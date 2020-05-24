@@ -15,6 +15,7 @@ public:
 	ASkill();
 	FORCEINLINE void Initialize(class AWeapon* InWeapon) { Weapon = InWeapon; }
 
+	UFUNCTION(BlueprintCallable)
 	void UseSkill();
 
 	UFUNCTION(BlueprintImplementableEvent)
