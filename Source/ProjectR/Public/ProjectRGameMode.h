@@ -14,6 +14,3 @@ class AProjectRGameMode : public AGameModeBase
 public:
 	AProjectRGameMode();
 };
-
-
-
