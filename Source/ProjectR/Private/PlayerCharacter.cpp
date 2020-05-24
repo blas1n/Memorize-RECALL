@@ -18,7 +18,7 @@ APlayerCharacter::APlayerCharacter()
 	CurWeaponIndex = 0;
 }
 
-void APlayerCharacter::EquipWeapon(const FName& Name, uint8 Index)
+void APlayerCharacter::EquipWeapon(FName Name, uint8 Index)
 {
 	Weapons[Index] = GenerateWeapon(Name);
 }
@@ -27,11 +27,6 @@ int32 APlayerCharacter::HealEnergy(int32 Value)
 {
 	Energy = FMath::Clamp(Energy + Value, 0, MaxEnergy);
 	return Energy;
-}
-
-void APlayerCharacter::BeginPlay()
-{
-	Super::BeginPlay();
 }
 
 void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
