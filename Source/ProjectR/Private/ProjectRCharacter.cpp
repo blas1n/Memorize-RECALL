@@ -11,6 +11,7 @@
 #include "GameFramework/SpringArmComponent.h"
 #include "UObject/ConstructorHelpers.h"
 #include "Buff.h"
+#include "BuffStorage.h"
 #include "Weapon.h"
 #include "WeaponData.h"
 
@@ -56,7 +57,35 @@ AProjectRCharacter::AProjectRCharacter()
 	HealthHeal = 0.0f;
 	WalkSpeed = 0.0f;
 	RunSpeed = 0.0f;
-	StunCount = 0u;
+}
+
+AWeapon* AProjectRCharacter::GenerateWeapon(FName Name)
+{
+	static ConstructorHelpers::FObjectFinder<UDataTable> DataTable(TEXT("/Game/WeaponTable"));
+	static UDataTable* WeaponTable = DataTable.Succeeded() ? DataTable.Object : nullptr;
+
+	FActorSpawnParameters SpawnParam;
+	SpawnParam.Owner = SpawnParam.Instigator = this;
+	SpawnParam.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+
+	AWeapon* Ret = GetWorld()->SpawnActor<AWeapon>(SpawnParam);
+
+	const FWeaponData* WeaponData = WeaponTable->FindRow<FWeaponData>(Name, "", false);
+	Ret->Initialize(WeaponData);
+
+	return Ret;
+}
+
+void AProjectRCharacter::ApplyStun()
+{
+	NativeOnStunApply();
+	OnStunApply();
+}
+
+void AProjectRCharacter::ReleaseStun()
+{
+	NativeOnStunRelease();
+	OnStunRelease();
 }
 
 int32 AProjectRCharacter::HealHealth(int32 Value)
@@ -77,6 +106,8 @@ void AProjectRCharacter::SetSpeed(float Speed) noexcept
 
 void AProjectRCharacter::BeginPlay()
 {
+	Super::BeginPlay();
+
 	Health = MaxHealth;
 }
 
@@ -99,23 +130,6 @@ void AProjectRCharacter::PressSkill(uint8 Index)
 void AProjectRCharacter::ReleaseSkill(uint8 Index)
 {
 	if (Weapon) Weapon->ReleaseSkill(Index);
-}
-
-AWeapon* AProjectRCharacter::GenerateWeapon(FName Name)
-{
-	static ConstructorHelpers::FObjectFinder<UDataTable> DataTable(TEXT("/Game/WeaponTable"));
-	static UDataTable* WeaponTable = DataTable.Succeeded() ? DataTable.Object : nullptr;
-
-	FActorSpawnParameters SpawnParam;
-	SpawnParam.Owner = SpawnParam.Instigator = this;
-	SpawnParam.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-
-	AWeapon* Ret = GetWorld()->SpawnActor<AWeapon>(SpawnParam);
-
-	const FWeaponData* WeaponData = WeaponTable->FindRow<FWeaponData>(Name, "", false);
-	Ret->Initialize(WeaponData);
-	
-	return Ret;
 }
 
 void AProjectRCharacter::Death()
