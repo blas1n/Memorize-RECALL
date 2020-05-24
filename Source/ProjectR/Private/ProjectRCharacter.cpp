@@ -101,7 +101,7 @@ void AProjectRCharacter::ReleaseSkill(uint8 Index)
 	if (Weapon) Weapon->ReleaseSkill(Index);
 }
 
-AWeapon* AProjectRCharacter::GenerateWeapon(const FName& Name)
+AWeapon* AProjectRCharacter::GenerateWeapon(FName Name)
 {
 	static ConstructorHelpers::FObjectFinder<UDataTable> DataTable(TEXT("/Game/WeaponTable"));
 	static UDataTable* WeaponTable = DataTable.Succeeded() ? DataTable.Object : nullptr;
