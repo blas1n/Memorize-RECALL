@@ -17,10 +17,16 @@ class AProjectRCharacter : public ACharacter
 public:
 	AProjectRCharacter();
 
-	class AWeapon* GenerateWeapon(const FName& Name);
+	UFUNCTION(BlueprintCallable)
+	class AWeapon* GenerateWeapon(FName Name);
+
+	UFUNCTION(BlueprintCallable)
 	int32 HealHealth(int32 Value);
 
+	UFUNCTION(BlueprintCallable)
 	float GetSpeed() const noexcept;
+
+	UFUNCTION(BlueprintCallable)
 	void SetSpeed(float Speed) noexcept;
 
 	FORCEINLINE class USpringArmComponent* GetCameraBoom() const noexcept { return CameraBoom; }
