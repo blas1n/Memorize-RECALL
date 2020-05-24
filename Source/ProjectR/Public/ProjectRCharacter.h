@@ -9,7 +9,7 @@
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnDeath, AController*, Instigator);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnAttack, AProjectRCharacter*, Target);
 
-UCLASS(config=Game, BlueprintType)
+UCLASS(config=Game, Abstract, Blueprintable)
 class AProjectRCharacter : public ACharacter
 {
 	GENERATED_BODY()
@@ -19,6 +19,12 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	class AWeapon* GenerateWeapon(FName Name);
+
+	UFUNCTION(BlueprintCallable)
+	void ApplyStun();
+
+	UFUNCTION(BlueprintCallable)
+	void ReleaseStun();
 
 	UFUNCTION(BlueprintCallable)
 	int32 HealHealth(int32 Value);
@@ -45,6 +51,15 @@ protected:
 	void BeginPlay() override;
 	float TakeDamage(float DamageAmount, const FDamageEvent& DamageEvent,
 		AController* EventInstigator, AActor* DamageCauser) override;
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void OnStunApply();
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void OnStunRelease();
+
+	virtual void NativeOnStunApply() {}
+	virtual void NativeOnStunRelease() {}
 
 	void PressSkill(uint8 index);
 	void ReleaseSkill(uint8 index);
