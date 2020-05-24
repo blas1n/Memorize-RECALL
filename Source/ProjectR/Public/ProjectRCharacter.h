@@ -9,7 +9,7 @@
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnDeath, AController*, Instigator);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnAttack, AProjectRCharacter*, Target);
 
-UCLASS(config=Game, BlueprintType)
+UCLASS(config=Game, Abstract, Blueprintable)
 class AProjectRCharacter : public ACharacter
 {
 	GENERATED_BODY()
@@ -17,10 +17,22 @@ class AProjectRCharacter : public ACharacter
 public:
 	AProjectRCharacter();
 
-	class AWeapon* GenerateWeapon(const FName& Name);
+	UFUNCTION(BlueprintCallable)
+	class AWeapon* GenerateWeapon(FName Name);
+
+	UFUNCTION(BlueprintCallable)
+	void ApplyStun();
+
+	UFUNCTION(BlueprintCallable)
+	void ReleaseStun();
+
+	UFUNCTION(BlueprintCallable)
 	int32 HealHealth(int32 Value);
 
+	UFUNCTION(BlueprintCallable)
 	float GetSpeed() const noexcept;
+
+	UFUNCTION(BlueprintCallable)
 	void SetSpeed(float Speed) noexcept;
 
 	FORCEINLINE class USpringArmComponent* GetCameraBoom() const noexcept { return CameraBoom; }
@@ -34,11 +46,22 @@ public:
 	FORCEINLINE float GetHealthHeal() const noexcept { return HealthHeal; }
 	FORCEINLINE float GetWalkSpeed() const noexcept { return WalkSpeed; }
 	FORCEINLINE float GetRunSpeed() const noexcept { return RunSpeed; }
+	FORCEINLINE TMap<TSubclassOf<class ABuff>, class UBuffStorage*>&
+		GetBuffStorages() noexcept { return BuffStorages; }
 
 protected:
 	void BeginPlay() override;
 	float TakeDamage(float DamageAmount, const FDamageEvent& DamageEvent,
 		AController* EventInstigator, AActor* DamageCauser) override;
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void OnStunApply();
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void OnStunRelease();
+
+	virtual void NativeOnStunApply() {}
+	virtual void NativeOnStunRelease() {}
 
 	void PressSkill(uint8 index);
 	void ReleaseSkill(uint8 index);
@@ -86,5 +109,6 @@ private:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Transient, Category = Stat, meta = (AllowPrivateAccess = true))
 	float RunSpeed;
 
-	uint8 StunCount;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Buff, meta = (AllowPrivateAccess = true))
+	TMap<TSubclassOf<class ABuff>, class UBuffStorage*> BuffStorages;
 };

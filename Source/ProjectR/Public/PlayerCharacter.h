@@ -14,7 +14,10 @@ class PROJECTR_API APlayerCharacter final : public AProjectRCharacter
 public:
 	APlayerCharacter();
 
-	void EquipWeapon(const FName& Name, uint8 Index);
+	UFUNCTION(BlueprintCallable)
+	void EquipWeapon(FName Name, uint8 Index);
+
+	UFUNCTION(BlueprintCallable)
 	int32 HealEnergy(int32 Value);
 
 	FORCEINLINE int32 GetEnergy() const noexcept { return Energy; }
@@ -22,7 +25,6 @@ public:
 	FORCEINLINE int32 GetEnergyHeal() const noexcept { return EnergyHeal; }
 
 private:
-	void BeginPlay() override;
 	void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 	void MoveForward(float Value);
