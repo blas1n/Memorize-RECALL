@@ -46,6 +46,8 @@ public:
 	FORCEINLINE float GetHealthHeal() const noexcept { return HealthHeal; }
 	FORCEINLINE float GetWalkSpeed() const noexcept { return WalkSpeed; }
 	FORCEINLINE float GetRunSpeed() const noexcept { return RunSpeed; }
+	FORCEINLINE TMap<TSubclassOf<class ABuff>, class UBuffStorage*>&
+		GetBuffStorages() noexcept { return BuffStorages; }
 
 protected:
 	void BeginPlay() override;
@@ -107,5 +109,6 @@ private:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Transient, Category = Stat, meta = (AllowPrivateAccess = true))
 	float RunSpeed;
 
-	uint8 StunCount;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Buff, meta = (AllowPrivateAccess = true))
+	TMap<TSubclassOf<class ABuff>, class UBuffStorage*> BuffStorages;
 };

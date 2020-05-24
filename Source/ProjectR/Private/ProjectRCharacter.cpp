@@ -109,6 +109,10 @@ void AProjectRCharacter::BeginPlay()
 	Super::BeginPlay();
 
 	Health = MaxHealth;
+
+	for (TObjectIterator<UClass> It; It; ++It)
+		if (It->IsChildOf(ABuff::StaticClass()) && !It->HasAnyClassFlags(CLASS_Abstract))
+			BuffStorages.Add(*It, It->GetDefaultObject<ABuff>()->CreateStorage());
 }
 
 float AProjectRCharacter::TakeDamage(float DamageAmount, const FDamageEvent& DamageEvent,
