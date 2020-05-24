@@ -17,10 +17,14 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void ApplyBuff(class AProjectRCharacter* InTarget, float Duration);
 
+	UFUNCTION(BlueprintImplementableEvent)
+	class UBuffStorage* CreateStorage() const;
+
 protected:
 	UFUNCTION(BlueprintImplementableEvent)
-	void OnBuff();
+	void OnBuff(class UBuffStorage* BuffStorage);
 
 private:
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = true))
 	AProjectRCharacter* Target;
 };
