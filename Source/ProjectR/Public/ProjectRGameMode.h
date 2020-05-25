@@ -10,7 +10,4 @@ UCLASS(minimalapi)
 class AProjectRGameMode : public AGameModeBase
 {
 	GENERATED_BODY()
-
-public:
-	AProjectRGameMode();
 };
