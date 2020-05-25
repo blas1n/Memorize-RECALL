@@ -1,3 +1,3 @@
 # ProjectR
 
-It is out UE4 game project.
+It is our UE4 game project.
