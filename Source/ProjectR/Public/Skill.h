@@ -13,7 +13,11 @@ class PROJECTR_API ASkill : public AActor
 	
 public:	
 	ASkill();
-	FORCEINLINE void Initialize(class AWeapon* InWeapon) { Weapon = InWeapon; }
+
+	UFUNCTION(BlueprintNativeEvent)
+	void Initialize(class AWeapon* InWeapon);
+
+	FORCEINLINE void Initialize_Implementation(AWeapon* InWeapon) { Weapon = InWeapon; }
 
 	UFUNCTION(BlueprintImplementableEvent)
 	void OnPress();
