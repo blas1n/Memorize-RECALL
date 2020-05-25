@@ -15,9 +15,6 @@ public:
 	ASkill();
 	FORCEINLINE void Initialize(class AWeapon* InWeapon) { Weapon = InWeapon; }
 
-	UFUNCTION(BlueprintCallable)
-	void UseSkill();
-
 	UFUNCTION(BlueprintImplementableEvent)
 	void OnPress();
 
@@ -25,8 +22,11 @@ public:
 	void OnRelease();
 
 protected:
-	UFUNCTION(BlueprintImplementableEvent)
-	void OnActive();
+	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
+	void UseSkill();
+
+	UFUNCTION(BlueprintCallable)
+	bool CheckAndApplyLimit();
 
 private:
 	void BeginPlay() override;
@@ -46,6 +46,4 @@ private:
 	float CoolTime;
 
 	float NextUseTime;
-
-	bool IsPlayer;
 };
