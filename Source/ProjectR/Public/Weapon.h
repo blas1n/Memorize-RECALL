@@ -14,6 +14,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnEndSkill);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnBeginAttack);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnEndAttack);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnShoot);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnExecute);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnLeftWeaponHitted, AActor*, Target);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnRightWeaponHitted, AActor*, Target);
 
@@ -50,12 +51,6 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void ReleaseSkill(uint8 Index);
-
-	FORCEINLINE void BeginSkill() { OnBeginSkill.Broadcast(); }
-	FORCEINLINE void EndSkill() { OnEndSkill.Broadcast(); }
-	FORCEINLINE void BeginAttack() { OnBeginAttack.Broadcast(); }
-	FORCEINLINE void EndAttack() { OnEndAttack.Broadcast(); }
-	FORCEINLINE void Shoot() { OnShoot.Broadcast(); }
 
 private:
 	virtual void BeginPlay() override;
@@ -96,6 +91,9 @@ public:
 
 	UPROPERTY(BlueprintAssignable)
 	FOnShoot OnShoot;
+
+	UPROPERTY(BlueprintAssignable)
+	FOnExecute OnExecute;
 
 	UPROPERTY(BlueprintAssignable)
 	FOnLeftWeaponHitted OnLeftWeaponHitted;
