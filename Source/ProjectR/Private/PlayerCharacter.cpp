@@ -29,6 +29,13 @@ int32 APlayerCharacter::HealEnergy(int32 Value)
 	return Energy;
 }
 
+void APlayerCharacter::BeginPlay()
+{
+	Super::BeginPlay();
+
+	Energy = MaxEnergy;
+}
+
 void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);

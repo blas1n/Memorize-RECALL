@@ -109,6 +109,7 @@ void AProjectRCharacter::BeginPlay()
 	Super::BeginPlay();
 
 	Health = MaxHealth;
+	SetSpeed(WalkSpeed);
 
 	for (TObjectIterator<UClass> It; It; ++It)
 		if (It->IsChildOf(ABuff::StaticClass()) && !It->HasAnyClassFlags(CLASS_Abstract))
