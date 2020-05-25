@@ -27,6 +27,12 @@ public:
 	void ReleaseStun();
 
 	UFUNCTION(BlueprintCallable)
+	void BeginParrying(UObject* InParrying);
+
+	UFUNCTION(BlueprintCallable)
+	void EndParrying();
+
+	UFUNCTION(BlueprintCallable)
 	int32 HealHealth(int32 Value);
 
 	UFUNCTION(BlueprintCallable)
@@ -111,4 +117,6 @@ private:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Buff, meta = (AllowPrivateAccess = true))
 	TMap<TSubclassOf<class ABuff>, class UBuffStorage*> BuffStorages;
+
+	UObject* Parrying;
 };

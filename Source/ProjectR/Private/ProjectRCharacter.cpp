@@ -12,6 +12,7 @@
 #include "UObject/ConstructorHelpers.h"
 #include "Buff.h"
 #include "BuffStorage.h"
+#include "Parryable.h"
 #include "Weapon.h"
 #include "WeaponData.h"
 
@@ -57,6 +58,7 @@ AProjectRCharacter::AProjectRCharacter()
 	HealthHeal = 0.0f;
 	WalkSpeed = 0.0f;
 	RunSpeed = 0.0f;
+	Parrying = nullptr;
 }
 
 AWeapon* AProjectRCharacter::GenerateWeapon(FName Name)
@@ -86,6 +88,17 @@ void AProjectRCharacter::ReleaseStun()
 {
 	NativeOnStunRelease();
 	OnStunRelease();
+}
+
+void AProjectRCharacter::BeginParrying(UObject* InParrying)
+{
+	if (InParrying->GetClass()->ImplementsInterface(UParryable::StaticClass()))
+		Parrying = InParrying;
+}
+
+void AProjectRCharacter::EndParrying()
+{
+	Parrying = nullptr;
 }
 
 int32 AProjectRCharacter::HealHealth(int32 Value)
@@ -120,6 +133,12 @@ float AProjectRCharacter::TakeDamage(float DamageAmount, const FDamageEvent& Dam
 	AController* EventInstigator, AActor* DamageCauser)
 {
 	float Damage = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
+
+	if (Parrying && IParryable::Execute_IsParryable(Parrying, Damage, EventInstigator, DamageCauser))
+	{
+		IParryable::Execute_Parry(Parrying, Damage, EventInstigator, DamageCauser);
+		return 0.0f;
+	}
 
 	Health -= static_cast<int32>(DamageAmount);
 	if (Health <= 0) Death();
