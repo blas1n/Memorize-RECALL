@@ -14,6 +14,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnEndSkill);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnBeginAttack);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnEndAttack);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnShoot);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnExecute);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnLeftWeaponHitted, AActor*, Target);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnRightWeaponHitted, AActor*, Target);
 
@@ -96,6 +97,9 @@ public:
 
 	UPROPERTY(BlueprintAssignable)
 	FOnShoot OnShoot;
+
+	UPROPERTY(BlueprintAssignable)
+	FOnExecute OnExecute;
 
 	UPROPERTY(BlueprintAssignable)
 	FOnLeftWeaponHitted OnLeftWeaponHitted;
