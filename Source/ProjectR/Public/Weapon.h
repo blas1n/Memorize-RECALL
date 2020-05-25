@@ -52,12 +52,6 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void ReleaseSkill(uint8 Index);
 
-	FORCEINLINE void BeginSkill() { OnBeginSkill.Broadcast(); }
-	FORCEINLINE void EndSkill() { OnEndSkill.Broadcast(); }
-	FORCEINLINE void BeginAttack() { OnBeginAttack.Broadcast(); }
-	FORCEINLINE void EndAttack() { OnEndAttack.Broadcast(); }
-	FORCEINLINE void Shoot() { OnShoot.Broadcast(); }
-
 private:
 	virtual void BeginPlay() override;
 
