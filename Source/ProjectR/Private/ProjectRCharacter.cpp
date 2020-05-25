@@ -63,8 +63,8 @@ AProjectRCharacter::AProjectRCharacter()
 
 AWeapon* AProjectRCharacter::GenerateWeapon(FName Name)
 {
-	static ConstructorHelpers::FObjectFinder<UDataTable> DataTable(TEXT("/Game/WeaponTable"));
-	static UDataTable* WeaponTable = DataTable.Succeeded() ? DataTable.Object : nullptr;
+	static ConstructorHelpers::FObjectFinder<UDataTable> DataTable(TEXT("DataTable'/Game/DataTable/WeaponTable.WeaponTable'"));
+	UDataTable* WeaponTable = DataTable.Succeeded() ? DataTable.Object : nullptr;
 
 	FActorSpawnParameters SpawnParam;
 	SpawnParam.Owner = SpawnParam.Instigator = this;
