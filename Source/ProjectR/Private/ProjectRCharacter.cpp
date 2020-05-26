@@ -53,29 +53,24 @@ AProjectRCharacter::AProjectRCharacter()
 	RightWeapon->SetCollisionProfileName(TEXT("Weapon"));
 
 	Weapon = nullptr;
+	WeaponsData = nullptr;
 	Health = 0;
 	MaxHealth = 0;
 	HealthHeal = 0.0f;
 	WalkSpeed = 0.0f;
 	RunSpeed = 0.0f;
 	Parrying = nullptr;
-
-	static ConstructorHelpers::FObjectFinder<UDataTable> DataTable(TEXT("DataTable'/Game/DataTable/WeaponData.WeaponData'"));
-	check(DataTable.Succeeded());
-
-	WeaponTable = DataTable.Object;
 }
 
-AWeapon* AProjectRCharacter::GenerateWeapon(FName Name)
-{	
-	FActorSpawnParameters SpawnParam;
-	SpawnParam.Owner = SpawnParam.Instigator = this;
-	SpawnParam.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+void AProjectRCharacter::BeginParrying(UObject* InParrying)
+{
+	if (InParrying->GetClass()->ImplementsInterface(UParryable::StaticClass()))
+		Parrying = InParrying;
+}
 
-	AWeapon* Ret = GetWorld()->SpawnActor<AWeapon>(SpawnParam);
-	const FWeaponData* WeaponData = WeaponTable->FindRow<FWeaponData>(Name, "", false);
-	Ret->Initialize(WeaponData);
-	return Ret;
+void AProjectRCharacter::EndParrying()
+{
+	Parrying = nullptr;
 }
 
 void AProjectRCharacter::ApplyStun()
@@ -88,17 +83,6 @@ void AProjectRCharacter::ReleaseStun()
 {
 	NativeOnStunRelease();
 	OnStunRelease();
-}
-
-void AProjectRCharacter::BeginParrying(UObject* InParrying)
-{
-	if (InParrying->GetClass()->ImplementsInterface(UParryable::StaticClass()))
-		Parrying = InParrying;
-}
-
-void AProjectRCharacter::EndParrying()
-{
-	Parrying = nullptr;
 }
 
 int32 AProjectRCharacter::HealHealth(int32 Value)
@@ -144,6 +128,18 @@ float AProjectRCharacter::TakeDamage(float DamageAmount, const FDamageEvent& Dam
 	if (Health <= 0) Death();
 	
 	return Damage;
+}
+
+AWeapon* AProjectRCharacter::GenerateWeapon(FName Name)
+{
+	FActorSpawnParameters SpawnParam;
+	SpawnParam.Owner = SpawnParam.Instigator = this;
+	SpawnParam.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+
+	AWeapon* Ret = GetWorld()->SpawnActor<AWeapon>(SpawnParam);
+	const FWeaponData* WeaponData = WeaponsData->FindRow<FWeaponData>(Name, "", false);
+	Ret->Initialize(WeaponData);
+	return Ret;
 }
 
 void AProjectRCharacter::PressSkill(uint8 Index)
