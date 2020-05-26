@@ -97,7 +97,7 @@ private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Weapon, meta = (AllowPrivateAccess = true))
 	UStaticMeshComponent* RightWeapon;
 	
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Transient, Category = Weapon, meta = (AllowPrivateAccess = true))
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Transient, Category = Weapon, meta = (AllowPrivateAccess = true))
 	AWeapon* Weapon;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Transient, Category = Stat, meta = (AllowPrivateAccess = true))
