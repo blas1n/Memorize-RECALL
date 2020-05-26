@@ -52,7 +52,7 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 	PlayerInputComponent->BindAction(TEXT("Jump"), IE_Released, this, &ACharacter::StopJumping);
 
 	PlayerInputComponent->BindAction<FSpeedSetter>(TEXT("Sprint"), IE_Pressed, this, &APlayerCharacter::SetSpeed, GetRunSpeed());
-	PlayerInputComponent->BindAction<FSpeedSetter>(TEXT("Sprint"), IE_Pressed, this, &APlayerCharacter::SetSpeed, GetWalkSpeed());
+	PlayerInputComponent->BindAction<FSpeedSetter>(TEXT("Sprint"), IE_Released, this, &APlayerCharacter::SetSpeed, GetWalkSpeed());
 
 	PlayerInputComponent->BindAction<FIndexer>(TEXT("Weapon1"), IE_Pressed, this, &APlayerCharacter::SwapWeapon, static_cast<uint8>(0));
 	PlayerInputComponent->BindAction<FIndexer>(TEXT("Weapon2"), IE_Pressed, this, &APlayerCharacter::SwapWeapon, static_cast<uint8>(1));
