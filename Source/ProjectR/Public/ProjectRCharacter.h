@@ -119,4 +119,5 @@ private:
 	TMap<TSubclassOf<class ABuff>, class UBuffStorage*> BuffStorages;
 
 	UObject* Parrying;
+	class UDataTable* WeaponTable;
 };

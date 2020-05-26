@@ -59,22 +59,22 @@ AProjectRCharacter::AProjectRCharacter()
 	WalkSpeed = 0.0f;
 	RunSpeed = 0.0f;
 	Parrying = nullptr;
+
+	static ConstructorHelpers::FObjectFinder<UDataTable> DataTable(TEXT("DataTable'/Game/DataTable/WeaponData.WeaponData'"));
+	check(DataTable.Succeeded());
+
+	WeaponTable = DataTable.Object;
 }
 
 AWeapon* AProjectRCharacter::GenerateWeapon(FName Name)
-{
-	static ConstructorHelpers::FObjectFinder<UDataTable> DataTable(TEXT("DataTable'/Game/DataTable/WeaponTable.WeaponTable'"));
-	UDataTable* WeaponTable = DataTable.Succeeded() ? DataTable.Object : nullptr;
-
+{	
 	FActorSpawnParameters SpawnParam;
 	SpawnParam.Owner = SpawnParam.Instigator = this;
 	SpawnParam.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 
 	AWeapon* Ret = GetWorld()->SpawnActor<AWeapon>(SpawnParam);
-
 	const FWeaponData* WeaponData = WeaponTable->FindRow<FWeaponData>(Name, "", false);
 	Ret->Initialize(WeaponData);
-
 	return Ret;
 }
 
