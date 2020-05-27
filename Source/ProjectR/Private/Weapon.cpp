@@ -22,8 +22,8 @@ void AWeapon::Initialize(const FWeaponData* WeaponData)
 	Key = WeaponData->Key;
 	Name = WeaponData->Name;
 
-	if (WeaponData->LeftMesh.IsValid()) ++MeshLoadCount;
-	if (WeaponData->RightMesh.IsValid()) ++MeshLoadCount;
+	if (WeaponData->LeftMesh.IsPending())++MeshLoadCount;
+	if (WeaponData->RightMesh.IsPending()) ++MeshLoadCount;
 
 	LoadWeapon(LeftWeaponInfo, WeaponData->LeftMesh, WeaponData->LefttTransform);
 	LoadWeapon(RightWeaponInfo, WeaponData->RightMesh, WeaponData->RightTransform);
@@ -95,7 +95,7 @@ void AWeapon::UnequipOnce(UStaticMeshComponent* Weapon)
 
 void AWeapon::LoadWeapon(FWeaponInfo& WeaponInfoRef, TAssetPtr<UStaticMesh> Mesh, const FTransform& Transform)
 {
-	if (!Mesh.IsValid()) return;
+	if (!Mesh.IsPending()) return;
 
 	const FSoftObjectPath& MeshPath = Mesh.ToSoftObjectPath();
 	FStreamableManager& Manager = UAssetManager::GetStreamableManager();
