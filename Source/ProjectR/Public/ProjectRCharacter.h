@@ -18,7 +18,10 @@ public:
 	AProjectRCharacter();
 
 	UFUNCTION(BlueprintCallable)
-	class AWeapon* GenerateWeapon(FName Name);
+	void BeginParrying(UObject* InParrying);
+
+	UFUNCTION(BlueprintCallable)
+	void EndParrying();
 
 	UFUNCTION(BlueprintCallable)
 	void ApplyStun();
@@ -53,6 +56,9 @@ protected:
 	void BeginPlay() override;
 	float TakeDamage(float DamageAmount, const FDamageEvent& DamageEvent,
 		AController* EventInstigator, AActor* DamageCauser) override;
+
+	UFUNCTION(BlueprintCallable)
+	class AWeapon* GenerateWeapon(FName Name);
 
 	UFUNCTION(BlueprintImplementableEvent)
 	void OnStunApply();
@@ -91,8 +97,11 @@ private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Weapon, meta = (AllowPrivateAccess = true))
 	UStaticMeshComponent* RightWeapon;
 	
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Transient, Category = Weapon, meta = (AllowPrivateAccess = true))
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Transient, Category = Weapon, meta = (AllowPrivateAccess = true))
 	AWeapon* Weapon;
+
+	UPROPERTY(EditDefaultsOnly, Category = Weapon, meta = (AllowPrivateAccess = true))
+	class UDataTable* WeaponsData;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Transient, Category = Stat, meta = (AllowPrivateAccess = true))
 	int32 Health;
@@ -111,4 +120,6 @@ private:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Buff, meta = (AllowPrivateAccess = true))
 	TMap<TSubclassOf<class ABuff>, class UBuffStorage*> BuffStorages;
+
+	UObject* Parrying;
 };

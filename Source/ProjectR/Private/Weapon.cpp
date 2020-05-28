@@ -22,11 +22,11 @@ void AWeapon::Initialize(const FWeaponData* WeaponData)
 	Key = WeaponData->Key;
 	Name = WeaponData->Name;
 
-	if (WeaponData->LeftMesh.IsValid()) ++MeshLoadCount;
-	if (WeaponData->RightMesh.IsValid()) ++MeshLoadCount;
+	if (WeaponData->LeftMesh.IsPending())++MeshLoadCount;
+	if (WeaponData->RightMesh.IsPending()) ++MeshLoadCount;
 
-	LoadWeapon(LeftWeaponInfo, WeaponData->LeftMesh, WeaponData->LefttTransform);
-	LoadWeapon(RightWeaponInfo, WeaponData->RightMesh, WeaponData->RightTransform);
+	LoadWeapon(&LeftWeaponInfo, WeaponData->LeftMesh, WeaponData->LefttTransform);
+	LoadWeapon(&RightWeaponInfo, WeaponData->RightMesh, WeaponData->RightTransform);
 
 	UWorld* World = GetWorld();
 	FActorSpawnParameters SpawnParam;
@@ -93,21 +93,20 @@ void AWeapon::UnequipOnce(UStaticMeshComponent* Weapon)
 	Weapon->SetRelativeTransform(FTransform{});
 }
 
-void AWeapon::LoadWeapon(FWeaponInfo& WeaponInfoRef, TAssetPtr<UStaticMesh> Mesh, const FTransform& Transform)
+void AWeapon::LoadWeapon(FWeaponInfo* WeaponInfoPtr, TAssetPtr<UStaticMesh> Mesh, const FTransform& Transform)
 {
-	if (!Mesh.IsValid()) return;
+	if (!Mesh.IsPending()) return;
 
-	const FSoftObjectPath& MeshPath = Mesh.ToSoftObjectPath();
 	FStreamableManager& Manager = UAssetManager::GetStreamableManager();
 	Manager.RequestAsyncLoad(Mesh.ToSoftObjectPath(), FStreamableDelegate::CreateLambda(
-		[this, WeaponInfoRef, Mesh]() mutable { OnMeshLoaded(WeaponInfoRef, Mesh); }));
+		[this, WeaponInfoPtr, &Mesh]() { OnMeshLoaded(WeaponInfoPtr, Mesh); }));
 
-	WeaponInfoRef.Transform = Transform;
+	WeaponInfoPtr->Transform = Transform;
 }
 
-void AWeapon::OnMeshLoaded(FWeaponInfo& WeaponInfoRef, TAssetPtr<UStaticMesh> Mesh)
+void AWeapon::OnMeshLoaded(FWeaponInfo* WeaponInfoPtr, const TAssetPtr<UStaticMesh>& Mesh)
 {
-	WeaponInfoRef.Mesh = Mesh.Get();
+	WeaponInfoPtr->Mesh = Mesh.Get();
 
 	if (--MeshLoadCount == 0) OnWeaponMeshLoaded.Broadcast();
 }

@@ -25,6 +25,7 @@ public:
 	FORCEINLINE int32 GetEnergyHeal() const noexcept { return EnergyHeal; }
 
 private:
+	void BeginPlay() override;
 	void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 	void MoveForward(float Value);
