@@ -97,7 +97,6 @@ void AWeapon::LoadWeapon(FWeaponInfo& WeaponInfoRef, TAssetPtr<UStaticMesh> Mesh
 {
 	if (!Mesh.IsPending()) return;
 
-	const FSoftObjectPath& MeshPath = Mesh.ToSoftObjectPath();
 	FStreamableManager& Manager = UAssetManager::GetStreamableManager();
 	Manager.RequestAsyncLoad(Mesh.ToSoftObjectPath(), FStreamableDelegate::CreateLambda(
 		[this, WeaponInfoRef, Mesh]() mutable { OnMeshLoaded(WeaponInfoRef, Mesh); }));
