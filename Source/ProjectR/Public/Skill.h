@@ -13,10 +13,11 @@ class PROJECTR_API ASkill : public AActor
 	
 public:	
 	ASkill();
-	FORCEINLINE void Initialize(class AWeapon* InWeapon) { Weapon = InWeapon; }
 
-	UFUNCTION(BlueprintCallable)
-	void UseSkill();
+	UFUNCTION(BlueprintNativeEvent)
+	void Initialize(class AWeapon* InWeapon);
+
+	FORCEINLINE void Initialize_Implementation(AWeapon* InWeapon) { Weapon = InWeapon; }
 
 	UFUNCTION(BlueprintImplementableEvent)
 	void OnPress();
@@ -25,8 +26,11 @@ public:
 	void OnRelease();
 
 protected:
-	UFUNCTION(BlueprintImplementableEvent)
-	void OnActive();
+	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
+	void UseSkill();
+
+	UFUNCTION(BlueprintCallable)
+	bool CheckAndApplyLimit();
 
 private:
 	void BeginPlay() override;
@@ -46,6 +50,4 @@ private:
 	float CoolTime;
 
 	float NextUseTime;
-
-	bool IsPlayer;
 };

@@ -14,6 +14,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnEndSkill);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnBeginAttack);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnEndAttack);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnShoot);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnExecute);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnLeftWeaponHitted, AActor*, Target);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnRightWeaponHitted, AActor*, Target);
 
@@ -51,20 +52,14 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void ReleaseSkill(uint8 Index);
 
-	FORCEINLINE void BeginSkill() { OnBeginSkill.Broadcast(); }
-	FORCEINLINE void EndSkill() { OnEndSkill.Broadcast(); }
-	FORCEINLINE void BeginAttack() { OnBeginAttack.Broadcast(); }
-	FORCEINLINE void EndAttack() { OnEndAttack.Broadcast(); }
-	FORCEINLINE void Shoot() { OnShoot.Broadcast(); }
-
 private:
 	virtual void BeginPlay() override;
 
 	void EquipOnce(UStaticMeshComponent* Weapon, const FWeaponInfo& Info);
 	void UnequipOnce(UStaticMeshComponent* Weapon);
 
-	void LoadWeapon(FWeaponInfo& WeaponInfoRef, TAssetPtr<UStaticMesh> Mesh, const FTransform& Transform);
-	void OnMeshLoaded(FWeaponInfo& WeaponInfoRef, TAssetPtr<UStaticMesh> Mesh);
+	void LoadWeapon(FWeaponInfo* WeaponInfoPtr, TAssetPtr<UStaticMesh> Mesh, const FTransform& Transform);
+	void OnMeshLoaded(FWeaponInfo* WeaponInfoPtr, const TAssetPtr<UStaticMesh>& Mesh);
 
 	UFUNCTION()
 	void OnLeftWeaponOverlapped(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
@@ -96,6 +91,9 @@ public:
 
 	UPROPERTY(BlueprintAssignable)
 	FOnShoot OnShoot;
+
+	UPROPERTY(BlueprintAssignable)
+	FOnExecute OnExecute;
 
 	UPROPERTY(BlueprintAssignable)
 	FOnLeftWeaponHitted OnLeftWeaponHitted;
