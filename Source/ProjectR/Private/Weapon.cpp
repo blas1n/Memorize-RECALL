@@ -25,8 +25,11 @@ void AWeapon::Initialize(const FWeaponData* WeaponData)
 	if (WeaponData->LeftMesh.IsPending())++MeshLoadCount;
 	if (WeaponData->RightMesh.IsPending()) ++MeshLoadCount;
 
-	LoadWeapon(&LeftWeaponInfo, WeaponData->LeftMesh, WeaponData->LefttTransform);
-	LoadWeapon(&RightWeaponInfo, WeaponData->RightMesh, WeaponData->RightTransform);
+	LeftMeshRef = WeaponData->LeftMesh;
+	RightMeshRef = WeaponData->RightMesh;
+
+	LoadWeapon(&LeftWeaponInfo, &LeftMeshRef, WeaponData->LefttTransform);
+	LoadWeapon(&RightWeaponInfo, &RightMeshRef, WeaponData->RightTransform);
 
 	UWorld* World = GetWorld();
 	FActorSpawnParameters SpawnParam;
@@ -44,7 +47,7 @@ void AWeapon::Initialize(const FWeaponData* WeaponData)
 void AWeapon::Equip()
 {
 	EquipOnce(LeftWeapon, LeftWeaponInfo);
-	EquipOnce(RightWeapon, LeftWeaponInfo);
+	EquipOnce(RightWeapon, RightWeaponInfo);
 
 	RightWeapon->OnComponentBeginOverlap.AddDynamic(this, &AWeapon::OnLeftWeaponOverlapped);
 	RightWeapon->OnComponentBeginOverlap.AddDynamic(this, &AWeapon::OnRightWeaponOverlapped);
@@ -93,20 +96,20 @@ void AWeapon::UnequipOnce(UStaticMeshComponent* Weapon)
 	Weapon->SetRelativeTransform(FTransform{});
 }
 
-void AWeapon::LoadWeapon(FWeaponInfo* WeaponInfoPtr, TAssetPtr<UStaticMesh> Mesh, const FTransform& Transform)
+void AWeapon::LoadWeapon(FWeaponInfo* WeaponInfoPtr, TAssetPtr<UStaticMesh>* MeshPtr, const FTransform& Transform)
 {
-	if (!Mesh.IsPending()) return;
+	if (!MeshPtr->IsPending()) return;
 
 	FStreamableManager& Manager = UAssetManager::GetStreamableManager();
-	Manager.RequestAsyncLoad(Mesh.ToSoftObjectPath(), FStreamableDelegate::CreateLambda(
-		[this, WeaponInfoPtr, &Mesh]() { OnMeshLoaded(WeaponInfoPtr, Mesh); }));
+	Manager.RequestAsyncLoad(MeshPtr->ToSoftObjectPath(), FStreamableDelegate::CreateLambda(
+		[this, WeaponInfoPtr, MeshPtr] { OnMeshLoaded(WeaponInfoPtr, MeshPtr); }));
 
 	WeaponInfoPtr->Transform = Transform;
 }
 
-void AWeapon::OnMeshLoaded(FWeaponInfo* WeaponInfoPtr, const TAssetPtr<UStaticMesh>& Mesh)
+void AWeapon::OnMeshLoaded(FWeaponInfo* WeaponInfoPtr, const TAssetPtr<UStaticMesh>* MeshPtr)
 {
-	WeaponInfoPtr->Mesh = Mesh.Get();
+	WeaponInfoPtr->Mesh = MeshPtr->Get();
 
 	if (--MeshLoadCount == 0) OnWeaponMeshLoaded.Broadcast();
 }
