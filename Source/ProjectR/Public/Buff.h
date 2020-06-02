@@ -22,7 +22,7 @@ public:
 
 protected:
 	UFUNCTION(BlueprintImplementableEvent)
-	void OnBuff(class UBuffStorage* BuffStorage);
+	void OnBuff(UBuffStorage* BuffStorage);
 
 private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = true))
