@@ -29,7 +29,7 @@ struct FWeaponData : public FTableRowBase
 	TAssetPtr<UStaticMesh> LeftMesh;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	FTransform LefttTransform;
+	FTransform LeftTransform;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, EditFixedSize)
 	TArray<TSubclassOf<class ASkill>> Skills;
