@@ -44,7 +44,7 @@ void AWeapon::Equip()
 	EquipOnce(LeftWeapon, LeftWeaponInfo);
 	EquipOnce(RightWeapon, RightWeaponInfo);
 
-	RightWeapon->OnComponentBeginOverlap.AddDynamic(this, &AWeapon::OnLeftWeaponOverlapped);
+	LeftWeapon->OnComponentBeginOverlap.AddDynamic(this, &AWeapon::OnLeftWeaponOverlapped);
 	RightWeapon->OnComponentBeginOverlap.AddDynamic(this, &AWeapon::OnRightWeaponOverlapped);
 
 	OnActive.Broadcast();
