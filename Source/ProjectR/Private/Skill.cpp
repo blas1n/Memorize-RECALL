@@ -30,9 +30,8 @@ bool ASkill::CheckAndApplyLimit()
 
 void ASkill::BeginPlay()
 {
-	Super::BeginPlay();
-	
 	User = Cast<AProjectRCharacter>(GetInstigator());
+	Super::BeginPlay();
 }
 
 bool ASkill::IsCoolTime() const
