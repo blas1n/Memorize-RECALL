@@ -38,6 +38,7 @@ class PROJECTR_API AWeapon final : public AActor
 
 public:
 	AWeapon();
+
 	void Initialize(const struct FWeaponData* WeaponData);
 
 	UFUNCTION(BlueprintCallable)
@@ -58,8 +59,8 @@ private:
 	void EquipOnce(UStaticMeshComponent* Weapon, const FWeaponInfo& Info);
 	void UnequipOnce(UStaticMeshComponent* Weapon);
 
-	void LoadWeapon(FWeaponInfo* WeaponInfoPtr, TAssetPtr<UStaticMesh>* Mesh, const FTransform& Transform);
-	void OnMeshLoaded(FWeaponInfo* WeaponInfoPtr, const TAssetPtr<UStaticMesh>* MeshPtr);
+	void LoadWeapon(FWeaponInfo& WeaponInfo, TAssetPtr<UStaticMesh>* Mesh, const FTransform& Transform);
+	void OnMeshLoaded(FWeaponInfo& WeaponInfo, TAssetPtr<UStaticMesh>* MeshPtr);
 
 	UFUNCTION()
 	void OnLeftWeaponOverlapped(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);

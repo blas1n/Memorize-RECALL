@@ -96,7 +96,7 @@ void AWeapon::UnequipOnce(UStaticMeshComponent* Weapon)
 	Weapon->SetRelativeTransform(FTransform{});
 }
 
-void AWeapon::LoadWeapon(FWeaponInfo* WeaponInfoPtr, TAssetPtr<UStaticMesh>* MeshPtr, const FTransform& Transform)
+void AWeapon::LoadWeapon(FWeaponInfo& WeaponInfo, TAssetPtr<UStaticMesh>* MeshPtr, const FTransform& Transform)
 {
 	if (!MeshPtr->IsPending()) return;
 
@@ -107,9 +107,9 @@ void AWeapon::LoadWeapon(FWeaponInfo* WeaponInfoPtr, TAssetPtr<UStaticMesh>* Mes
 	WeaponInfoPtr->Transform = Transform;
 }
 
-void AWeapon::OnMeshLoaded(FWeaponInfo* WeaponInfoPtr, const TAssetPtr<UStaticMesh>* MeshPtr)
+void AWeapon::OnMeshLoaded(FWeaponInfo& WeaponInfo, TAssetPtr<UStaticMesh>* MeshPtr)
 {
-	WeaponInfoPtr->Mesh = MeshPtr->Get();
+	WeaponInfo.Mesh = MeshPtr->Get();
 
 	if (--MeshLoadCount == 0) OnWeaponMeshLoaded.Broadcast();
 }
