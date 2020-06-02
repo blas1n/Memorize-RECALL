@@ -6,6 +6,7 @@
 #include "GameFramework/Actor.h"
 #include "Weapon.generated.h"
 
+DECLARE_DYNAMIC_DELEGATE(FOnWeaponMeshLoadedSingle);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnWeaponMeshLoaded);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnActive);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnInactive);
@@ -35,9 +36,10 @@ UCLASS(BlueprintType)
 class PROJECTR_API AWeapon final : public AActor
 {
 	GENERATED_BODY()
-	
+
 public:
 	AWeapon();
+
 	void Initialize(const struct FWeaponData* WeaponData);
 
 	UFUNCTION(BlueprintCallable)
@@ -52,14 +54,17 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void ReleaseSkill(uint8 Index);
 
+	UFUNCTION(BlueprintCallable)
+	void RegisterOnWeaponMeshLoaded(const FOnWeaponMeshLoadedSingle& Callback);
+
 private:
 	virtual void BeginPlay() override;
 
 	void EquipOnce(UStaticMeshComponent* Weapon, const FWeaponInfo& Info);
 	void UnequipOnce(UStaticMeshComponent* Weapon);
 
-	void LoadWeapon(FWeaponInfo& WeaponInfoRef, TAssetPtr<UStaticMesh> Mesh, const FTransform& Transform);
-	void OnMeshLoaded(FWeaponInfo& WeaponInfoRef, TAssetPtr<UStaticMesh> Mesh);
+	void LoadWeapon(FWeaponInfo& WeaponInfo, TAssetPtr<UStaticMesh>* Mesh, const FTransform& Transform);
+	void OnMeshLoaded(FWeaponInfo& WeaponInfo, TAssetPtr<UStaticMesh>* MeshPtr);
 
 	UFUNCTION()
 	void OnLeftWeaponOverlapped(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
@@ -68,9 +73,6 @@ private:
 	void OnRightWeaponOverlapped(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
 public:
-	UPROPERTY(BlueprintAssignable)
-	FOnWeaponMeshLoaded OnWeaponMeshLoaded;
-
 	UPROPERTY(BlueprintAssignable)
 	FOnActive OnActive;
 
@@ -122,6 +124,8 @@ private:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, EditFixedSize, Category = Skill, meta = (AllowPrivateAccess = true))
 	TArray<class ASkill*> Skills;
+
+	FOnWeaponMeshLoaded OnWeaponMeshLoaded;
 
 	uint8 MeshLoadCount;
 };
