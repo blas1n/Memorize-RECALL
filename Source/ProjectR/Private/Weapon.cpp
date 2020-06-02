@@ -106,6 +106,7 @@ void AWeapon::LoadWeapon(FWeaponInfo& WeaponInfo, TAssetPtr<UStaticMesh>* MeshPt
 	if (MeshPtr->IsNull())
 	{
 		--MeshLoadCount;
+		delete MeshPtr;
 		return;
 	}
 
@@ -125,6 +126,7 @@ void AWeapon::LoadWeapon(FWeaponInfo& WeaponInfo, TAssetPtr<UStaticMesh>* MeshPt
 void AWeapon::OnMeshLoaded(FWeaponInfo& WeaponInfo, TAssetPtr<UStaticMesh>* MeshPtr)
 {
 	WeaponInfo.Mesh = MeshPtr->Get();
+	delete MeshPtr;
 
 	if (--MeshLoadCount == 0) OnWeaponMeshLoaded.Broadcast();
 }
