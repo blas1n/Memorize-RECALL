@@ -12,6 +12,7 @@
 #include "UObject/ConstructorHelpers.h"
 #include "Buff.h"
 #include "BuffStorage.h"
+#include "Parryable.h"
 #include "Weapon.h"
 #include "WeaponData.h"
 
@@ -52,28 +53,24 @@ AProjectRCharacter::AProjectRCharacter()
 	RightWeapon->SetCollisionProfileName(TEXT("Weapon"));
 
 	Weapon = nullptr;
+	WeaponsData = nullptr;
 	Health = 0;
 	MaxHealth = 0;
 	HealthHeal = 0.0f;
 	WalkSpeed = 0.0f;
 	RunSpeed = 0.0f;
+	Parrying = nullptr;
 }
 
-AWeapon* AProjectRCharacter::GenerateWeapon(FName Name)
+void AProjectRCharacter::BeginParrying(UObject* InParrying)
 {
-	static ConstructorHelpers::FObjectFinder<UDataTable> DataTable(TEXT("/Game/WeaponTable"));
-	static UDataTable* WeaponTable = DataTable.Succeeded() ? DataTable.Object : nullptr;
+	if (InParrying->GetClass()->ImplementsInterface(UParryable::StaticClass()))
+		Parrying = InParrying;
+}
 
-	FActorSpawnParameters SpawnParam;
-	SpawnParam.Owner = SpawnParam.Instigator = this;
-	SpawnParam.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-
-	AWeapon* Ret = GetWorld()->SpawnActor<AWeapon>(SpawnParam);
-
-	const FWeaponData* WeaponData = WeaponTable->FindRow<FWeaponData>(Name, "", false);
-	Ret->Initialize(WeaponData);
-
-	return Ret;
+void AProjectRCharacter::EndParrying()
+{
+	Parrying = nullptr;
 }
 
 void AProjectRCharacter::ApplyStun()
@@ -109,6 +106,7 @@ void AProjectRCharacter::BeginPlay()
 	Super::BeginPlay();
 
 	Health = MaxHealth;
+	SetSpeed(WalkSpeed);
 
 	for (TObjectIterator<UClass> It; It; ++It)
 		if (It->IsChildOf(ABuff::StaticClass()) && !It->HasAnyClassFlags(CLASS_Abstract))
@@ -120,10 +118,28 @@ float AProjectRCharacter::TakeDamage(float DamageAmount, const FDamageEvent& Dam
 {
 	float Damage = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
 
+	if (Parrying && IParryable::Execute_IsParryable(Parrying, Damage, EventInstigator, DamageCauser))
+	{
+		IParryable::Execute_Parry(Parrying, Damage, EventInstigator, DamageCauser);
+		return 0.0f;
+	}
+
 	Health -= static_cast<int32>(DamageAmount);
 	if (Health <= 0) Death();
 	
 	return Damage;
+}
+
+AWeapon* AProjectRCharacter::GenerateWeapon(FName Name)
+{
+	FActorSpawnParameters SpawnParam;
+	SpawnParam.Owner = SpawnParam.Instigator = this;
+	SpawnParam.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+
+	AWeapon* Ret = GetWorld()->SpawnActor<AWeapon>(SpawnParam);
+	const FWeaponData* WeaponData = WeaponsData->FindRow<FWeaponData>(Name, "", false);
+	Ret->Initialize(WeaponData);
+	return Ret;
 }
 
 void AProjectRCharacter::PressSkill(uint8 Index)

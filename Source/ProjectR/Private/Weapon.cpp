@@ -15,6 +15,7 @@ AWeapon::AWeapon()
 	SetCanBeDamaged(false);
 
 	Skills.SetNum(5);
+	MeshLoadCount = 2;
 }
 
 void AWeapon::Initialize(const FWeaponData* WeaponData)
@@ -22,11 +23,8 @@ void AWeapon::Initialize(const FWeaponData* WeaponData)
 	Key = WeaponData->Key;
 	Name = WeaponData->Name;
 
-	if (WeaponData->LeftMesh.IsValid()) ++MeshLoadCount;
-	if (WeaponData->RightMesh.IsValid()) ++MeshLoadCount;
-
-	LoadWeapon(LeftWeaponInfo, WeaponData->LeftMesh, WeaponData->LefttTransform);
-	LoadWeapon(RightWeaponInfo, WeaponData->RightMesh, WeaponData->RightTransform);
+	LoadWeapon(LeftWeaponInfo, new TAssetPtr<UStaticMesh>{ WeaponData->LeftMesh }, WeaponData->LeftTransform);
+	LoadWeapon(RightWeaponInfo, new TAssetPtr<UStaticMesh>{ WeaponData->RightMesh }, WeaponData->RightTransform);
 
 	UWorld* World = GetWorld();
 	FActorSpawnParameters SpawnParam;
@@ -44,9 +42,9 @@ void AWeapon::Initialize(const FWeaponData* WeaponData)
 void AWeapon::Equip()
 {
 	EquipOnce(LeftWeapon, LeftWeaponInfo);
-	EquipOnce(RightWeapon, LeftWeaponInfo);
+	EquipOnce(RightWeapon, RightWeaponInfo);
 
-	RightWeapon->OnComponentBeginOverlap.AddDynamic(this, &AWeapon::OnLeftWeaponOverlapped);
+	LeftWeapon->OnComponentBeginOverlap.AddDynamic(this, &AWeapon::OnLeftWeaponOverlapped);
 	RightWeapon->OnComponentBeginOverlap.AddDynamic(this, &AWeapon::OnRightWeaponOverlapped);
 
 	OnActive.Broadcast();
@@ -56,6 +54,9 @@ void AWeapon::Unequip()
 {
 	UnequipOnce(LeftWeapon);
 	UnequipOnce(RightWeapon);
+
+	LeftWeapon->OnComponentBeginOverlap.RemoveDynamic(this, &AWeapon::OnLeftWeaponOverlapped);
+	RightWeapon->OnComponentBeginOverlap.RemoveDynamic(this, &AWeapon::OnRightWeaponOverlapped);
 
 	OnInactive.Broadcast();
 }
@@ -68,6 +69,13 @@ void AWeapon::PressSkill(uint8 Index)
 void AWeapon::ReleaseSkill(uint8 Index)
 {
 	Skills[Index]->OnRelease();
+}
+
+void AWeapon::RegisterOnWeaponMeshLoaded(const FOnWeaponMeshLoadedSingle& Callback)
+{
+	check(Callback.IsBound());
+	if (MeshLoadCount) OnWeaponMeshLoaded.Add(Callback);
+	else Callback.Execute();
 }
 
 void AWeapon::BeginPlay()
@@ -93,21 +101,32 @@ void AWeapon::UnequipOnce(UStaticMeshComponent* Weapon)
 	Weapon->SetRelativeTransform(FTransform{});
 }
 
-void AWeapon::LoadWeapon(FWeaponInfo& WeaponInfoRef, TAssetPtr<UStaticMesh> Mesh, const FTransform& Transform)
+void AWeapon::LoadWeapon(FWeaponInfo& WeaponInfo, TAssetPtr<UStaticMesh>* MeshPtr, const FTransform& Transform)
 {
-	if (!Mesh.IsValid()) return;
+	if (MeshPtr->IsNull())
+	{
+		--MeshLoadCount;
+		delete MeshPtr;
+		return;
+	}
 
-	const FSoftObjectPath& MeshPath = Mesh.ToSoftObjectPath();
-	FStreamableManager& Manager = UAssetManager::GetStreamableManager();
-	Manager.RequestAsyncLoad(Mesh.ToSoftObjectPath(), FStreamableDelegate::CreateLambda(
-		[this, WeaponInfoRef, Mesh]() mutable { OnMeshLoaded(WeaponInfoRef, Mesh); }));
+	WeaponInfo.Transform = Transform;
 
-	WeaponInfoRef.Transform = Transform;
+	if (MeshPtr->IsPending())
+	{
+		UAssetManager::GetStreamableManager().RequestAsyncLoad(
+			MeshPtr->ToSoftObjectPath(),
+			FStreamableDelegate::CreateLambda([this, &WeaponInfo = WeaponInfo, MeshPtr]() mutable
+				{ OnMeshLoaded(WeaponInfo, MeshPtr); })
+		);
+	}
+	else OnMeshLoaded(WeaponInfo, MeshPtr);
 }
 
-void AWeapon::OnMeshLoaded(FWeaponInfo& WeaponInfoRef, TAssetPtr<UStaticMesh> Mesh)
+void AWeapon::OnMeshLoaded(FWeaponInfo& WeaponInfo, TAssetPtr<UStaticMesh>* MeshPtr)
 {
-	WeaponInfoRef.Mesh = Mesh.Get();
+	WeaponInfo.Mesh = MeshPtr->Get();
+	delete MeshPtr;
 
 	if (--MeshLoadCount == 0) OnWeaponMeshLoaded.Broadcast();
 }

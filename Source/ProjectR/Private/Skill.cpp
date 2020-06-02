@@ -13,30 +13,25 @@ ASkill::ASkill()
 	UseEnergy = 0;
 	CoolTime = 0.0f;
 	NextUseTime = 0.0f;
-	IsPlayer = false;
 }
 
-void ASkill::UseSkill()
+bool ASkill::CheckAndApplyLimit()
 {
-	if (IsCoolTime()) return;
-	if (IsPlayer)
+	if (IsCoolTime()) return false;
+	if (APlayerCharacter* Player = Cast<APlayerCharacter>(User))
 	{
-		APlayerCharacter* Player = Cast<APlayerCharacter>(User);
-		if (Player->GetEnergy() < UseEnergy) return;
-
+		if (Player->GetEnergy() < UseEnergy) return false;
 		Player->HealEnergy(-UseEnergy);
 	}
 
 	NextUseTime = GetWorld()->GetTimeSeconds() + CoolTime;
-	OnActive();
+	return true;
 }
 
 void ASkill::BeginPlay()
 {
-	Super::BeginPlay();
-	
 	User = Cast<AProjectRCharacter>(GetInstigator());
-	IsPlayer = Cast<APlayerCharacter>(User) != nullptr;
+	Super::BeginPlay();
 }
 
 bool ASkill::IsCoolTime() const
