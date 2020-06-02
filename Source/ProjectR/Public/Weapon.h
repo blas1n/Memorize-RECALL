@@ -35,7 +35,7 @@ UCLASS(BlueprintType)
 class PROJECTR_API AWeapon final : public AActor
 {
 	GENERATED_BODY()
-	
+
 public:
 	AWeapon();
 	void Initialize(const struct FWeaponData* WeaponData);
@@ -53,7 +53,7 @@ public:
 	void ReleaseSkill(uint8 Index);
 
 private:
-	virtual void BeginPlay() override;
+	void BeginPlay() override;
 
 	void EquipOnce(UStaticMeshComponent* Weapon, const FWeaponInfo& Info);
 	void UnequipOnce(UStaticMeshComponent* Weapon);
