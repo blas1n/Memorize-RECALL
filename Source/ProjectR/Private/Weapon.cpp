@@ -26,12 +26,6 @@ void AWeapon::Initialize(const FWeaponData* WeaponData)
 	LoadWeapon(LeftWeaponInfo, new TAssetPtr<UStaticMesh>{ WeaponData->LeftMesh }, WeaponData->LeftTransform);
 	LoadWeapon(RightWeaponInfo, new TAssetPtr<UStaticMesh>{ WeaponData->RightMesh }, WeaponData->RightTransform);
 
-	LeftMeshRef = WeaponData->LeftMesh;
-	RightMeshRef = WeaponData->RightMesh;
-
-	LoadWeapon(&LeftWeaponInfo, &LeftMeshRef, WeaponData->LefttTransform);
-	LoadWeapon(&RightWeaponInfo, &RightMeshRef, WeaponData->RightTransform);
-
 	UWorld* World = GetWorld();
 	FActorSpawnParameters SpawnParam;
 	SpawnParam.Owner = SpawnParam.Instigator = GetInstigator();
@@ -61,6 +55,9 @@ void AWeapon::Unequip()
 	UnequipOnce(LeftWeapon);
 	UnequipOnce(RightWeapon);
 
+	LeftWeapon->OnComponentBeginOverlap.RemoveDynamic(this, &AWeapon::OnLeftWeaponOverlapped);
+	RightWeapon->OnComponentBeginOverlap.RemoveDynamic(this, &AWeapon::OnRightWeaponOverlapped);
+
 	OnInactive.Broadcast();
 }
 
@@ -72,6 +69,13 @@ void AWeapon::PressSkill(uint8 Index)
 void AWeapon::ReleaseSkill(uint8 Index)
 {
 	Skills[Index]->OnRelease();
+}
+
+void AWeapon::RegisterOnWeaponMeshLoaded(const FOnWeaponMeshLoadedSingle& Callback)
+{
+	check(Callback.IsBound());
+	if (MeshLoadCount) OnWeaponMeshLoaded.Add(Callback);
+	else Callback.Execute();
 }
 
 void AWeapon::BeginPlay()
@@ -99,14 +103,23 @@ void AWeapon::UnequipOnce(UStaticMeshComponent* Weapon)
 
 void AWeapon::LoadWeapon(FWeaponInfo& WeaponInfo, TAssetPtr<UStaticMesh>* MeshPtr, const FTransform& Transform)
 {
-	if (!MeshPtr->IsPending()) return;
+	if (MeshPtr->IsNull())
+	{
 		--MeshLoadCount;
+		return;
+	}
 
-	FStreamableManager& Manager = UAssetManager::GetStreamableManager();
-	Manager.RequestAsyncLoad(MeshPtr->ToSoftObjectPath(), FStreamableDelegate::CreateLambda(
-		[this, WeaponInfoPtr, MeshPtr] { OnMeshLoaded(WeaponInfoPtr, MeshPtr); }));
+	WeaponInfo.Transform = Transform;
 
-	WeaponInfoPtr->Transform = Transform;
+	if (MeshPtr->IsPending())
+	{
+		UAssetManager::GetStreamableManager().RequestAsyncLoad(
+			MeshPtr->ToSoftObjectPath(),
+			FStreamableDelegate::CreateLambda([this, &WeaponInfo = WeaponInfo, MeshPtr]() mutable
+				{ OnMeshLoaded(WeaponInfo, MeshPtr); })
+		);
+	}
+	else OnMeshLoaded(WeaponInfo, MeshPtr);
 }
 
 void AWeapon::OnMeshLoaded(FWeaponInfo& WeaponInfo, TAssetPtr<UStaticMesh>* MeshPtr)

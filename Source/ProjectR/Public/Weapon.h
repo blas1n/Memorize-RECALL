@@ -6,6 +6,7 @@
 #include "GameFramework/Actor.h"
 #include "Weapon.generated.h"
 
+DECLARE_DYNAMIC_DELEGATE(FOnWeaponMeshLoadedSingle);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnWeaponMeshLoaded);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnActive);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnInactive);
@@ -53,8 +54,11 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void ReleaseSkill(uint8 Index);
 
+	UFUNCTION(BlueprintCallable)
+	void RegisterOnWeaponMeshLoaded(const FOnWeaponMeshLoadedSingle& Callback);
+
 private:
-	void BeginPlay() override;
+	virtual void BeginPlay() override;
 
 	void EquipOnce(UStaticMeshComponent* Weapon, const FWeaponInfo& Info);
 	void UnequipOnce(UStaticMeshComponent* Weapon);
@@ -69,9 +73,6 @@ private:
 	void OnRightWeaponOverlapped(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
 public:
-	UPROPERTY(BlueprintAssignable)
-	FOnWeaponMeshLoaded OnWeaponMeshLoaded;
-
 	UPROPERTY(BlueprintAssignable)
 	FOnActive OnActive;
 
@@ -124,7 +125,7 @@ private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, EditFixedSize, Category = Skill, meta = (AllowPrivateAccess = true))
 	TArray<class ASkill*> Skills;
 
-	TAssetPtr<UStaticMesh> LeftMeshRef;
-	TAssetPtr<UStaticMesh> RightMeshRef;
+	FOnWeaponMeshLoaded OnWeaponMeshLoaded;
+
 	uint8 MeshLoadCount;
 };
