@@ -15,6 +15,7 @@ AWeapon::AWeapon()
 	SetCanBeDamaged(false);
 
 	Skills.SetNum(5);
+	MeshLoadCount = 2;
 }
 
 void AWeapon::Initialize(const FWeaponData* WeaponData)
@@ -22,8 +23,8 @@ void AWeapon::Initialize(const FWeaponData* WeaponData)
 	Key = WeaponData->Key;
 	Name = WeaponData->Name;
 
-	if (WeaponData->LeftMesh.IsPending())++MeshLoadCount;
-	if (WeaponData->RightMesh.IsPending()) ++MeshLoadCount;
+	LoadWeapon(LeftWeaponInfo, new TAssetPtr<UStaticMesh>{ WeaponData->LeftMesh }, WeaponData->LeftTransform);
+	LoadWeapon(RightWeaponInfo, new TAssetPtr<UStaticMesh>{ WeaponData->RightMesh }, WeaponData->RightTransform);
 
 	LeftMeshRef = WeaponData->LeftMesh;
 	RightMeshRef = WeaponData->RightMesh;
@@ -99,6 +100,7 @@ void AWeapon::UnequipOnce(UStaticMeshComponent* Weapon)
 void AWeapon::LoadWeapon(FWeaponInfo& WeaponInfo, TAssetPtr<UStaticMesh>* MeshPtr, const FTransform& Transform)
 {
 	if (!MeshPtr->IsPending()) return;
+		--MeshLoadCount;
 
 	FStreamableManager& Manager = UAssetManager::GetStreamableManager();
 	Manager.RequestAsyncLoad(MeshPtr->ToSoftObjectPath(), FStreamableDelegate::CreateLambda(
