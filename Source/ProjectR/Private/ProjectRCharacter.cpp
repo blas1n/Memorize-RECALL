@@ -157,8 +157,12 @@ void AProjectRCharacter::SetWeapon(AWeapon* InWeapon)
 	if (Weapon)
 		Weapon->Unequip();
 
-	if ((Weapon = InWeapon))
-		Weapon->Equip();
+	Weapon = InWeapon;
+	if (!Weapon) return;
+
+	FOnWeaponMeshLoadedSingle Callback;
+	Callback.BindDynamic(this, &AProjectRCharacter::Equip);
+	Weapon->RegisterOnWeaponMeshLoaded(Callback);
 }
 
 void AProjectRCharacter::Death()
@@ -179,4 +183,9 @@ void AProjectRCharacter::Death()
 	RightWeapon->SetCollisionProfileName(TEXT("BlockAllDynamic"));
 	RightWeapon->SetSimulatePhysics(true);
 	RightWeapon->DetachFromComponent(Rules);
+}
+
+void AProjectRCharacter::Equip()
+{
+	Weapon->Equip();
 }

@@ -77,6 +77,9 @@ protected:
 private:
 	void Death();
 
+	UFUNCTION()
+	void Equip();
+
 public:
 	UPROPERTY(BlueprintAssignable)
 	FOnDeath OnDeath;
