@@ -21,6 +21,14 @@ APlayerCharacter::APlayerCharacter()
 void APlayerCharacter::EquipWeapon(FName Name, uint8 Index)
 {
 	Weapons[Index] = GenerateWeapon(Name);
+
+	bool bIsFirstWeapon = true;
+
+	for (int I = 0; I < 3; ++I)
+		bIsFirstWeapon &= I == Index || Weapons[I] == nullptr;
+
+	if (bIsFirstWeapon)
+		SwapWeapon(Index);
 }
 
 int32 APlayerCharacter::HealEnergy(int32 Value)
