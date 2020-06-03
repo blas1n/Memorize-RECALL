@@ -72,10 +72,13 @@ protected:
 	void PressSkill(uint8 index);
 	void ReleaseSkill(uint8 index);
 
-	FORCEINLINE void SetWeapon(AWeapon* InWeapon) noexcept { Weapon = InWeapon; }
+	void SetWeapon(AWeapon* InWeapon);
 
 private:
 	void Death();
+
+	UFUNCTION()
+	void Equip();
 
 public:
 	UPROPERTY(BlueprintAssignable)
