@@ -15,17 +15,24 @@ ASkill::ASkill()
 	NextUseTime = 0.0f;
 }
 
-bool ASkill::CheckAndApplyLimit()
+bool ASkill::CanUseSkill()
 {
-	if (IsCoolTime()) return false;
+	bool bIsUsableEnergy = true;
 	if (APlayerCharacter* Player = Cast<APlayerCharacter>(User))
-	{
-		if (Player->GetEnergy() < UseEnergy) return false;
-		Player->HealEnergy(-UseEnergy);
-	}
+		bIsUsableEnergy = Player->GetEnergy() >= UseEnergy;
+	
+	return !IsCoolTime() && bIsUsableEnergy;
+}
 
+void ASkill::ApplyCooltime()
+{
 	NextUseTime = GetWorld()->GetTimeSeconds() + CoolTime;
-	return true;
+}
+
+void ASkill::ApplyEnergy()
+{
+	if (APlayerCharacter* Player = Cast<APlayerCharacter>(User))
+		Player->HealEnergy(-UseEnergy);
 }
 
 void ASkill::BeginPlay()
