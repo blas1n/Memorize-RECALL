@@ -152,6 +152,19 @@ void AProjectRCharacter::ReleaseSkill(uint8 Index)
 	if (Weapon) Weapon->ReleaseSkill(Index);
 }
 
+void AProjectRCharacter::SetWeapon(AWeapon* InWeapon)
+{
+	if (Weapon)
+		Weapon->Unequip();
+
+	Weapon = InWeapon;
+	if (!Weapon) return;
+
+	FOnWeaponMeshLoadedSingle Callback;
+	Callback.BindDynamic(this, &AProjectRCharacter::Equip);
+	Weapon->RegisterOnWeaponMeshLoaded(Callback);
+}
+
 void AProjectRCharacter::Death()
 {
 	OnDeath.Broadcast(LastHitBy);
@@ -170,4 +183,9 @@ void AProjectRCharacter::Death()
 	RightWeapon->SetCollisionProfileName(TEXT("BlockAllDynamic"));
 	RightWeapon->SetSimulatePhysics(true);
 	RightWeapon->DetachFromComponent(Rules);
+}
+
+void AProjectRCharacter::Equip()
+{
+	Weapon->Equip();
 }
