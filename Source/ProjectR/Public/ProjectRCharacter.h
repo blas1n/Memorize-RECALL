@@ -52,6 +52,8 @@ public:
 	FORCEINLINE TMap<TSubclassOf<class ABuff>, class UBuffStorage*>&
 		GetBuffStorages() noexcept { return BuffStorages; }
 
+	FORCEINLINE bool IsCasting() const noexcept { return bIsCasting; }
+
 protected:
 	void BeginPlay() override;
 	float TakeDamage(float DamageAmount, const FDamageEvent& DamageEvent,
@@ -79,6 +81,12 @@ private:
 
 	UFUNCTION()
 	void Equip();
+
+	UFUNCTION()
+	void BeginCast();
+
+	UFUNCTION()
+	void EndCast();
 
 public:
 	UPROPERTY(BlueprintAssignable)
@@ -125,4 +133,6 @@ private:
 	TMap<TSubclassOf<class ABuff>, class UBuffStorage*> BuffStorages;
 
 	UObject* Parrying;
+
+	bool bIsCasting;
 };

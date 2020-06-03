@@ -60,6 +60,7 @@ AProjectRCharacter::AProjectRCharacter()
 	WalkSpeed = 0.0f;
 	RunSpeed = 0.0f;
 	Parrying = nullptr;
+	bIsCasting = false;
 }
 
 void AProjectRCharacter::BeginParrying(UObject* InParrying)
@@ -155,11 +156,18 @@ void AProjectRCharacter::ReleaseSkill(uint8 Index)
 void AProjectRCharacter::SetWeapon(AWeapon* InWeapon)
 {
 	if (Weapon)
+	{
 		Weapon->Unequip();
+		Weapon->OnBeginSkill.RemoveDynamic(this, &AProjectRCharacter::BeginCast);
+		Weapon->OnEndSkill.RemoveDynamic(this, &AProjectRCharacter::EndCast);
+	}
 
 	Weapon = InWeapon;
 	if (!Weapon) return;
 
+	Weapon->OnBeginSkill.AddDynamic(this, &AProjectRCharacter::BeginCast);
+	Weapon->OnEndSkill.AddDynamic(this, &AProjectRCharacter::EndCast);
+	
 	FOnWeaponMeshLoadedSingle Callback;
 	Callback.BindDynamic(this, &AProjectRCharacter::Equip);
 	Weapon->RegisterOnWeaponMeshLoaded(Callback);
@@ -188,4 +196,14 @@ void AProjectRCharacter::Death()
 void AProjectRCharacter::Equip()
 {
 	Weapon->Equip();
+}
+
+void AProjectRCharacter::BeginCast()
+{
+	bIsCasting = true;
+}
+
+void AProjectRCharacter::EndCast()
+{
+	bIsCasting = false;
 }
