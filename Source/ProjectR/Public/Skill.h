@@ -26,7 +26,10 @@ public:
 	void OnRelease();
 
 protected:
-	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
+	UFUNCTION(BlueprintImplementableEvent)
+	void OnSkill();
+
+	UFUNCTION(BlueprintCallable)
 	void UseSkill();
 
 	UFUNCTION(BlueprintCallable)

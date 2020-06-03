@@ -15,6 +15,12 @@ ASkill::ASkill()
 	NextUseTime = 0.0f;
 }
 
+void ASkill::UseSkill()
+{
+	if (IsValid(User) && !User->IsCasting())
+		OnSkill();
+}
+
 bool ASkill::CanUseSkill()
 {
 	bool bIsUsableEnergy = true;
