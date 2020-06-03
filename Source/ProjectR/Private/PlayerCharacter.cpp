@@ -110,9 +110,6 @@ void APlayerCharacter::SwapWeapon(uint8 Index)
 
 	CurWeaponIndex = Index;
 	SetWeapon(Weapons[CurWeaponIndex]);
-
-	if (AWeapon* CurWeapon = GetWeapon())
-		CurWeapon->Equip();
 }
 
 void APlayerCharacter::SwapWeapon(float Value)

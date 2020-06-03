@@ -152,6 +152,12 @@ void AProjectRCharacter::ReleaseSkill(uint8 Index)
 	if (Weapon) Weapon->ReleaseSkill(Index);
 }
 
+void AProjectRCharacter::SetWeapon(AWeapon* InWeapon)
+{
+	Weapon = InWeapon;
+	Weapon->Equip();
+}
+
 void AProjectRCharacter::Death()
 {
 	OnDeath.Broadcast(LastHitBy);
