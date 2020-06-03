@@ -11,7 +11,7 @@ DECLARE_DELEGATE_OneParam(FSpeedSetter, float);
 APlayerCharacter::APlayerCharacter()
 	: Super()
 {
-	Weapons.SetNum(5);
+	Weapons.SetNum(3);
 	Energy = 0;
 	MaxEnergy = 0;
 	EnergyHeal = 0;
