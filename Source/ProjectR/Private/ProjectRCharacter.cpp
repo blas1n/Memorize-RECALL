@@ -154,8 +154,11 @@ void AProjectRCharacter::ReleaseSkill(uint8 Index)
 
 void AProjectRCharacter::SetWeapon(AWeapon* InWeapon)
 {
-	Weapon = InWeapon;
-	Weapon->Equip();
+	if (Weapon)
+		Weapon->Unequip();
+
+	if ((Weapon = InWeapon))
+		Weapon->Equip();
 }
 
 void AProjectRCharacter::Death()
