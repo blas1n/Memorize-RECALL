@@ -26,11 +26,20 @@ public:
 	void OnRelease();
 
 protected:
-	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
+	UFUNCTION(BlueprintImplementableEvent)
+	void OnSkill();
+
+	UFUNCTION(BlueprintCallable)
 	void UseSkill();
 
 	UFUNCTION(BlueprintCallable)
-	bool CheckAndApplyLimit();
+	bool CanUseSkill();
+
+	UFUNCTION(BlueprintCallable)
+	void ApplyCooltime();
+
+	UFUNCTION(BlueprintCallable)
+	void ApplyEnergy();
 
 private:
 	void BeginPlay() override;
