@@ -30,7 +30,13 @@ protected:
 	void UseSkill();
 
 	UFUNCTION(BlueprintCallable)
-	bool CheckAndApplyLimit();
+	bool CanUseSkill();
+
+	UFUNCTION(BlueprintCallable)
+	void ApplyCooltime();
+
+	UFUNCTION(BlueprintCallable)
+	void ApplyEnergy();
 
 private:
 	void BeginPlay() override;
