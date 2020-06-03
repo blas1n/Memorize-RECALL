@@ -15,7 +15,7 @@ APlayerCharacter::APlayerCharacter()
 	Energy = 0;
 	MaxEnergy = 0;
 	EnergyHeal = 0;
-	CurWeaponIndex = 0;
+	CurWeaponIndex = 3;
 }
 
 void APlayerCharacter::EquipWeapon(FName Name, uint8 Index)
@@ -104,9 +104,6 @@ void APlayerCharacter::MoveRight(float Value)
 void APlayerCharacter::SwapWeapon(uint8 Index)
 {
 	if (CurWeaponIndex == Index) return;
-
-	if (AWeapon* OldWeapon = GetWeapon())
-		OldWeapon->Unequip();
 
 	CurWeaponIndex = Index;
 	SetWeapon(Weapons[CurWeaponIndex]);
