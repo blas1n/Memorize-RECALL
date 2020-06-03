@@ -26,7 +26,7 @@ void UProjectRAnimInstance::AnimNotify_BeginSkill()
 {
 	AWeapon* Weapon = GetWeapon();
 
-	if (Weapon)
+	if (IsValid(Weapon))
 		Weapon->OnBeginSkill.Broadcast();
 }
 
