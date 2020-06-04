@@ -13,6 +13,7 @@
 #include "Parryable.h"
 #include "Weapon.h"
 #include "WeaponData.h"
+#include "BehaviorTree/Tasks/BTTask_Wait.h"
 
 AProjectRCharacter::AProjectRCharacter()
 	: Super()
