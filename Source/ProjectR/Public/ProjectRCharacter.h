@@ -38,8 +38,6 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void SetSpeed(float Speed) noexcept;
 
-	FORCEINLINE class USpringArmComponent* GetCameraBoom() const noexcept { return CameraBoom; }
-	FORCEINLINE class UCameraComponent* GetFollowCamera() const noexcept { return FollowCamera; }
 	FORCEINLINE class UStaticMeshComponent* GetLeftWeapon() const noexcept { return LeftWeapon; }
 	FORCEINLINE UStaticMeshComponent* GetRightWeapon() const noexcept { return RightWeapon; }
 
@@ -96,12 +94,6 @@ public:
 	FOnAttack OnAttack;
 
 private:
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = true))
-	USpringArmComponent* CameraBoom;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = true))
-	UCameraComponent* FollowCamera;
-
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Weapon, meta = (AllowPrivateAccess = true))
 	UStaticMeshComponent* LeftWeapon;
 
