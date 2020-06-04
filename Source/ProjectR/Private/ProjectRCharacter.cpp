@@ -114,7 +114,7 @@ float AProjectRCharacter::TakeDamage(float DamageAmount, const FDamageEvent& Dam
 		return 0.0f;
 	}
 
-	Health -= static_cast<int32>(DamageAmount);
+	Health -= static_cast<int32>(Damage);
 	if (Health <= 0) Death();
 	
 	return Damage;
