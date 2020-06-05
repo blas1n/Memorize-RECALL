@@ -1,8 +1,11 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "PlayerCharacter.h"
+#include "Camera/CameraComponent.h"
 #include "Components/InputComponent.h"
 #include "GameFramework/Controller.h"
+#include "GameFramework/SpringArmComponent.h"
+#include "BehaviorTree/Tasks/BTTask_MoveTo.h"
 #include "Weapon.h"
 
 DECLARE_DELEGATE_OneParam(FIndexer, uint8);
@@ -11,16 +14,33 @@ DECLARE_DELEGATE_OneParam(FSpeedSetter, float);
 APlayerCharacter::APlayerCharacter()
 	: Super()
 {
-	Weapons.SetNum(5);
+	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
+	CameraBoom->SetupAttachment(RootComponent);
+	CameraBoom->TargetArmLength = 300.0f;
+	CameraBoom->bUsePawnControlRotation = true;
+
+	FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));
+	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
+	FollowCamera->bUsePawnControlRotation = false;
+
+	Weapons.SetNum(3);
 	Energy = 0;
 	MaxEnergy = 0;
 	EnergyHeal = 0;
-	CurWeaponIndex = 0;
+	CurWeaponIndex = 3;
 }
 
 void APlayerCharacter::EquipWeapon(FName Name, uint8 Index)
 {
 	Weapons[Index] = GenerateWeapon(Name);
+
+	bool bIsFirstWeapon = true;
+
+	for (int I = 0; I < 3; ++I)
+		bIsFirstWeapon &= I == Index || Weapons[I] == nullptr;
+
+	if (bIsFirstWeapon)
+		SwapWeapon(Index);
 }
 
 int32 APlayerCharacter::HealEnergy(int32 Value)
@@ -58,17 +78,11 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 	PlayerInputComponent->BindAction<FIndexer>(TEXT("Weapon2"), IE_Pressed, this, &APlayerCharacter::SwapWeapon, static_cast<uint8>(1));
 	PlayerInputComponent->BindAction<FIndexer>(TEXT("Weapon3"), IE_Pressed, this, &APlayerCharacter::SwapWeapon, static_cast<uint8>(2));
 
-	PlayerInputComponent->BindAction<FIndexer>(TEXT("Attack"), IE_Pressed, this, &APlayerCharacter::PressSkill, static_cast<uint8>(0));
-	PlayerInputComponent->BindAction<FIndexer>(TEXT("Skill1"), IE_Pressed, this, &APlayerCharacter::PressSkill, static_cast<uint8>(1));
-	PlayerInputComponent->BindAction<FIndexer>(TEXT("Skill2"), IE_Pressed, this, &APlayerCharacter::PressSkill, static_cast<uint8>(2));
-	PlayerInputComponent->BindAction<FIndexer>(TEXT("Skill3"), IE_Pressed, this, &APlayerCharacter::PressSkill, static_cast<uint8>(3));
-	PlayerInputComponent->BindAction<FIndexer>(TEXT("Parrying"), IE_Pressed, this, &APlayerCharacter::PressSkill, static_cast<uint8>(4));
-
-	PlayerInputComponent->BindAction<FIndexer>(TEXT("Attack"), IE_Released, this, &APlayerCharacter::ReleaseSkill, static_cast<uint8>(0));
-	PlayerInputComponent->BindAction<FIndexer>(TEXT("Skill1"), IE_Released, this, &APlayerCharacter::ReleaseSkill, static_cast<uint8>(1));
-	PlayerInputComponent->BindAction<FIndexer>(TEXT("Skill2"), IE_Released, this, &APlayerCharacter::ReleaseSkill, static_cast<uint8>(2));
-	PlayerInputComponent->BindAction<FIndexer>(TEXT("Skill3"), IE_Released, this, &APlayerCharacter::ReleaseSkill, static_cast<uint8>(3));
-	PlayerInputComponent->BindAction<FIndexer>(TEXT("Parrying"), IE_Released, this, &APlayerCharacter::ReleaseSkill, static_cast<uint8>(4));
+	PlayerInputComponent->BindAction<FIndexer>(TEXT("Attack"), IE_Pressed, this, &APlayerCharacter::UseSkill, static_cast<uint8>(0));
+	PlayerInputComponent->BindAction<FIndexer>(TEXT("Skill1"), IE_Pressed, this, &APlayerCharacter::UseSkill, static_cast<uint8>(1));
+	PlayerInputComponent->BindAction<FIndexer>(TEXT("Skill2"), IE_Pressed, this, &APlayerCharacter::UseSkill, static_cast<uint8>(2));
+	PlayerInputComponent->BindAction<FIndexer>(TEXT("Skill3"), IE_Pressed, this, &APlayerCharacter::UseSkill, static_cast<uint8>(3));
+	PlayerInputComponent->BindAction<FIndexer>(TEXT("Parrying"), IE_Pressed, this, &APlayerCharacter::UseSkill, static_cast<uint8>(4));
 }
 
 void APlayerCharacter::MoveForward(float Value)
@@ -97,14 +111,8 @@ void APlayerCharacter::SwapWeapon(uint8 Index)
 {
 	if (CurWeaponIndex == Index) return;
 
-	if (AWeapon* OldWeapon = GetWeapon())
-		OldWeapon->Unequip();
-
 	CurWeaponIndex = Index;
 	SetWeapon(Weapons[CurWeaponIndex]);
-
-	if (AWeapon* CurWeapon = GetWeapon())
-		CurWeapon->Equip();
 }
 
 void APlayerCharacter::SwapWeapon(float Value)

@@ -49,16 +49,13 @@ public:
 	void Unequip();
 
 	UFUNCTION(BlueprintCallable)
-	void PressSkill(uint8 Index);
-
-	UFUNCTION(BlueprintCallable)
-	void ReleaseSkill(uint8 Index);
+	void UseSkill(uint8 Index);
 
 	UFUNCTION(BlueprintCallable)
 	void RegisterOnWeaponMeshLoaded(const FOnWeaponMeshLoadedSingle& Callback);
 
 private:
-	virtual void BeginPlay() override;
+	void BeginPlay() override;
 
 	void EquipOnce(UStaticMeshComponent* Weapon, const FWeaponInfo& Info);
 	void UnequipOnce(UStaticMeshComponent* Weapon);
