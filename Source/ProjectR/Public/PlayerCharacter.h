@@ -20,6 +20,9 @@ public:
 	UFUNCTION(BlueprintCallable)
 	int32 HealEnergy(int32 Value);
 
+	FORCEINLINE class USpringArmComponent* GetCameraBoom() const noexcept { return CameraBoom; }
+	FORCEINLINE class UCameraComponent* GetFollowCamera() const noexcept { return FollowCamera; }
+
 	FORCEINLINE int32 GetEnergy() const noexcept { return Energy; }
 	FORCEINLINE int32 GetMaxEnergy() const noexcept { return MaxEnergy; }
 	FORCEINLINE int32 GetEnergyHeal() const noexcept { return EnergyHeal; }
@@ -35,6 +38,12 @@ private:
 	void SwapWeapon(float Value);
 
 private:
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = true))
+	USpringArmComponent* CameraBoom;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = true))
+	UCameraComponent* FollowCamera;
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, EditFixedSize, Category = Weapon, meta = (AllowPrivateAccess = true))
 	TArray<class AWeapon*> Weapons;
 
