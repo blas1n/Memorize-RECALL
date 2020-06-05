@@ -42,7 +42,8 @@ void AWeapon::Initialize(const FWeaponData* WeaponData)
 void AWeapon::Equip()
 {
 	constexpr static uint8 EquipIndex = 5;
-	Skills[EquipIndex];
+	if (Skills.Num() > EquipIndex)
+		Skills[EquipIndex];
 
 	EquipOnce(LeftWeapon, LeftWeaponInfo);
 	EquipOnce(RightWeapon, RightWeaponInfo);
