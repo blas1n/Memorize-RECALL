@@ -38,8 +38,6 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void SetSpeed(float Speed) noexcept;
 
-	FORCEINLINE class USpringArmComponent* GetCameraBoom() const noexcept { return CameraBoom; }
-	FORCEINLINE class UCameraComponent* GetFollowCamera() const noexcept { return FollowCamera; }
 	FORCEINLINE class UStaticMeshComponent* GetLeftWeapon() const noexcept { return LeftWeapon; }
 	FORCEINLINE UStaticMeshComponent* GetRightWeapon() const noexcept { return RightWeapon; }
 
@@ -62,6 +60,9 @@ protected:
 	UFUNCTION(BlueprintCallable)
 	class AWeapon* GenerateWeapon(FName Name);
 
+	UFUNCTION(BlueprintCallable)
+	void SetWeapon(AWeapon* InWeapon);
+
 	UFUNCTION(BlueprintImplementableEvent)
 	void OnStunApply();
 
@@ -71,10 +72,7 @@ protected:
 	virtual void NativeOnStunApply() {}
 	virtual void NativeOnStunRelease() {}
 
-	void PressSkill(uint8 index);
-	void ReleaseSkill(uint8 index);
-
-	void SetWeapon(AWeapon* InWeapon);
+	void UseSkill(uint8 index);
 
 private:
 	void Death();
@@ -96,19 +94,13 @@ public:
 	FOnAttack OnAttack;
 
 private:
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = true))
-	USpringArmComponent* CameraBoom;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = true))
-	UCameraComponent* FollowCamera;
-
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Weapon, meta = (AllowPrivateAccess = true))
 	UStaticMeshComponent* LeftWeapon;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Weapon, meta = (AllowPrivateAccess = true))
 	UStaticMeshComponent* RightWeapon;
 	
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Transient, Category = Weapon, meta = (AllowPrivateAccess = true))
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Transient, Category = Weapon, meta = (AllowPrivateAccess = true))
 	AWeapon* Weapon;
 
 	UPROPERTY(EditDefaultsOnly, Category = Weapon, meta = (AllowPrivateAccess = true))
