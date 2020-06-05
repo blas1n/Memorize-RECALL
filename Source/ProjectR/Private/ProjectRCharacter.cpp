@@ -133,16 +133,6 @@ AWeapon* AProjectRCharacter::GenerateWeapon(FName Name)
 	return Ret;
 }
 
-void AProjectRCharacter::PressSkill(uint8 Index)
-{
-	if (Weapon) Weapon->PressSkill(Index);
-}
-
-void AProjectRCharacter::ReleaseSkill(uint8 Index)
-{
-	if (Weapon) Weapon->ReleaseSkill(Index);
-}
-
 void AProjectRCharacter::SetWeapon(AWeapon* InWeapon)
 {
 	if (Weapon)
@@ -161,6 +151,11 @@ void AProjectRCharacter::SetWeapon(AWeapon* InWeapon)
 	FOnWeaponMeshLoadedSingle Callback;
 	Callback.BindDynamic(this, &AProjectRCharacter::Equip);
 	Weapon->RegisterOnWeaponMeshLoaded(Callback);
+}
+
+void AProjectRCharacter::UseSkill(uint8 Index)
+{
+	if (Weapon) Weapon->UseSkill(Index);
 }
 
 void AProjectRCharacter::Death()

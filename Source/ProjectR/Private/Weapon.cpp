@@ -61,14 +61,9 @@ void AWeapon::Unequip()
 	OnInactive.Broadcast();
 }
 
-void AWeapon::PressSkill(uint8 Index)
+void AWeapon::UseSkill(uint8 Index)
 {
-	Skills[Index]->OnPress();
-}
-
-void AWeapon::ReleaseSkill(uint8 Index)
-{
-	Skills[Index]->OnRelease();
+	Skills[Index]->UseSkill();
 }
 
 void AWeapon::RegisterOnWeaponMeshLoaded(const FOnWeaponMeshLoadedSingle& Callback)

@@ -5,6 +5,7 @@
 #include "Components/InputComponent.h"
 #include "GameFramework/Controller.h"
 #include "GameFramework/SpringArmComponent.h"
+#include "BehaviorTree/Tasks/BTTask_MoveTo.h"
 #include "Weapon.h"
 
 DECLARE_DELEGATE_OneParam(FIndexer, uint8);
@@ -77,17 +78,11 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 	PlayerInputComponent->BindAction<FIndexer>(TEXT("Weapon2"), IE_Pressed, this, &APlayerCharacter::SwapWeapon, static_cast<uint8>(1));
 	PlayerInputComponent->BindAction<FIndexer>(TEXT("Weapon3"), IE_Pressed, this, &APlayerCharacter::SwapWeapon, static_cast<uint8>(2));
 
-	PlayerInputComponent->BindAction<FIndexer>(TEXT("Attack"), IE_Pressed, this, &APlayerCharacter::PressSkill, static_cast<uint8>(0));
-	PlayerInputComponent->BindAction<FIndexer>(TEXT("Skill1"), IE_Pressed, this, &APlayerCharacter::PressSkill, static_cast<uint8>(1));
-	PlayerInputComponent->BindAction<FIndexer>(TEXT("Skill2"), IE_Pressed, this, &APlayerCharacter::PressSkill, static_cast<uint8>(2));
-	PlayerInputComponent->BindAction<FIndexer>(TEXT("Skill3"), IE_Pressed, this, &APlayerCharacter::PressSkill, static_cast<uint8>(3));
-	PlayerInputComponent->BindAction<FIndexer>(TEXT("Parrying"), IE_Pressed, this, &APlayerCharacter::PressSkill, static_cast<uint8>(4));
-
-	PlayerInputComponent->BindAction<FIndexer>(TEXT("Attack"), IE_Released, this, &APlayerCharacter::ReleaseSkill, static_cast<uint8>(0));
-	PlayerInputComponent->BindAction<FIndexer>(TEXT("Skill1"), IE_Released, this, &APlayerCharacter::ReleaseSkill, static_cast<uint8>(1));
-	PlayerInputComponent->BindAction<FIndexer>(TEXT("Skill2"), IE_Released, this, &APlayerCharacter::ReleaseSkill, static_cast<uint8>(2));
-	PlayerInputComponent->BindAction<FIndexer>(TEXT("Skill3"), IE_Released, this, &APlayerCharacter::ReleaseSkill, static_cast<uint8>(3));
-	PlayerInputComponent->BindAction<FIndexer>(TEXT("Parrying"), IE_Released, this, &APlayerCharacter::ReleaseSkill, static_cast<uint8>(4));
+	PlayerInputComponent->BindAction<FIndexer>(TEXT("Attack"), IE_Pressed, this, &APlayerCharacter::UseSkill, static_cast<uint8>(0));
+	PlayerInputComponent->BindAction<FIndexer>(TEXT("Skill1"), IE_Pressed, this, &APlayerCharacter::UseSkill, static_cast<uint8>(1));
+	PlayerInputComponent->BindAction<FIndexer>(TEXT("Skill2"), IE_Pressed, this, &APlayerCharacter::UseSkill, static_cast<uint8>(2));
+	PlayerInputComponent->BindAction<FIndexer>(TEXT("Skill3"), IE_Pressed, this, &APlayerCharacter::UseSkill, static_cast<uint8>(3));
+	PlayerInputComponent->BindAction<FIndexer>(TEXT("Parrying"), IE_Pressed, this, &APlayerCharacter::UseSkill, static_cast<uint8>(4));
 }
 
 void APlayerCharacter::MoveForward(float Value)
