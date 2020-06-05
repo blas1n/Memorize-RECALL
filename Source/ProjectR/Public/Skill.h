@@ -17,24 +17,27 @@ public:
 	UFUNCTION(BlueprintNativeEvent)
 	void Initialize(class AWeapon* InWeapon);
 
-	FORCEINLINE void Initialize_Implementation(AWeapon* InWeapon) { Weapon = InWeapon; }
-
-	UFUNCTION(BlueprintImplementableEvent)
-	void OnPress();
-
-	UFUNCTION(BlueprintImplementableEvent)
-	void OnRelease();
-
-protected:
-	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
+	UFUNCTION(BlueprintCallable)
 	void UseSkill();
 
+protected:
+	UFUNCTION(BlueprintImplementableEvent)
+	void OnSkill();
+
 	UFUNCTION(BlueprintCallable)
-	bool CheckAndApplyLimit();
+	bool CanUseSkill();
+
+	UFUNCTION(BlueprintCallable)
+	void ApplyCooltime();
+
+	UFUNCTION(BlueprintCallable)
+	void ApplyEnergy();
 
 private:
 	void BeginPlay() override;
 	bool IsCoolTime() const;
+
+	FORCEINLINE void Initialize_Implementation(AWeapon* InWeapon) { Weapon = InWeapon; }
 
 private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Owner, meta = (AllowPrivateAccess = true))

@@ -1,20 +1,19 @@
 // Copyright 1998-2019 Epic Games, Inc. All Rights Reserved.
 
 #include "ProjectRCharacter.h"
-#include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "Components/StaticMeshComponent.h"
 #include "Engine/DataTable.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/Controller.h"
-#include "GameFramework/SpringArmComponent.h"
 #include "UObject/ConstructorHelpers.h"
 #include "Buff.h"
 #include "BuffStorage.h"
 #include "Parryable.h"
 #include "Weapon.h"
 #include "WeaponData.h"
+#include "BehaviorTree/Tasks/BTTask_Wait.h"
 
 AProjectRCharacter::AProjectRCharacter()
 	: Super()
@@ -30,15 +29,6 @@ AProjectRCharacter::AProjectRCharacter()
 	GetCharacterMovement()->RotationRate = FRotator(0.0f, 540.0f, 0.0f);
 	GetCharacterMovement()->JumpZVelocity = 600.f;
 	GetCharacterMovement()->AirControl = 0.2f;
-
-	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
-	CameraBoom->SetupAttachment(RootComponent);
-	CameraBoom->TargetArmLength = 300.0f;
-	CameraBoom->bUsePawnControlRotation = true;
-
-	FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));
-	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
-	FollowCamera->bUsePawnControlRotation = false;
 
 	LeftWeapon = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("LeftWeapon"));
 	LeftWeapon->SetupAttachment(GetMesh(), TEXT("weapon_l"));
@@ -60,6 +50,7 @@ AProjectRCharacter::AProjectRCharacter()
 	WalkSpeed = 0.0f;
 	RunSpeed = 0.0f;
 	Parrying = nullptr;
+	bIsCasting = false;
 }
 
 void AProjectRCharacter::BeginParrying(UObject* InParrying)
@@ -124,7 +115,7 @@ float AProjectRCharacter::TakeDamage(float DamageAmount, const FDamageEvent& Dam
 		return 0.0f;
 	}
 
-	Health -= static_cast<int32>(DamageAmount);
+	Health -= static_cast<int32>(Damage);
 	if (Health <= 0) Death();
 	
 	return Damage;
@@ -142,14 +133,29 @@ AWeapon* AProjectRCharacter::GenerateWeapon(FName Name)
 	return Ret;
 }
 
-void AProjectRCharacter::PressSkill(uint8 Index)
+void AProjectRCharacter::SetWeapon(AWeapon* InWeapon)
 {
-	if (Weapon) Weapon->PressSkill(Index);
+	if (Weapon)
+	{
+		Weapon->Unequip();
+		Weapon->OnBeginSkill.RemoveDynamic(this, &AProjectRCharacter::BeginCast);
+		Weapon->OnEndSkill.RemoveDynamic(this, &AProjectRCharacter::EndCast);
+	}
+
+	Weapon = InWeapon;
+	if (!Weapon) return;
+
+	Weapon->OnBeginSkill.AddDynamic(this, &AProjectRCharacter::BeginCast);
+	Weapon->OnEndSkill.AddDynamic(this, &AProjectRCharacter::EndCast);
+	
+	FOnWeaponMeshLoadedSingle Callback;
+	Callback.BindDynamic(this, &AProjectRCharacter::Equip);
+	Weapon->RegisterOnWeaponMeshLoaded(Callback);
 }
 
-void AProjectRCharacter::ReleaseSkill(uint8 Index)
+void AProjectRCharacter::UseSkill(uint8 Index)
 {
-	if (Weapon) Weapon->ReleaseSkill(Index);
+	if (Weapon) Weapon->UseSkill(Index);
 }
 
 void AProjectRCharacter::Death()
@@ -170,4 +176,19 @@ void AProjectRCharacter::Death()
 	RightWeapon->SetCollisionProfileName(TEXT("BlockAllDynamic"));
 	RightWeapon->SetSimulatePhysics(true);
 	RightWeapon->DetachFromComponent(Rules);
+}
+
+void AProjectRCharacter::Equip()
+{
+	Weapon->Equip();
+}
+
+void AProjectRCharacter::BeginCast()
+{
+	bIsCasting = true;
+}
+
+void AProjectRCharacter::EndCast()
+{
+	bIsCasting = false;
 }
