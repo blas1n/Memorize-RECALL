@@ -13,8 +13,6 @@ AWeapon::AWeapon()
 {
  	PrimaryActorTick.bCanEverTick = false;
 	SetCanBeDamaged(false);
-
-	Skills.SetNum(5);
 	MeshLoadCount = 2;
 }
 
@@ -31,7 +29,9 @@ void AWeapon::Initialize(const FWeaponData* WeaponData)
 	SpawnParam.Owner = SpawnParam.Instigator = GetInstigator();
 	SpawnParam.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 
-	for (uint8 Index = 0; Index < 5; ++Index)
+	Skills.SetNum(WeaponData->Skills.Num());
+
+	for (int32 Index = 0; Index < WeaponData->Skills.Num(); ++Index)
 	{
 		TSubclassOf<ASkill> SkillClass = WeaponData->Skills[Index];
 		Skills[Index] = World->SpawnActor<ASkill>(SkillClass, SpawnParam);
