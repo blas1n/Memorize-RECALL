@@ -18,11 +18,11 @@ public:
 	void Initialize(class AWeapon* InWeapon);
 
 	UFUNCTION(BlueprintCallable)
-	void UseSkill();
+	bool UseSkill();
 
 protected:
 	UFUNCTION(BlueprintImplementableEvent)
-	void OnSkill();
+	bool OnSkill();
 
 	UFUNCTION(BlueprintCallable)
 	bool CanUseSkill();

@@ -15,10 +15,11 @@ ASkill::ASkill()
 	NextUseTime = 0.0f;
 }
 
-void ASkill::UseSkill()
+bool ASkill::UseSkill()
 {
 	if (IsValid(User) && !User->IsCasting())
-		OnSkill();
+		return OnSkill();
+	return false;
 }
 
 bool ASkill::CanUseSkill()
