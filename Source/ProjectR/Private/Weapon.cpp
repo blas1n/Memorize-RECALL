@@ -80,6 +80,9 @@ void AWeapon::BeginPlay()
 	AProjectRCharacter* Character = Cast<AProjectRCharacter>(GetInstigator());
 	LeftWeapon = Character->GetLeftWeapon();
 	RightWeapon = Character->GetRightWeapon();
+
+	Character->GetMesh()->GetAnimInstance()->OnMontageStarted.AddDynamic(this, &AWeapon::BeginSkill);
+	Character->GetMesh()->GetAnimInstance()->OnMontageEnded.AddDynamic(this, &AWeapon::EndSkill);
 }
 
 void AWeapon::EquipOnce(UStaticMeshComponent* Weapon, const FWeaponInfo& Info)
@@ -124,6 +127,16 @@ void AWeapon::OnMeshLoaded(FWeaponInfo& WeaponInfo, TAssetPtr<UStaticMesh>* Mesh
 	delete MeshPtr;
 
 	if (--MeshLoadCount == 0) OnWeaponMeshLoaded.Broadcast();
+}
+
+void AWeapon::BeginSkill(UAnimMontage* Montage)
+{
+	OnBeginSkill.Broadcast();
+}
+
+void AWeapon::EndSkill(UAnimMontage* Montage, bool bInterrupted)
+{
+	OnEndSkill.Broadcast();
 }
 
 void AWeapon::OnLeftWeaponOverlapped(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, 
