@@ -125,7 +125,7 @@ private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Info, meta = (AllowPrivateAccess = true))
 	FName Name;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, EditFixedSize, Category = Skill, meta = (AllowPrivateAccess = true))
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Skill, meta = (AllowPrivateAccess = true))
 	TArray<class ASkill*> Skills;
 
 	FOnWeaponMeshLoaded OnWeaponMeshLoaded;
