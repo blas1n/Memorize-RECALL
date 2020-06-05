@@ -7,13 +7,11 @@
 #include "Engine/DataTable.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/Controller.h"
-#include "UObject/ConstructorHelpers.h"
 #include "Buff.h"
 #include "BuffStorage.h"
 #include "Parryable.h"
 #include "Weapon.h"
 #include "WeaponData.h"
-#include "BehaviorTree/Tasks/BTTask_Wait.h"
 
 AProjectRCharacter::AProjectRCharacter()
 	: Super()
