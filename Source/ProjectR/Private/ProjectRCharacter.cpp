@@ -122,7 +122,8 @@ float AProjectRCharacter::TakeDamage(float DamageAmount, const FDamageEvent& Dam
 AWeapon* AProjectRCharacter::GenerateWeapon(FName Name)
 {
 	FActorSpawnParameters SpawnParam;
-	SpawnParam.Owner = SpawnParam.Instigator = this;
+	SpawnParam.Owner = GetController();
+	SpawnParam.Instigator = this;
 	SpawnParam.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 
 	AWeapon* Ret = GetWorld()->SpawnActor<AWeapon>(SpawnParam);

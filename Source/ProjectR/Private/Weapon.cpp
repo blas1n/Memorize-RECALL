@@ -26,9 +26,9 @@ void AWeapon::Initialize(const FWeaponData* WeaponData)
 	LoadWeapon(LeftWeaponInfo, WeaponData->LeftMesh, WeaponData->LeftTransform);
 	LoadWeapon(RightWeaponInfo, WeaponData->RightMesh, WeaponData->RightTransform);
 
-	UWorld* World = GetWorld();
 	FActorSpawnParameters SpawnParam;
-	SpawnParam.Owner = SpawnParam.Instigator = GetInstigator();
+	SpawnParam.Owner = GetOwner();
+	SpawnParam.Instigator = GetInstigator();
 	SpawnParam.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 
 	Skills.SetNum(WeaponData->Skills.Num());
