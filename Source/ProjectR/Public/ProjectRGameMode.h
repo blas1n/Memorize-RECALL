@@ -7,7 +7,7 @@
 #include "ProjectRGameMode.generated.h"
 
 UCLASS(minimalapi)
-class AProjectRGameMode : public AGameModeBase
+class AProjectRGameMode final : public AGameModeBase
 {
 	GENERATED_BODY()
 };

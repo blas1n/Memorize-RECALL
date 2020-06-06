@@ -1,6 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "Weapon.h"
+#include "Animation/AnimInstance.h"
 #include "Components/StaticMeshComponent.h"
 #include "Engine/AssetManager.h"
 #include "Engine/World.h"
@@ -14,8 +15,8 @@ AWeapon::AWeapon()
  	PrimaryActorTick.bCanEverTick = false;
 	SetCanBeDamaged(false);
 
-	Skills.SetNum(5);
-	MeshLoadCount = 2;
+	EquipMontage = nullptr;
+	AsyncLoadCount = 3;
 }
 
 void AWeapon::Initialize(const FWeaponData* WeaponData)
@@ -23,24 +24,47 @@ void AWeapon::Initialize(const FWeaponData* WeaponData)
 	Key = WeaponData->Key;
 	Name = WeaponData->Name;
 
-	LoadWeapon(LeftWeaponInfo, new TAssetPtr<UStaticMesh>{ WeaponData->LeftMesh }, WeaponData->LeftTransform);
-	LoadWeapon(RightWeaponInfo, new TAssetPtr<UStaticMesh>{ WeaponData->RightMesh }, WeaponData->RightTransform);
+	LoadWeapon(LeftWeaponInfo, WeaponData->LeftMesh, WeaponData->LeftTransform);
+	LoadWeapon(RightWeaponInfo, WeaponData->RightMesh, WeaponData->RightTransform);
 
-	UWorld* World = GetWorld();
 	FActorSpawnParameters SpawnParam;
-	SpawnParam.Owner = SpawnParam.Instigator = GetInstigator();
+	SpawnParam.Owner = GetOwner();
+	SpawnParam.Instigator = GetInstigator();
 	SpawnParam.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 
-	for (uint8 Index = 0; Index < 5; ++Index)
+	Skills.SetNum(WeaponData->Skills.Num());
+
+	for (int32 Index = 0; Index < WeaponData->Skills.Num(); ++Index)
 	{
 		TSubclassOf<ASkill> SkillClass = WeaponData->Skills[Index];
-		Skills[Index] = World->SpawnActor<ASkill>(SkillClass, SpawnParam);
+		Skills[Index] = GetWorld()->SpawnActor<ASkill>(SkillClass, SpawnParam);
 		Skills[Index]->Initialize(this);
 	}
+
+	if (WeaponData->EquipMontage.IsNull())
+	{
+		if (--AsyncLoadCount == 0) OnAsyncLoadEnded.Broadcast();
+		return;
+	}
+
+	const TAssetPtr<UAnimMontage>& EquipMontagePtr = WeaponData->EquipMontage;
+
+	if (EquipMontagePtr.IsPending())
+	{
+		UAssetManager::GetStreamableManager().RequestAsyncLoad(
+			EquipMontagePtr.ToSoftObjectPath(),
+			FStreamableDelegate::CreateLambda([this, EquipMontagePtr]() mutable
+				{ OnEquipMontageLoaded(EquipMontagePtr); })
+		);
+	}
+	else OnEquipMontageLoaded(EquipMontagePtr);
 }
 
 void AWeapon::Equip()
 {
+	if (EquipMontage)
+		Cast<ACharacter>(GetInstigator())->PlayAnimMontage(EquipMontage);
+
 	EquipOnce(LeftWeapon, LeftWeaponInfo);
 	EquipOnce(RightWeapon, RightWeaponInfo);
 
@@ -66,10 +90,10 @@ void AWeapon::UseSkill(uint8 Index)
 	Skills[Index]->UseSkill();
 }
 
-void AWeapon::RegisterOnWeaponMeshLoaded(const FOnWeaponMeshLoadedSingle& Callback)
+void AWeapon::RegisterOnAsyncLoadEnded(const FOnAsyncLoadEndedSingle& Callback)
 {
 	check(Callback.IsBound());
-	if (MeshLoadCount) OnWeaponMeshLoaded.Add(Callback);
+	if (AsyncLoadCount) OnAsyncLoadEnded.Add(Callback);
 	else Callback.Execute();
 }
 
@@ -80,6 +104,9 @@ void AWeapon::BeginPlay()
 	AProjectRCharacter* Character = Cast<AProjectRCharacter>(GetInstigator());
 	LeftWeapon = Character->GetLeftWeapon();
 	RightWeapon = Character->GetRightWeapon();
+
+	Character->GetMesh()->GetAnimInstance()->OnMontageStarted.AddDynamic(this, &AWeapon::BeginSkill);
+	Character->GetMesh()->GetAnimInstance()->OnMontageEnded.AddDynamic(this, &AWeapon::EndSkill);
 }
 
 void AWeapon::EquipOnce(UStaticMeshComponent* Weapon, const FWeaponInfo& Info)
@@ -96,34 +123,47 @@ void AWeapon::UnequipOnce(UStaticMeshComponent* Weapon)
 	Weapon->SetRelativeTransform(FTransform{});
 }
 
-void AWeapon::LoadWeapon(FWeaponInfo& WeaponInfo, TAssetPtr<UStaticMesh>* MeshPtr, const FTransform& Transform)
+void AWeapon::LoadWeapon(FWeaponInfo& WeaponInfo, const TAssetPtr<UStaticMesh>& MeshPtr, const FTransform& Transform)
 {
-	if (MeshPtr->IsNull())
+	if (MeshPtr.IsNull())
 	{
-		--MeshLoadCount;
-		delete MeshPtr;
+		if (--AsyncLoadCount == 0) OnAsyncLoadEnded.Broadcast();
 		return;
 	}
 
 	WeaponInfo.Transform = Transform;
 
-	if (MeshPtr->IsPending())
+	if (MeshPtr.IsPending())
 	{
 		UAssetManager::GetStreamableManager().RequestAsyncLoad(
-			MeshPtr->ToSoftObjectPath(),
-			FStreamableDelegate::CreateLambda([this, &WeaponInfo = WeaponInfo, MeshPtr]() mutable
+			MeshPtr.ToSoftObjectPath(),
+			FStreamableDelegate::CreateLambda([this, &WeaponInfo = WeaponInfo, &MeshPtr = MeshPtr]() mutable
 				{ OnMeshLoaded(WeaponInfo, MeshPtr); })
 		);
 	}
 	else OnMeshLoaded(WeaponInfo, MeshPtr);
 }
 
-void AWeapon::OnMeshLoaded(FWeaponInfo& WeaponInfo, TAssetPtr<UStaticMesh>* MeshPtr)
+void AWeapon::OnMeshLoaded(FWeaponInfo& WeaponInfo, const TAssetPtr<UStaticMesh>& MeshPtr)
 {
-	WeaponInfo.Mesh = MeshPtr->Get();
-	delete MeshPtr;
+	WeaponInfo.Mesh = MeshPtr.Get();
+	if (--AsyncLoadCount == 0) OnAsyncLoadEnded.Broadcast();
+}
 
-	if (--MeshLoadCount == 0) OnWeaponMeshLoaded.Broadcast();
+void AWeapon::OnEquipMontageLoaded(const TAssetPtr<UAnimMontage>& MontagePtr)
+{
+	EquipMontage = MontagePtr.Get();
+	if (--AsyncLoadCount == 0) OnAsyncLoadEnded.Broadcast();
+}
+
+void AWeapon::BeginSkill(UAnimMontage* Montage)
+{
+	OnBeginSkill.Broadcast();
+}
+
+void AWeapon::EndSkill(UAnimMontage* Montage, bool bInterrupted)
+{
+	OnEndSkill.Broadcast();
 }
 
 void AWeapon::OnLeftWeaponOverlapped(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, 

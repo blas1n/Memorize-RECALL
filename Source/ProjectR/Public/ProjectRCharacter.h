@@ -33,6 +33,9 @@ public:
 	int32 HealHealth(int32 Value);
 
 	UFUNCTION(BlueprintCallable)
+	int32 SetMaxHealth(int32 NewMaxHealth);
+
+	UFUNCTION(BlueprintCallable)
 	float GetSpeed() const noexcept;
 
 	UFUNCTION(BlueprintCallable)
