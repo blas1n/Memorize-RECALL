@@ -14,8 +14,9 @@ AWeapon::AWeapon()
 {
  	PrimaryActorTick.bCanEverTick = false;
 	SetCanBeDamaged(false);
-	AsyncLoadCount = 3;
+
 	EquipMontage = nullptr;
+	AsyncLoadCount = 3;
 }
 
 void AWeapon::Initialize(const FWeaponData* WeaponData)
@@ -40,7 +41,7 @@ void AWeapon::Initialize(const FWeaponData* WeaponData)
 		Skills[Index]->Initialize(this);
 	}
 
-	if (!WeaponData->EquipMontage.IsNull())
+	if (WeaponData->EquipMontage.IsNull())
 	{
 		if (--AsyncLoadCount == 0) OnAsyncLoadEnded.Broadcast();
 		return;
