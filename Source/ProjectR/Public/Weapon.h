@@ -6,8 +6,8 @@
 #include "GameFramework/Actor.h"
 #include "Weapon.generated.h"
 
-DECLARE_DYNAMIC_DELEGATE(FOnWeaponMeshLoadedSingle);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnWeaponMeshLoaded);
+DECLARE_DYNAMIC_DELEGATE(FOnAsyncLoadEndedSingle);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnAsyncLoadEnded);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnActive);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnInactive);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnBeginSkill);
@@ -52,7 +52,7 @@ public:
 	void UseSkill(uint8 Index);
 
 	UFUNCTION(BlueprintCallable)
-	void RegisterOnWeaponMeshLoaded(const FOnWeaponMeshLoadedSingle& Callback);
+	void RegisterOnAsyncLoadEnded(const FOnAsyncLoadEndedSingle& Callback);
 
 private:
 	void BeginPlay() override;
@@ -63,8 +63,10 @@ private:
 	void LoadWeapon(FWeaponInfo& WeaponInfo, const TAssetPtr<UStaticMesh>& Mesh, const FTransform& Transform);
 	void OnMeshLoaded(FWeaponInfo& WeaponInfo, const TAssetPtr<UStaticMesh>& MeshPtr);
 
+	void OnEquipMontageLoaded(const TAssetPtr<UAnimMontage>& MontagePtr);
+
 	UFUNCTION()
-	void BeginSkill(class UAnimMontage* Montage);
+	void BeginSkill(UAnimMontage* Montage);
 
 	UFUNCTION()
 	void EndSkill(UAnimMontage* Montage, bool bInterrupted);
@@ -131,7 +133,7 @@ private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Weapon, meta = (AllowPrivateAccess = true))
 	UAnimMontage* EquipMontage;
 
-	FOnWeaponMeshLoaded OnWeaponMeshLoaded;
+	FOnAsyncLoadEnded OnAsyncLoadEnded;
 
-	uint8 MeshLoadCount;
+	uint8 AsyncLoadCount;
 };
