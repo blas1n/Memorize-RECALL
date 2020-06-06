@@ -22,6 +22,22 @@ void UProjectRAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 	IsInAir = Owner->GetCharacterMovement()->IsFalling();
 }
 
+void UProjectRAnimInstance::AnimNotify_BeginSkill()
+{
+	AWeapon* Weapon = GetWeapon();
+
+	if (IsValid(Weapon))
+		Weapon->OnBeginSkill.Broadcast();
+}
+
+void UProjectRAnimInstance::AnimNotify_EndSkill()
+{
+	AWeapon* Weapon = GetWeapon();
+
+	if (IsValid(Weapon))
+		Weapon->OnEndSkill.Broadcast();
+}
+
 void UProjectRAnimInstance::AnimNotify_BeginAttack()
 {
 	AWeapon* Weapon = GetWeapon();

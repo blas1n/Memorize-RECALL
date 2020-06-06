@@ -18,6 +18,12 @@ private:
 	void NativeUpdateAnimation(float DeltaSeconds) override;
 
 	UFUNCTION()
+	void AnimNotify_BeginSkill();
+
+	UFUNCTION()
+	void AnimNotify_EndSkill();
+
+	UFUNCTION()
 	void AnimNotify_BeginAttack();
 
 	UFUNCTION()
