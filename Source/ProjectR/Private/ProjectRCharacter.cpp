@@ -155,9 +155,9 @@ void AProjectRCharacter::SetWeapon(AWeapon* InWeapon)
 	Weapon->OnBeginSkill.AddDynamic(this, &AProjectRCharacter::BeginCast);
 	Weapon->OnEndSkill.AddDynamic(this, &AProjectRCharacter::EndCast);
 	
-	FOnWeaponMeshLoadedSingle Callback;
+	FOnAsyncLoadEndedSingle Callback;
 	Callback.BindDynamic(this, &AProjectRCharacter::Equip);
-	Weapon->RegisterOnWeaponMeshLoaded(Callback);
+	Weapon->RegisterOnAsyncLoadEnded(Callback);
 }
 
 void AProjectRCharacter::UseSkill(uint8 Index)

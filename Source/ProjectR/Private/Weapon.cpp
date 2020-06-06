@@ -14,7 +14,7 @@ AWeapon::AWeapon()
 {
  	PrimaryActorTick.bCanEverTick = false;
 	SetCanBeDamaged(false);
-	MeshLoadCount = 2;
+	AsyncLoadCount = 3;
 	EquipMontage = nullptr;
 }
 
@@ -40,15 +40,23 @@ void AWeapon::Initialize(const FWeaponData* WeaponData)
 		Skills[Index]->Initialize(this);
 	}
 
-	if (!WeaponData->EquipMontage.IsNull()) return;
+	if (!WeaponData->EquipMontage.IsNull())
+	{
+		if (--AsyncLoadCount == 0) OnAsyncLoadEnded.Broadcast();
+		return;
+	}
 
 	const TAssetPtr<UAnimMontage>& EquipMontagePtr = WeaponData->EquipMontage;
 
-	UAssetManager::GetStreamableManager().RequestAsyncLoad(
-		EquipMontagePtr.ToSoftObjectPath(),
-		FStreamableDelegate::CreateLambda([this, EquipMontagePtr]() mutable
-			{ EquipMontage = EquipMontagePtr.Get(); })
-	);
+	if (EquipMontagePtr.IsPending())
+	{
+		UAssetManager::GetStreamableManager().RequestAsyncLoad(
+			EquipMontagePtr.ToSoftObjectPath(),
+			FStreamableDelegate::CreateLambda([this, EquipMontagePtr]() mutable
+				{ OnEquipMontageLoaded(EquipMontagePtr); })
+		);
+	}
+	else OnEquipMontageLoaded(EquipMontagePtr);
 }
 
 void AWeapon::Equip()
@@ -81,10 +89,10 @@ void AWeapon::UseSkill(uint8 Index)
 	Skills[Index]->UseSkill();
 }
 
-void AWeapon::RegisterOnWeaponMeshLoaded(const FOnWeaponMeshLoadedSingle& Callback)
+void AWeapon::RegisterOnAsyncLoadEnded(const FOnAsyncLoadEndedSingle& Callback)
 {
 	check(Callback.IsBound());
-	if (MeshLoadCount) OnWeaponMeshLoaded.Add(Callback);
+	if (AsyncLoadCount) OnAsyncLoadEnded.Add(Callback);
 	else Callback.Execute();
 }
 
@@ -118,7 +126,7 @@ void AWeapon::LoadWeapon(FWeaponInfo& WeaponInfo, const TAssetPtr<UStaticMesh>& 
 {
 	if (MeshPtr.IsNull())
 	{
-		--MeshLoadCount;
+		if (--AsyncLoadCount == 0) OnAsyncLoadEnded.Broadcast();
 		return;
 	}
 
@@ -128,7 +136,7 @@ void AWeapon::LoadWeapon(FWeaponInfo& WeaponInfo, const TAssetPtr<UStaticMesh>& 
 	{
 		UAssetManager::GetStreamableManager().RequestAsyncLoad(
 			MeshPtr.ToSoftObjectPath(),
-			FStreamableDelegate::CreateLambda([this, &WeaponInfo = WeaponInfo, MeshPtr]() mutable
+			FStreamableDelegate::CreateLambda([this, &WeaponInfo = WeaponInfo, &MeshPtr = MeshPtr]() mutable
 				{ OnMeshLoaded(WeaponInfo, MeshPtr); })
 		);
 	}
@@ -138,8 +146,13 @@ void AWeapon::LoadWeapon(FWeaponInfo& WeaponInfo, const TAssetPtr<UStaticMesh>& 
 void AWeapon::OnMeshLoaded(FWeaponInfo& WeaponInfo, const TAssetPtr<UStaticMesh>& MeshPtr)
 {
 	WeaponInfo.Mesh = MeshPtr.Get();
+	if (--AsyncLoadCount == 0) OnAsyncLoadEnded.Broadcast();
+}
 
-	if (--MeshLoadCount == 0) OnWeaponMeshLoaded.Broadcast();
+void AWeapon::OnEquipMontageLoaded(const TAssetPtr<UAnimMontage>& MontagePtr)
+{
+	EquipMontage = MontagePtr.Get();
+	if (--AsyncLoadCount == 0) OnAsyncLoadEnded.Broadcast();
 }
 
 void AWeapon::BeginSkill(UAnimMontage* Montage)
