@@ -2,43 +2,26 @@
 
 #include "Skill.h"
 #include "Engine/World.h"
-#include "PlayerCharacter.h"
+#include "ProjectRCharacter.h"
 
 ASkill::ASkill()
+	: Super()
 {
  	PrimaryActorTick.bCanEverTick = false;
 
 	User = nullptr;
 	Weapon = nullptr;
-	UseEnergy = 0;
 	CoolTime = 0.0f;
 	NextUseTime = 0.0f;
 }
 
-void ASkill::UseSkill()
+bool ASkill::UseSkill()
 {
-	if (IsValid(User) && !User->IsCasting())
-		OnSkill();
-}
+	if (User->IsCasting() || !CanUseSkill())
+		return false;
 
-bool ASkill::CanUseSkill()
-{
-	bool bIsUsableEnergy = true;
-	if (APlayerCharacter* Player = Cast<APlayerCharacter>(User))
-		bIsUsableEnergy = Player->GetEnergy() >= UseEnergy;
-	
-	return !IsCoolTime() && bIsUsableEnergy;
-}
-
-void ASkill::ApplyCooltime()
-{
-	NextUseTime = GetWorld()->GetTimeSeconds() + CoolTime;
-}
-
-void ASkill::ApplyEnergy()
-{
-	if (APlayerCharacter* Player = Cast<APlayerCharacter>(User))
-		Player->HealEnergy(-UseEnergy);
+	OnSkill();
+	return true;
 }
 
 void ASkill::BeginPlay()
@@ -47,7 +30,12 @@ void ASkill::BeginPlay()
 	Super::BeginPlay();
 }
 
-bool ASkill::IsCoolTime() const
+bool ASkill::IsNotCoolTime() const
 {
-	return (!FMath::IsNearlyEqual(NextUseTime, 0.0f) && NextUseTime > GetWorld()->GetTimeSeconds());
+	return FMath::IsNearlyEqual(NextUseTime, 0.0f) || NextUseTime <= GetWorld()->GetTimeSeconds();
+}
+
+void ASkill::ApplyCooltime()
+{
+	NextUseTime = GetWorld()->GetTimeSeconds() + CoolTime;
 }

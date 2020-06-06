@@ -7,13 +7,11 @@
 #include "Engine/DataTable.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/Controller.h"
-#include "UObject/ConstructorHelpers.h"
 #include "Buff.h"
 #include "BuffStorage.h"
 #include "Parryable.h"
 #include "Weapon.h"
 #include "WeaponData.h"
-#include "BehaviorTree/Tasks/BTTask_Wait.h"
 
 AProjectRCharacter::AProjectRCharacter()
 	: Super()
@@ -82,6 +80,14 @@ int32 AProjectRCharacter::HealHealth(int32 Value)
 	return Health;
 }
 
+int32 AProjectRCharacter::SetMaxHealth(int32 NewMaxHealth)
+{
+	int32 Diff = NewMaxHealth - MaxHealth;
+	MaxHealth = NewMaxHealth;
+	Health += Diff;
+	return Diff;
+}
+
 float AProjectRCharacter::GetSpeed() const noexcept
 {
 	return GetCharacterMovement()->MaxWalkSpeed;
@@ -124,7 +130,8 @@ float AProjectRCharacter::TakeDamage(float DamageAmount, const FDamageEvent& Dam
 AWeapon* AProjectRCharacter::GenerateWeapon(FName Name)
 {
 	FActorSpawnParameters SpawnParam;
-	SpawnParam.Owner = SpawnParam.Instigator = this;
+	SpawnParam.Owner = GetController();
+	SpawnParam.Instigator = this;
 	SpawnParam.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 
 	AWeapon* Ret = GetWorld()->SpawnActor<AWeapon>(SpawnParam);
@@ -148,9 +155,9 @@ void AProjectRCharacter::SetWeapon(AWeapon* InWeapon)
 	Weapon->OnBeginSkill.AddDynamic(this, &AProjectRCharacter::BeginCast);
 	Weapon->OnEndSkill.AddDynamic(this, &AProjectRCharacter::EndCast);
 	
-	FOnWeaponMeshLoadedSingle Callback;
+	FOnAsyncLoadEndedSingle Callback;
 	Callback.BindDynamic(this, &AProjectRCharacter::Equip);
-	Weapon->RegisterOnWeaponMeshLoaded(Callback);
+	Weapon->RegisterOnAsyncLoadEnded(Callback);
 }
 
 void AProjectRCharacter::UseSkill(uint8 Index)

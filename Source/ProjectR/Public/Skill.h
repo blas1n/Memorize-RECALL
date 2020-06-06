@@ -18,26 +18,29 @@ public:
 	void Initialize(class AWeapon* InWeapon);
 
 	UFUNCTION(BlueprintCallable)
-	void UseSkill();
+	bool UseSkill();
 
 protected:
+	void BeginPlay() override;
+
 	UFUNCTION(BlueprintImplementableEvent)
 	void OnSkill();
 
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintNativeEvent)
 	bool CanUseSkill();
+
+	UFUNCTION(BlueprintCallable)
+	bool IsNotCoolTime() const;
 
 	UFUNCTION(BlueprintCallable)
 	void ApplyCooltime();
 
-	UFUNCTION(BlueprintCallable)
-	void ApplyEnergy();
+	FORCEINLINE class AProjectRCharacter* GetUser() noexcept { return User; }
+	FORCEINLINE const AProjectRCharacter* GetUser() const noexcept { return User; }
 
 private:
-	void BeginPlay() override;
-	bool IsCoolTime() const;
-
 	FORCEINLINE void Initialize_Implementation(AWeapon* InWeapon) { Weapon = InWeapon; }
+	FORCEINLINE bool CanUseSkill_Implementation() { return true; }
 
 private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Owner, meta = (AllowPrivateAccess = true))
@@ -46,10 +49,7 @@ private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Owner, meta = (AllowPrivateAccess = true))
 	AWeapon* Weapon;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Limit, meta = (AllowPrivateAccess = true))
-	int32 UseEnergy;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Limit, meta = (AllowPrivateAccess = true))
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = Limit, meta = (AllowPrivateAccess = true))
 	float CoolTime;
 
 	float NextUseTime;

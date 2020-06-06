@@ -49,6 +49,14 @@ int32 APlayerCharacter::HealEnergy(int32 Value)
 	return Energy;
 }
 
+int32 APlayerCharacter::SetMaxEnergy(int32 NewMaxEnergy)
+{
+	int32 Diff = NewMaxEnergy - MaxEnergy;
+	MaxEnergy = NewMaxEnergy;
+	Energy += Diff;
+	return Diff;
+}
+
 void APlayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();

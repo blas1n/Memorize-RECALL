@@ -33,7 +33,7 @@ void UProjectRAnimInstance::AnimNotify_BeginSkill()
 void UProjectRAnimInstance::AnimNotify_EndSkill()
 {
 	AWeapon* Weapon = GetWeapon();
-	
+
 	if (IsValid(Weapon))
 		Weapon->OnEndSkill.Broadcast();
 }
