@@ -31,4 +31,7 @@ struct FWeaponData : public FTableRowBase
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TArray<TSubclassOf<class ASkill>> Skills;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TAssetPtr<class UAnimMontage> EquipMontage;
 };

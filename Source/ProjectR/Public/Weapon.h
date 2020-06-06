@@ -128,6 +128,9 @@ private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Skill, meta = (AllowPrivateAccess = true))
 	TArray<class ASkill*> Skills;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Weapon, meta = (AllowPrivateAccess = true))
+	UAnimMontage* EquipMontage;
+
 	FOnWeaponMeshLoaded OnWeaponMeshLoaded;
 
 	uint8 MeshLoadCount;

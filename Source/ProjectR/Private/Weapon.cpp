@@ -1,6 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "Weapon.h"
+#include "Animation/AnimInstance.h"
 #include "Components/StaticMeshComponent.h"
 #include "Engine/AssetManager.h"
 #include "Engine/World.h"
@@ -41,9 +42,8 @@ void AWeapon::Initialize(const FWeaponData* WeaponData)
 
 void AWeapon::Equip()
 {
-	constexpr static uint8 EquipIndex = 5;
-	if (Skills.Num() > EquipIndex)
-		Skills[EquipIndex];
+	if (EquipMontage)
+		Cast<ACharacter>(GetInstigator())->PlayAnimMontage(EquipMontage);
 
 	EquipOnce(LeftWeapon, LeftWeaponInfo);
 	EquipOnce(RightWeapon, RightWeaponInfo);
