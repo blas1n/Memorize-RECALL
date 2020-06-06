@@ -60,8 +60,8 @@ private:
 	void EquipOnce(UStaticMeshComponent* Weapon, const FWeaponInfo& Info);
 	void UnequipOnce(UStaticMeshComponent* Weapon);
 
-	void LoadWeapon(FWeaponInfo& WeaponInfo, TAssetPtr<UStaticMesh>* Mesh, const FTransform& Transform);
-	void OnMeshLoaded(FWeaponInfo& WeaponInfo, TAssetPtr<UStaticMesh>* MeshPtr);
+	void LoadWeapon(FWeaponInfo& WeaponInfo, const TAssetPtr<UStaticMesh>& Mesh, const FTransform& Transform);
+	void OnMeshLoaded(FWeaponInfo& WeaponInfo, const TAssetPtr<UStaticMesh>& MeshPtr);
 
 	UFUNCTION()
 	void BeginSkill(class UAnimMontage* Montage);

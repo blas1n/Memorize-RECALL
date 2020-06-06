@@ -15,6 +15,7 @@ AWeapon::AWeapon()
  	PrimaryActorTick.bCanEverTick = false;
 	SetCanBeDamaged(false);
 	MeshLoadCount = 2;
+	EquipMontage = nullptr;
 }
 
 void AWeapon::Initialize(const FWeaponData* WeaponData)
@@ -22,8 +23,8 @@ void AWeapon::Initialize(const FWeaponData* WeaponData)
 	Key = WeaponData->Key;
 	Name = WeaponData->Name;
 
-	LoadWeapon(LeftWeaponInfo, new TAssetPtr<UStaticMesh>{ WeaponData->LeftMesh }, WeaponData->LeftTransform);
-	LoadWeapon(RightWeaponInfo, new TAssetPtr<UStaticMesh>{ WeaponData->RightMesh }, WeaponData->RightTransform);
+	LoadWeapon(LeftWeaponInfo, WeaponData->LeftMesh, WeaponData->LeftTransform);
+	LoadWeapon(RightWeaponInfo, WeaponData->RightMesh, WeaponData->RightTransform);
 
 	UWorld* World = GetWorld();
 	FActorSpawnParameters SpawnParam;
@@ -35,9 +36,19 @@ void AWeapon::Initialize(const FWeaponData* WeaponData)
 	for (int32 Index = 0; Index < WeaponData->Skills.Num(); ++Index)
 	{
 		TSubclassOf<ASkill> SkillClass = WeaponData->Skills[Index];
-		Skills[Index] = World->SpawnActor<ASkill>(SkillClass, SpawnParam);
+		Skills[Index] = GetWorld()->SpawnActor<ASkill>(SkillClass, SpawnParam);
 		Skills[Index]->Initialize(this);
 	}
+
+	if (!WeaponData->EquipMontage.IsNull()) return;
+
+	const TAssetPtr<UAnimMontage>& EquipMontagePtr = WeaponData->EquipMontage;
+
+	UAssetManager::GetStreamableManager().RequestAsyncLoad(
+		EquipMontagePtr.ToSoftObjectPath(),
+		FStreamableDelegate::CreateLambda([this, EquipMontagePtr]() mutable
+			{ EquipMontage = EquipMontagePtr.Get(); })
+	);
 }
 
 void AWeapon::Equip()
@@ -103,21 +114,20 @@ void AWeapon::UnequipOnce(UStaticMeshComponent* Weapon)
 	Weapon->SetRelativeTransform(FTransform{});
 }
 
-void AWeapon::LoadWeapon(FWeaponInfo& WeaponInfo, TAssetPtr<UStaticMesh>* MeshPtr, const FTransform& Transform)
+void AWeapon::LoadWeapon(FWeaponInfo& WeaponInfo, const TAssetPtr<UStaticMesh>& MeshPtr, const FTransform& Transform)
 {
-	if (MeshPtr->IsNull())
+	if (MeshPtr.IsNull())
 	{
 		--MeshLoadCount;
-		delete MeshPtr;
 		return;
 	}
 
 	WeaponInfo.Transform = Transform;
 
-	if (MeshPtr->IsPending())
+	if (MeshPtr.IsPending())
 	{
 		UAssetManager::GetStreamableManager().RequestAsyncLoad(
-			MeshPtr->ToSoftObjectPath(),
+			MeshPtr.ToSoftObjectPath(),
 			FStreamableDelegate::CreateLambda([this, &WeaponInfo = WeaponInfo, MeshPtr]() mutable
 				{ OnMeshLoaded(WeaponInfo, MeshPtr); })
 		);
@@ -125,10 +135,9 @@ void AWeapon::LoadWeapon(FWeaponInfo& WeaponInfo, TAssetPtr<UStaticMesh>* MeshPt
 	else OnMeshLoaded(WeaponInfo, MeshPtr);
 }
 
-void AWeapon::OnMeshLoaded(FWeaponInfo& WeaponInfo, TAssetPtr<UStaticMesh>* MeshPtr)
+void AWeapon::OnMeshLoaded(FWeaponInfo& WeaponInfo, const TAssetPtr<UStaticMesh>& MeshPtr)
 {
-	WeaponInfo.Mesh = MeshPtr->Get();
-	delete MeshPtr;
+	WeaponInfo.Mesh = MeshPtr.Get();
 
 	if (--MeshLoadCount == 0) OnWeaponMeshLoaded.Broadcast();
 }
