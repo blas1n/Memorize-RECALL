@@ -80,6 +80,14 @@ int32 AProjectRCharacter::HealHealth(int32 Value)
 	return Health;
 }
 
+int32 AProjectRCharacter::SetMaxHealth(int32 NewMaxHealth)
+{
+	int32 Diff = NewMaxHealth - MaxHealth;
+	MaxHealth = NewMaxHealth;
+	Health += Diff;
+	return Diff;
+}
+
 float AProjectRCharacter::GetSpeed() const noexcept
 {
 	return GetCharacterMovement()->MaxWalkSpeed;
