@@ -120,7 +120,7 @@ private:
 	FWeaponInfo RightWeaponInfo;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Info, meta = (AllowPrivateAccess = true))
-	uint8 Key;
+	int32 Key;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Info, meta = (AllowPrivateAccess = true))
 	FName Name;

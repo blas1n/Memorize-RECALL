@@ -12,7 +12,7 @@ struct FWeaponData : public FTableRowBase
 	GENERATED_BODY()
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	uint8 Key;
+	int32 Key;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FName Name;
