@@ -20,14 +20,14 @@ public:
 	UFUNCTION(BlueprintCallable)
 	bool UseSkill();
 
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
+	bool CanUseSkill();
+
 protected:
 	void BeginPlay() override;
 
 	UFUNCTION(BlueprintImplementableEvent)
 	void OnSkill();
-
-	UFUNCTION(BlueprintNativeEvent)
-	bool CanUseSkill();
 
 	UFUNCTION(BlueprintCallable)
 	bool IsNotCoolTime() const;

@@ -85,9 +85,14 @@ void AWeapon::Unequip()
 	OnInactive.Broadcast();
 }
 
-void AWeapon::UseSkill(uint8 Index)
+bool AWeapon::UseSkill(uint8 Index)
 {
-	Skills[Index]->UseSkill();
+	return Skills[Index]->UseSkill();
+}
+
+bool AWeapon::CanUseSkill(uint8 Index)
+{
+	return Skills[Index]->CanUseSkill();
 }
 
 void AWeapon::RegisterOnAsyncLoadEnded(const FOnAsyncLoadEndedSingle& Callback)
