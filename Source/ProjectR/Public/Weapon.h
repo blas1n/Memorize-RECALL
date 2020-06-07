@@ -49,7 +49,10 @@ public:
 	void Unequip();
 
 	UFUNCTION(BlueprintCallable)
-	void UseSkill(uint8 Index);
+	bool UseSkill(uint8 Index);
+
+	UFUNCTION(BlueprintCallable)
+	bool CanUseSkill(uint8 Index);
 
 	UFUNCTION(BlueprintCallable)
 	void RegisterOnAsyncLoadEnded(const FOnAsyncLoadEndedSingle& Callback);
