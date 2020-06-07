@@ -21,7 +21,7 @@ public:
 	void BeginParrying(UObject* InParrying);
 
 	UFUNCTION(BlueprintCallable)
-	void EndParrying();
+	void EndParrying(UObject* InParrying);
 
 	UFUNCTION(BlueprintCallable)
 	void ApplyStun();

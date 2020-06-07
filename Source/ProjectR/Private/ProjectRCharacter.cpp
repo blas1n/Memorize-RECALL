@@ -57,9 +57,10 @@ void AProjectRCharacter::BeginParrying(UObject* InParrying)
 		Parrying = InParrying;
 }
 
-void AProjectRCharacter::EndParrying()
+void AProjectRCharacter::EndParrying(UObject* InParrying)
 {
-	Parrying = nullptr;
+	if (Parrying == InParrying)
+		Parrying = nullptr;
 }
 
 void AProjectRCharacter::ApplyStun()
