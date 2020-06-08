@@ -21,7 +21,7 @@ public:
 	void BeginParrying(UObject* InParrying);
 
 	UFUNCTION(BlueprintCallable)
-	void EndParrying();
+	void EndParrying(UObject* InParrying);
 
 	UFUNCTION(BlueprintCallable)
 	void ApplyStun();
@@ -31,6 +31,9 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	int32 HealHealth(int32 Value);
+
+	UFUNCTION(BlueprintCallable)
+	int32 SetMaxHealth(int32 NewMaxHealth);
 
 	UFUNCTION(BlueprintCallable)
 	float GetSpeed() const noexcept;

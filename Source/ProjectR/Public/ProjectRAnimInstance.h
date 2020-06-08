@@ -16,7 +16,7 @@ public:
 
 private:
 	void NativeUpdateAnimation(float DeltaSeconds) override;
-	
+
 	UFUNCTION()
 	void AnimNotify_BeginSkill();
 

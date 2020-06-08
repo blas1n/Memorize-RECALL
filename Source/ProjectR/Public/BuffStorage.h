@@ -7,7 +7,7 @@
 #include "BuffStorage.generated.h"
 
 UCLASS(Abstract, Blueprintable)
-class PROJECTR_API UBuffStorage : public UObject
+class PROJECTR_API UBuffStorage final : public UObject
 {
 	GENERATED_BODY()
 };
