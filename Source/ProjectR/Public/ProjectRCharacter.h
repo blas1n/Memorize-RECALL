@@ -85,7 +85,7 @@ private:
 	void Death();
 
 	UFUNCTION()
-	void AttackHeal(AProjectRCharacter* Target, int32 Damage);
+	void OnAttacked(AProjectRCharacter* Target, int32 Damage);
 
 	UFUNCTION()
 	void Equip();

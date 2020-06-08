@@ -120,7 +120,7 @@ void AProjectRCharacter::BeginPlay()
 		if (It->IsChildOf(ABuff::StaticClass()) && !It->HasAnyClassFlags(CLASS_Abstract))
 			BuffStorages.Add(*It, It->GetDefaultObject<ABuff>()->CreateStorage());
 
-	OnAttack.AddDynamic(this, &AProjectRCharacter::AttackHeal);
+	OnAttack.AddDynamic(this, &AProjectRCharacter::OnAttacked);
 }
 
 float AProjectRCharacter::TakeDamage(float DamageAmount, const FDamageEvent& DamageEvent,
@@ -199,7 +199,7 @@ void AProjectRCharacter::Death()
 	RightWeapon->DetachFromComponent(Rules);
 }
 
-void AProjectRCharacter::AttackHeal(AProjectRCharacter* Target, int32 Damage)
+void AProjectRCharacter::OnAttacked(AProjectRCharacter* Target, int32 Damage)
 {
 	HealHealth(Damage * HealthHeal);
 }

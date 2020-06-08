@@ -35,7 +35,7 @@ private:
 	void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 	UFUNCTION()
-	void OnAttacked(AProjectRCharacter* Target, int32 Damage);
+	void HealEnergyByAttack(AProjectRCharacter* Target, int32 Damage);
 
 	void MoveForward(float Value);
 	void MoveRight(float Value);
