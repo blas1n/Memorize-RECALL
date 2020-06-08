@@ -41,6 +41,12 @@ public:
 	int32 SetMaxHealth(int32 NewMaxHealth);
 
 	UFUNCTION(BlueprintCallable)
+	void Jumping();
+
+	UFUNCTION(BlueprintCallable)
+	void ToggleCrouch();
+
+	UFUNCTION(BlueprintCallable)
 	float GetSpeed() const noexcept;
 
 	UFUNCTION(BlueprintCallable)

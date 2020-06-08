@@ -100,6 +100,18 @@ int32 AProjectRCharacter::SetMaxHealth(int32 NewMaxHealth)
 	return Diff;
 }
 
+void AProjectRCharacter::Jumping()
+{
+	if (CanMoving())
+		Jump();
+}
+
+void AProjectRCharacter::ToggleCrouch()
+{
+	if (CanMoving())
+		CanCrouch() ? Crouch() : UnCrouch();
+}
+
 float AProjectRCharacter::GetSpeed() const noexcept
 {
 	return GetCharacterMovement()->MaxWalkSpeed;
