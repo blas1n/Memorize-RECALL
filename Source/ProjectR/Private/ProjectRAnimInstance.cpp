@@ -24,18 +24,20 @@ void UProjectRAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 
 void UProjectRAnimInstance::AnimNotify_BeginSkill()
 {
+	UAnimMontage* Montage = GetCurrentActiveMontage();
 	AWeapon* Weapon = GetWeapon();
 
 	if (IsValid(Weapon))
-		Weapon->OnBeginSkill.Broadcast();
+		Weapon->BeginSkill(Montage);
 }
 
 void UProjectRAnimInstance::AnimNotify_EndSkill()
 {
+	UAnimMontage* Montage = GetCurrentActiveMontage();
 	AWeapon* Weapon = GetWeapon();
 
 	if (IsValid(Weapon))
-		Weapon->OnEndSkill.Broadcast();
+		Weapon->EndSkill(Montage, false);
 }
 
 void UProjectRAnimInstance::AnimNotify_BeginAttack()

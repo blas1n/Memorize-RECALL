@@ -5,7 +5,7 @@
 #include "Components/InputComponent.h"
 #include "GameFramework/Controller.h"
 #include "GameFramework/SpringArmComponent.h"
-#include "BehaviorTree/Tasks/BTTask_MoveTo.h"
+#include "TimerManager.h"
 #include "Weapon.h"
 
 DECLARE_DELEGATE_OneParam(FIndexer, uint8);
@@ -26,7 +26,7 @@ APlayerCharacter::APlayerCharacter()
 	Weapons.SetNum(3);
 	Energy = 0;
 	MaxEnergy = 0;
-	EnergyHeal = 0;
+	EnergyHeal = 0.0f;
 	CurWeaponIndex = 3;
 }
 
@@ -62,6 +62,7 @@ void APlayerCharacter::BeginPlay()
 	Super::BeginPlay();
 
 	Energy = MaxEnergy;
+	OnAttack.AddDynamic(this, &APlayerCharacter::HealEnergyByAttack);
 }
 
 void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -76,8 +77,10 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 
 	PlayerInputComponent->BindAxis(TEXT("Swap"), this, &APlayerCharacter::SwapWeapon);
 
-	PlayerInputComponent->BindAction(TEXT("Jump"), IE_Pressed, this, &ACharacter::Jump);
+	PlayerInputComponent->BindAction(TEXT("Jump"), IE_Pressed, this, &AProjectRCharacter::Jumping);
 	PlayerInputComponent->BindAction(TEXT("Jump"), IE_Released, this, &ACharacter::StopJumping);
+
+	PlayerInputComponent->BindAction(TEXT("Crouch"), IE_Pressed, this, &AProjectRCharacter::ToggleCrouch);
 
 	PlayerInputComponent->BindAction<FSpeedSetter>(TEXT("Sprint"), IE_Pressed, this, &APlayerCharacter::SetSpeed, GetRunSpeed());
 	PlayerInputComponent->BindAction<FSpeedSetter>(TEXT("Sprint"), IE_Released, this, &APlayerCharacter::SetSpeed, GetWalkSpeed());
@@ -95,29 +98,27 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 
 void APlayerCharacter::MoveForward(float Value)
 {
-	if ((Controller != nullptr) && (Value != 0.0f))
-	{
-		const FRotator Rotation = Controller->GetControlRotation();
-		const FRotator YawRotation(0, Rotation.Yaw, 0);
-		const FVector Direction = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
-		AddMovementInput(Direction, Value);
-	}
+	if (!CanMoving() || !Controller || Value == 0.0f) return;
+
+	const FRotator Rotation = Controller->GetControlRotation();
+	const FRotator YawRotation(0, Rotation.Yaw, 0);
+	const FVector Direction = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
+	AddMovementInput(Direction, Value);
 }
 
 void APlayerCharacter::MoveRight(float Value)
 {
-	if ((Controller != nullptr) && (Value != 0.0f))
-	{
-		const FRotator Rotation = Controller->GetControlRotation();
-		const FRotator YawRotation(0, Rotation.Yaw, 0);
-		const FVector Direction = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
-		AddMovementInput(Direction, Value);
-	}
+	if (!CanMoving() || !Controller || Value == 0.0f) return;
+
+	const FRotator Rotation = Controller->GetControlRotation();
+	const FRotator YawRotation(0, Rotation.Yaw, 0);
+	const FVector Direction = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
+	AddMovementInput(Direction, Value);
 }
 
 void APlayerCharacter::SwapWeapon(uint8 Index)
 {
-	if (CurWeaponIndex == Index) return;
+	if (IsCasting() || CurWeaponIndex == Index) return;
 
 	CurWeaponIndex = Index;
 	SetWeapon(Weapons[CurWeaponIndex]);
@@ -127,4 +128,9 @@ void APlayerCharacter::SwapWeapon(float Value)
 {
 	uint8 Index = (CurWeaponIndex + FMath::RoundToInt(Value) + 3) % 3;
 	SwapWeapon(Index);
+}
+
+void APlayerCharacter::HealEnergyByAttack(AProjectRCharacter* Target, int32 Damage)
+{
+	HealEnergy(Damage * EnergyHeal);
 }
