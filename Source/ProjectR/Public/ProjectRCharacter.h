@@ -84,10 +84,10 @@ private:
 	void Equip();
 
 	UFUNCTION()
-	void BeginCast();
+	void BeginSkill();
 
 	UFUNCTION()
-	void EndCast();
+	void EndSkill();
 
 public:
 	UPROPERTY(BlueprintAssignable)

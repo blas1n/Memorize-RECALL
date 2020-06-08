@@ -145,16 +145,16 @@ void AProjectRCharacter::SetWeapon(AWeapon* InWeapon)
 {
 	if (Weapon)
 	{
+		Weapon->OnBeginSkill.RemoveDynamic(this, &AProjectRCharacter::BeginSkill);
+		Weapon->OnEndSkill.RemoveDynamic(this, &AProjectRCharacter::EndSkill);
 		Weapon->Unequip();
-		Weapon->OnBeginSkill.RemoveDynamic(this, &AProjectRCharacter::BeginCast);
-		Weapon->OnEndSkill.RemoveDynamic(this, &AProjectRCharacter::EndCast);
 	}
 
 	Weapon = InWeapon;
 	if (!Weapon) return;
 
-	Weapon->OnBeginSkill.AddDynamic(this, &AProjectRCharacter::BeginCast);
-	Weapon->OnEndSkill.AddDynamic(this, &AProjectRCharacter::EndCast);
+	Weapon->OnBeginSkill.AddDynamic(this, &AProjectRCharacter::BeginSkill);
+	Weapon->OnEndSkill.AddDynamic(this, &AProjectRCharacter::EndSkill);
 	
 	FOnAsyncLoadEndedSingle Callback;
 	Callback.BindDynamic(this, &AProjectRCharacter::Equip);
@@ -191,12 +191,14 @@ void AProjectRCharacter::Equip()
 	Weapon->Equip();
 }
 
-void AProjectRCharacter::BeginCast()
+void AProjectRCharacter::BeginSkill()
 {
+	DisableInput(nullptr);
 	bIsCasting = true;
 }
 
-void AProjectRCharacter::EndCast()
+void AProjectRCharacter::EndSkill()
 {
+	EnableInput(nullptr);
 	bIsCasting = false;
 }
