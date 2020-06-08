@@ -20,6 +20,9 @@ public:
 	UFUNCTION(BlueprintCallable)
 	int32 HealEnergy(int32 Value);
 
+	UFUNCTION(BlueprintCallable)
+	int32 SetMaxEnergy(int32 NewMaxEnergy);
+
 	FORCEINLINE class USpringArmComponent* GetCameraBoom() const noexcept { return CameraBoom; }
 	FORCEINLINE class UCameraComponent* GetFollowCamera() const noexcept { return FollowCamera; }
 
