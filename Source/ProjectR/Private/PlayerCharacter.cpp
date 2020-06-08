@@ -71,7 +71,7 @@ void APlayerCharacter::BeginPlay()
 			Energy = FMath::Min(Energy + EnergyPerTick, MaxEnergy);
 		}, EnergyTick, true);
 
-	OnAttack.AddDynamic(this, &APlayerCharacter::OnAttacked);
+	OnAttack.AddDynamic(this, &APlayerCharacter::HealEnergyByAttack);
 }
 
 void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -139,7 +139,7 @@ void APlayerCharacter::SwapWeapon(float Value)
 	SwapWeapon(Index);
 }
 
-void APlayerCharacter::OnAttacked(AProjectRCharacter* Target, int32 Damage)
+void APlayerCharacter::HealEnergyByAttack(AProjectRCharacter* Target, int32 Damage)
 {
 	HealEnergy(Damage * EnergyHeal);
 
