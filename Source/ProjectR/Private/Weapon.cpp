@@ -5,6 +5,7 @@
 #include "Components/StaticMeshComponent.h"
 #include "Engine/AssetManager.h"
 #include "Engine/World.h"
+#include "AnimCastData.h"
 #include "ProjectRCharacter.h"
 #include "Skill.h"
 #include "WeaponData.h"
@@ -163,11 +164,27 @@ void AWeapon::OnEquipMontageLoaded(const TAssetPtr<UAnimMontage>& MontagePtr)
 
 void AWeapon::BeginSkill(UAnimMontage* Montage)
 {
+	AProjectRCharacter* User = Cast<AProjectRCharacter>(GetInstigator());
+
+	for (const UAnimMetaData* Data : Montage->GetMetaData())
+	{
+		if (const UAnimCastData* CastData = Cast<UAnimCastData>(Data))
+		{
+			 User->SetIsCasting(CastData->IsCasting());
+			 User->SetCanMoving(CastData->CanMoving());
+			 break;
+		}
+	}
+
 	OnBeginSkill.Broadcast();
 }
 
 void AWeapon::EndSkill(UAnimMontage* Montage, bool bInterrupted)
 {
+	AProjectRCharacter* User = Cast<AProjectRCharacter>(GetInstigator());
+	User->SetIsCasting(false);
+	User->SetCanMoving(true);
+
 	OnEndSkill.Broadcast();
 }
 

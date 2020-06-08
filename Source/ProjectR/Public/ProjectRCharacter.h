@@ -59,6 +59,10 @@ public:
 		GetBuffStorages() noexcept { return BuffStorages; }
 
 	FORCEINLINE bool IsCasting() const noexcept { return bIsCasting; }
+	FORCEINLINE bool CanMoving() const noexcept { return bCanMoving; }
+
+	FORCEINLINE void SetIsCasting(bool bInIsCasting) noexcept { bIsCasting = bInIsCasting; }
+	FORCEINLINE void SetCanMoving(bool bInCanMoving) noexcept { bCanMoving = bInCanMoving; }
 
 protected:
 	void BeginPlay() override;
@@ -90,12 +94,6 @@ private:
 
 	UFUNCTION()
 	void Equip();
-
-	UFUNCTION()
-	void BeginSkill();
-
-	UFUNCTION()
-	void EndSkill();
 
 public:
 	UPROPERTY(BlueprintAssignable)
@@ -144,4 +142,5 @@ private:
 	UObject* Parrying;
 
 	bool bIsCasting;
+	bool bCanMoving;
 };
