@@ -185,16 +185,16 @@ void AProjectRCharacter::Death()
 
 	// Enable Ragdoll.
 	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-	GetMesh()->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+	GetMesh()->SetCollisionEnabled(ECollisionEnabled::PhysicsOnly);
 	GetMesh()->SetSimulatePhysics(true);
 
 	FDetachmentTransformRules Rules = FDetachmentTransformRules{ EDetachmentRule::KeepWorld, true };
 
-	LeftWeapon->SetCollisionProfileName(TEXT("BlockAllDynamic"));
+	LeftWeapon->SetCollisionProfileName(TEXT("Ragdoll"));
 	LeftWeapon->SetSimulatePhysics(true);
 	LeftWeapon->DetachFromComponent(Rules);
 
-	RightWeapon->SetCollisionProfileName(TEXT("BlockAllDynamic"));
+	RightWeapon->SetCollisionProfileName(TEXT("Ragdoll"));
 	RightWeapon->SetSimulatePhysics(true);
 	RightWeapon->DetachFromComponent(Rules);
 }
