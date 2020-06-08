@@ -7,7 +7,8 @@
 #include "ProjectRCharacter.generated.h"
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnDeath, AController*, Instigator);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnAttack, AProjectRCharacter*, Target);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnDamaged, AController*, Instigator);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnAttack, AProjectRCharacter*, Target, int32, Damage);
 
 UCLASS(config=Game, Abstract, Blueprintable)
 class AProjectRCharacter : public ACharacter
@@ -16,6 +17,9 @@ class AProjectRCharacter : public ACharacter
 
 public:
 	AProjectRCharacter();
+
+	UFUNCTION(BlueprintCallable)
+	void Attack(AProjectRCharacter* Target, int32 Damage, AActor* Causer);
 
 	UFUNCTION(BlueprintCallable)
 	void BeginParrying(UObject* InParrying);
@@ -81,6 +85,9 @@ private:
 	void Death();
 
 	UFUNCTION()
+	void AttackHeal(AProjectRCharacter* Target, int32 Damage);
+
+	UFUNCTION()
 	void Equip();
 
 	UFUNCTION()
@@ -92,6 +99,9 @@ private:
 public:
 	UPROPERTY(BlueprintAssignable)
 	FOnDeath OnDeath;
+
+	UPROPERTY(BlueprintAssignable)
+	FOnDamaged OnDamaged;
 
 	UPROPERTY(BlueprintAssignable)
 	FOnAttack OnAttack;

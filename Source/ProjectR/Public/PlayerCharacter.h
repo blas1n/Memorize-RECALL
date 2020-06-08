@@ -34,6 +34,9 @@ private:
 	void BeginPlay() override;
 	void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
+	UFUNCTION()
+	void OnAttacked(AProjectRCharacter* Target, int32 Damage);
+
 	void MoveForward(float Value);
 	void MoveRight(float Value);
 
@@ -57,7 +60,17 @@ private:
 	int32 MaxEnergy;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Transient, Category = Stat, meta = (AllowPrivateAccess = true))
-	int32 EnergyHeal;
+	float EnergyHeal;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Transient, Category = Combat, meta = (AllowPrivateAccess = true))
+	float DisableCombatDelay;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Transient, Category = Combat, meta = (AllowPrivateAccess = true))
+	int32 EnergyPerTick;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Transient, Category = Combat, meta = (AllowPrivateAccess = true))
+	float EnergyTick;
+
+	FTimerHandle EnergyTimer;
 	uint8 CurWeaponIndex;
 };

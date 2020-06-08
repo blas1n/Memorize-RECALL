@@ -51,6 +51,16 @@ AProjectRCharacter::AProjectRCharacter()
 	bIsCasting = false;
 }
 
+void AProjectRCharacter::Attack(AProjectRCharacter* Target, int32 Damage, AActor* Causer)
+{
+	if (this == Target) return;
+
+	float TakingDamage = TakeDamage(Damage, FDamageEvent{}, GetController(), Causer);
+
+	if (TakingDamage > 0.0f)
+		OnAttack.Broadcast(Target, TakingDamage);
+}
+
 void AProjectRCharacter::BeginParrying(UObject* InParrying)
 {
 	if (InParrying->GetClass()->ImplementsInterface(UParryable::StaticClass()))
@@ -109,6 +119,8 @@ void AProjectRCharacter::BeginPlay()
 	for (TObjectIterator<UClass> It; It; ++It)
 		if (It->IsChildOf(ABuff::StaticClass()) && !It->HasAnyClassFlags(CLASS_Abstract))
 			BuffStorages.Add(*It, It->GetDefaultObject<ABuff>()->CreateStorage());
+
+	OnAttack.AddDynamic(this, &AProjectRCharacter::AttackHeal);
 }
 
 float AProjectRCharacter::TakeDamage(float DamageAmount, const FDamageEvent& DamageEvent,
@@ -124,6 +136,7 @@ float AProjectRCharacter::TakeDamage(float DamageAmount, const FDamageEvent& Dam
 
 	Health -= static_cast<int32>(Damage);
 	if (Health <= 0) Death();
+	else OnDamaged.Broadcast(EventInstigator);
 	
 	return Damage;
 }
@@ -184,6 +197,11 @@ void AProjectRCharacter::Death()
 	RightWeapon->SetCollisionProfileName(TEXT("BlockAllDynamic"));
 	RightWeapon->SetSimulatePhysics(true);
 	RightWeapon->DetachFromComponent(Rules);
+}
+
+void AProjectRCharacter::AttackHeal(AProjectRCharacter* Target, int32 Damage)
+{
+	HealHealth(Damage * HealthHeal);
 }
 
 void AProjectRCharacter::Equip()
