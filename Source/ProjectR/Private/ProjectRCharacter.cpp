@@ -55,7 +55,7 @@ void AProjectRCharacter::Attack(AProjectRCharacter* Target, int32 Damage, AActor
 {
 	if (this == Target) return;
 
-	float TakingDamage = TakeDamage(Damage, FDamageEvent{}, GetController(), Causer);
+	float TakingDamage = Target->TakeDamage(Damage, FDamageEvent{}, GetController(), Causer);
 
 	if (TakingDamage > 0.0f)
 		OnAttack.Broadcast(Target, TakingDamage);
