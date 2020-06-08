@@ -34,8 +34,14 @@ private:
 	void BeginPlay() override;
 	void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
+	UFUNCTION()
+	void HealEnergyByAttack(AProjectRCharacter* Target, int32 Damage);
+
 	void MoveForward(float Value);
 	void MoveRight(float Value);
+
+	void Jumping();
+	void ToggleCrouch();
 
 	void SwapWeapon(uint8 Index);
 	void SwapWeapon(float Value);
@@ -57,7 +63,7 @@ private:
 	int32 MaxEnergy;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Transient, Category = Stat, meta = (AllowPrivateAccess = true))
-	int32 EnergyHeal;
+	float EnergyHeal;
 
 	uint8 CurWeaponIndex;
 };
