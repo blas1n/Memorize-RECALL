@@ -49,6 +49,7 @@ AProjectRCharacter::AProjectRCharacter()
 	RunSpeed = 0.0f;
 	Parrying = nullptr;
 	bIsCasting = false;
+	bCanMoving = true;
 }
 
 void AProjectRCharacter::Attack(AProjectRCharacter* Target, int32 Damage, AActor* Causer)
@@ -156,18 +157,10 @@ AWeapon* AProjectRCharacter::GenerateWeapon(FName Name)
 
 void AProjectRCharacter::SetWeapon(AWeapon* InWeapon)
 {
-	if (Weapon)
-	{
-		Weapon->OnBeginSkill.RemoveDynamic(this, &AProjectRCharacter::BeginSkill);
-		Weapon->OnEndSkill.RemoveDynamic(this, &AProjectRCharacter::EndSkill);
-		Weapon->Unequip();
-	}
+	if (Weapon) Weapon->Unequip();
 
 	Weapon = InWeapon;
 	if (!Weapon) return;
-
-	Weapon->OnBeginSkill.AddDynamic(this, &AProjectRCharacter::BeginSkill);
-	Weapon->OnEndSkill.AddDynamic(this, &AProjectRCharacter::EndSkill);
 	
 	FOnAsyncLoadEndedSingle Callback;
 	Callback.BindDynamic(this, &AProjectRCharacter::Equip);
@@ -176,7 +169,7 @@ void AProjectRCharacter::SetWeapon(AWeapon* InWeapon)
 
 void AProjectRCharacter::UseSkill(uint8 Index)
 {
-	if (Weapon) Weapon->UseSkill(Index);
+	if (!IsCasting() && Weapon) Weapon->UseSkill(Index);
 }
 
 void AProjectRCharacter::Death()
@@ -207,16 +200,4 @@ void AProjectRCharacter::OnAttacked(AProjectRCharacter* Target, int32 Damage)
 void AProjectRCharacter::Equip()
 {
 	Weapon->Equip();
-}
-
-void AProjectRCharacter::BeginSkill()
-{
-	DisableInput(nullptr);
-	bIsCasting = true;
-}
-
-void AProjectRCharacter::EndSkill()
-{
-	EnableInput(nullptr);
-	bIsCasting = false;
 }

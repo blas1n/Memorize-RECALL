@@ -15,7 +15,6 @@ public:
 	FORCEINLINE bool IsCasting() const noexcept { return bIsCasting; }
 	FORCEINLINE bool CanMoving() const noexcept { return bCanMoving; }
 
-
 private:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = true))
 	bool bIsCasting = true;
