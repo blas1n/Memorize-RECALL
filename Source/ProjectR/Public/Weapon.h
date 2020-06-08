@@ -54,6 +54,12 @@ public:
 	UFUNCTION(BlueprintCallable)
 	bool CanUseSkill(uint8 Index);
 
+	UFUNCTION()
+	void BeginSkill(UAnimMontage* Montage);
+
+	UFUNCTION()
+	void EndSkill(UAnimMontage* Montage, bool bInterrupted);
+
 	UFUNCTION(BlueprintCallable)
 	void RegisterOnAsyncLoadEnded(const FOnAsyncLoadEndedSingle& Callback);
 
@@ -67,12 +73,6 @@ private:
 	void OnMeshLoaded(FWeaponInfo& WeaponInfo, const TAssetPtr<UStaticMesh>& MeshPtr);
 
 	void OnEquipMontageLoaded(const TAssetPtr<UAnimMontage>& MontagePtr);
-
-	UFUNCTION()
-	void BeginSkill(UAnimMontage* Montage);
-
-	UFUNCTION()
-	void EndSkill(UAnimMontage* Montage, bool bInterrupted);
 
 	UFUNCTION()
 	void OnLeftWeaponOverlapped(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
