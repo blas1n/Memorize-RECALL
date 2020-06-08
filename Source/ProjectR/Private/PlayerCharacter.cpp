@@ -27,9 +27,6 @@ APlayerCharacter::APlayerCharacter()
 	Energy = 0;
 	MaxEnergy = 0;
 	EnergyHeal = 0.0f;
-	DisableCombatDelay = 0.0f;
-	EnergyPerTick = 0;
-	EnergyTick = 0.0f;
 	CurWeaponIndex = 3;
 }
 
@@ -65,12 +62,6 @@ void APlayerCharacter::BeginPlay()
 	Super::BeginPlay();
 
 	Energy = MaxEnergy;
-
-	GetWorldTimerManager().SetTimer(EnergyTimer, [this]
-		{
-			Energy = FMath::Min(Energy + EnergyPerTick, MaxEnergy);
-		}, EnergyTick, true);
-
 	OnAttack.AddDynamic(this, &APlayerCharacter::HealEnergyByAttack);
 }
 
@@ -142,11 +133,4 @@ void APlayerCharacter::SwapWeapon(float Value)
 void APlayerCharacter::HealEnergyByAttack(AProjectRCharacter* Target, int32 Damage)
 {
 	HealEnergy(Damage * EnergyHeal);
-
-	GetWorldTimerManager().ClearTimer(EnergyTimer);
-	GetWorldTimerManager().SetTimer(EnergyTimer, [this]
-		{
-			Energy = FMath::Min(Energy + EnergyPerTick, MaxEnergy);
-		}, EnergyTick, true, DisableCombatDelay);
-
 }

@@ -6,6 +6,7 @@
 #include "GameFramework/Character.h"
 #include "ProjectRCharacter.generated.h"
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnSetCombat, bool, IsCombat);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnDeath, AController*, Instigator);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnDamaged, AController*, Instigator);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnAttack, AProjectRCharacter*, Target, int32, Damage);
@@ -97,6 +98,9 @@ private:
 	void EndSkill();
 
 public:
+	UPROPERTY(BlueprintAssignable)
+	FOnSetCombat OnSetCombat;
+
 	UPROPERTY(BlueprintAssignable)
 	FOnDeath OnDeath;
 

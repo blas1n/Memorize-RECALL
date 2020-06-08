@@ -62,15 +62,5 @@ private:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Transient, Category = Stat, meta = (AllowPrivateAccess = true))
 	float EnergyHeal;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Transient, Category = Combat, meta = (AllowPrivateAccess = true))
-	float DisableCombatDelay;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Transient, Category = Combat, meta = (AllowPrivateAccess = true))
-	int32 EnergyPerTick;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Transient, Category = Combat, meta = (AllowPrivateAccess = true))
-	float EnergyTick;
-
-	FTimerHandle EnergyTimer;
 	uint8 CurWeaponIndex;
 };
