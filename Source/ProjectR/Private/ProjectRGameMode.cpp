@@ -21,7 +21,17 @@ void AProjectRGameMode::BeginPlay()
 	Param.Owner = this;
 	Param.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 
-	for (const auto& Class : TObjectRange<UClass>())
-		if (Class->IsChildOf<ABuff>() && !Class->HasAnyClassFlags(CLASS_Abstract))
-			Buffs.Add(Class, World->SpawnActor<ABuff>(Class, Param));
+	for (UClass* Class : TObjectRange<UClass>{})
+	{
+		if (!Class->IsChildOf<ABuff>() || Class->HasAnyClassFlags(CLASS_Abstract))
+			continue;
+
+		FString Name;
+		Class->GetName(Name);
+
+		if (Name.StartsWith("TRASHCLASS_") || Name.StartsWith(TEXT("SKEL_")) || Name.StartsWith(TEXT("REINST")))
+			continue;
+
+		Buffs.Add(Class, World->SpawnActor<ABuff>(Class, Param));
+	}
 }
