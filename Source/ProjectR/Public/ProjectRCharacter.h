@@ -6,8 +6,10 @@
 #include "GameFramework/Character.h"
 #include "ProjectRCharacter.generated.h"
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnSetCombat, bool, IsCombat);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnDeath, AController*, Instigator);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnAttack, AProjectRCharacter*, Target);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnDamaged, AController*, Instigator);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnAttack, AProjectRCharacter*, Target, int32, Damage);
 
 UCLASS(config=Game, Abstract, Blueprintable)
 class AProjectRCharacter : public ACharacter
@@ -16,6 +18,9 @@ class AProjectRCharacter : public ACharacter
 
 public:
 	AProjectRCharacter();
+
+	UFUNCTION(BlueprintCallable)
+	void Attack(AProjectRCharacter* Target, int32 Damage, AActor* Causer);
 
 	UFUNCTION(BlueprintCallable)
 	void BeginParrying(UObject* InParrying);
@@ -36,6 +41,12 @@ public:
 	int32 SetMaxHealth(int32 NewMaxHealth);
 
 	UFUNCTION(BlueprintCallable)
+	void Jumping();
+
+	UFUNCTION(BlueprintCallable)
+	void ToggleCrouch();
+
+	UFUNCTION(BlueprintCallable)
 	float GetSpeed() const noexcept;
 
 	UFUNCTION(BlueprintCallable)
@@ -54,6 +65,10 @@ public:
 		GetBuffStorages() noexcept { return BuffStorages; }
 
 	FORCEINLINE bool IsCasting() const noexcept { return bIsCasting; }
+	FORCEINLINE bool CanMoving() const noexcept { return bCanMoving; }
+
+	FORCEINLINE void SetIsCasting(bool bInIsCasting) noexcept { bIsCasting = bInIsCasting; }
+	FORCEINLINE void SetCanMoving(bool bInCanMoving) noexcept { bCanMoving = bInCanMoving; }
 
 protected:
 	void BeginPlay() override;
@@ -81,17 +96,20 @@ private:
 	void Death();
 
 	UFUNCTION()
+	void OnAttacked(AProjectRCharacter* Target, int32 Damage);
+
+	UFUNCTION()
 	void Equip();
-
-	UFUNCTION()
-	void BeginCast();
-
-	UFUNCTION()
-	void EndCast();
 
 public:
 	UPROPERTY(BlueprintAssignable)
+	FOnSetCombat OnSetCombat;
+
+	UPROPERTY(BlueprintAssignable)
 	FOnDeath OnDeath;
+
+	UPROPERTY(BlueprintAssignable)
+	FOnDamaged OnDamaged;
 
 	UPROPERTY(BlueprintAssignable)
 	FOnAttack OnAttack;
@@ -130,4 +148,5 @@ private:
 	UObject* Parrying;
 
 	bool bIsCasting;
+	bool bCanMoving;
 };
