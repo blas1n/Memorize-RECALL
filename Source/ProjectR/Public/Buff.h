@@ -15,16 +15,15 @@ public:
 	ABuff();
 
 	UFUNCTION(BlueprintCallable)
-	void ApplyBuff(class AProjectRCharacter* InTarget, float Duration);
+	void ApplyBuff(class AProjectRCharacter* Target, float Duration);
 
 	UFUNCTION(BlueprintImplementableEvent)
 	class UBuffStorage* CreateStorage() const;
 
 protected:
 	UFUNCTION(BlueprintImplementableEvent)
-	void OnBuff(UBuffStorage* BuffStorage);
+	void OnBeginBuff(AProjectRCharacter* Target, UBuffStorage* BuffStorage);
 
-private:
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = true))
-	AProjectRCharacter* Target;
+	UFUNCTION(BlueprintImplementableEvent)
+	void OnEndBuff(AProjectRCharacter* Target, UBuffStorage* BuffStorage);
 };

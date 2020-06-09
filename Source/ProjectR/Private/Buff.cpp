@@ -3,19 +3,22 @@
 #include "Buff.h"
 #include "BuffStorage.h"
 #include "ProjectRCharacter.h"
+#include "TimerManager.h"
 
 ABuff::ABuff()
 	: Super()
 {
 	PrimaryActorTick.bCanEverTick = false;
-	Target = nullptr;
 }
 
-void ABuff::ApplyBuff(AProjectRCharacter* InTarget, float Duration)
+void ABuff::ApplyBuff(AProjectRCharacter* Target, float Duration)
 {
-	Target = InTarget;
-	SetLifeSpan(Duration);
-
 	UBuffStorage* BuffStorage = *Target->GetBuffStorages().Find(GetClass());
-	OnBuff(BuffStorage);
+	OnBeginBuff(Target, BuffStorage);
+
+	FTimerHandle Handle;
+	GetWorldTimerManager().SetTimer(Handle, [this, Target, BuffStorage]
+		{
+			OnEndBuff(Target, BuffStorage);
+		}, Duration, false);
 }
