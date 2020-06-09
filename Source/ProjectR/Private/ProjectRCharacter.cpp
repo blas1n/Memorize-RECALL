@@ -7,6 +7,7 @@
 #include "Engine/DataTable.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/Controller.h"
+#include "Kismet/GameplayStatics.h"
 #include "Buff.h"
 #include "BuffStorage.h"
 #include "Parryable.h"
@@ -129,9 +130,11 @@ void AProjectRCharacter::BeginPlay()
 	Health = MaxHealth;
 	SetSpeed(WalkSpeed);
 
-	for (TObjectIterator<UClass> It; It; ++It)
-		if (It->IsChildOf(ABuff::StaticClass()) && !It->HasAnyClassFlags(CLASS_Abstract))
-			BuffStorages.Add(*It, It->GetDefaultObject<ABuff>()->CreateStorage());
+	TArray<AActor*> Buffs;
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ABuff::StaticClass(), Buffs);
+
+	for (AActor* Buff : Buffs)
+		BuffStorages.Add(Buff->GetClass(), Cast<ABuff>(Buff)->CreateStorage());
 
 	OnAttack.AddDynamic(this, &AProjectRCharacter::OnAttacked);
 }
