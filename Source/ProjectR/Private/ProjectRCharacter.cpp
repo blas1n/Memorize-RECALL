@@ -49,6 +49,17 @@ AProjectRCharacter::AProjectRCharacter()
 	RunSpeed = 0.0f;
 	Parrying = nullptr;
 	bIsCasting = false;
+	bCanMoving = true;
+}
+
+void AProjectRCharacter::Attack(AProjectRCharacter* Target, int32 Damage, AActor* Causer)
+{
+	if (this == Target) return;
+
+	float TakingDamage = Target->TakeDamage(Damage, FDamageEvent{}, GetController(), Causer);
+
+	if (TakingDamage > 0.0f)
+		OnAttack.Broadcast(Target, TakingDamage);
 }
 
 void AProjectRCharacter::BeginParrying(UObject* InParrying)
@@ -89,6 +100,18 @@ int32 AProjectRCharacter::SetMaxHealth(int32 NewMaxHealth)
 	return Diff;
 }
 
+void AProjectRCharacter::Jumping()
+{
+	if (CanMoving())
+		Jump();
+}
+
+void AProjectRCharacter::ToggleCrouch()
+{
+	if (CanMoving())
+		CanCrouch() ? Crouch() : UnCrouch();
+}
+
 float AProjectRCharacter::GetSpeed() const noexcept
 {
 	return GetCharacterMovement()->MaxWalkSpeed;
@@ -109,6 +132,8 @@ void AProjectRCharacter::BeginPlay()
 	for (TObjectIterator<UClass> It; It; ++It)
 		if (It->IsChildOf(ABuff::StaticClass()) && !It->HasAnyClassFlags(CLASS_Abstract))
 			BuffStorages.Add(*It, It->GetDefaultObject<ABuff>()->CreateStorage());
+
+	OnAttack.AddDynamic(this, &AProjectRCharacter::OnAttacked);
 }
 
 float AProjectRCharacter::TakeDamage(float DamageAmount, const FDamageEvent& DamageEvent,
@@ -124,6 +149,7 @@ float AProjectRCharacter::TakeDamage(float DamageAmount, const FDamageEvent& Dam
 
 	Health -= static_cast<int32>(Damage);
 	if (Health <= 0) Death();
+	else OnDamaged.Broadcast(EventInstigator);
 	
 	return Damage;
 }
@@ -143,18 +169,10 @@ AWeapon* AProjectRCharacter::GenerateWeapon(FName Name)
 
 void AProjectRCharacter::SetWeapon(AWeapon* InWeapon)
 {
-	if (Weapon)
-	{
-		Weapon->Unequip();
-		Weapon->OnBeginSkill.RemoveDynamic(this, &AProjectRCharacter::BeginCast);
-		Weapon->OnEndSkill.RemoveDynamic(this, &AProjectRCharacter::EndCast);
-	}
+	if (Weapon) Weapon->Unequip();
 
 	Weapon = InWeapon;
 	if (!Weapon) return;
-
-	Weapon->OnBeginSkill.AddDynamic(this, &AProjectRCharacter::BeginCast);
-	Weapon->OnEndSkill.AddDynamic(this, &AProjectRCharacter::EndCast);
 	
 	FOnAsyncLoadEndedSingle Callback;
 	Callback.BindDynamic(this, &AProjectRCharacter::Equip);
@@ -163,7 +181,7 @@ void AProjectRCharacter::SetWeapon(AWeapon* InWeapon)
 
 void AProjectRCharacter::UseSkill(uint8 Index)
 {
-	if (Weapon) Weapon->UseSkill(Index);
+	if (!IsCasting() && Weapon) Weapon->UseSkill(Index);
 }
 
 void AProjectRCharacter::Death()
@@ -172,31 +190,26 @@ void AProjectRCharacter::Death()
 
 	// Enable Ragdoll.
 	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-	GetMesh()->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+	GetMesh()->SetCollisionEnabled(ECollisionEnabled::PhysicsOnly);
 	GetMesh()->SetSimulatePhysics(true);
 
 	FDetachmentTransformRules Rules = FDetachmentTransformRules{ EDetachmentRule::KeepWorld, true };
 
-	LeftWeapon->SetCollisionProfileName(TEXT("BlockAllDynamic"));
+	LeftWeapon->SetCollisionProfileName(TEXT("Ragdoll"));
 	LeftWeapon->SetSimulatePhysics(true);
 	LeftWeapon->DetachFromComponent(Rules);
 
-	RightWeapon->SetCollisionProfileName(TEXT("BlockAllDynamic"));
+	RightWeapon->SetCollisionProfileName(TEXT("Ragdoll"));
 	RightWeapon->SetSimulatePhysics(true);
 	RightWeapon->DetachFromComponent(Rules);
+}
+
+void AProjectRCharacter::OnAttacked(AProjectRCharacter* Target, int32 Damage)
+{
+	HealHealth(Damage * HealthHeal);
 }
 
 void AProjectRCharacter::Equip()
 {
 	Weapon->Equip();
-}
-
-void AProjectRCharacter::BeginCast()
-{
-	bIsCasting = true;
-}
-
-void AProjectRCharacter::EndCast()
-{
-	bIsCasting = false;
 }
