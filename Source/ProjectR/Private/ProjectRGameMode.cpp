@@ -21,7 +21,7 @@ void AProjectRGameMode::BeginPlay()
 	Param.Owner = this;
 	Param.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 
-	for (TObjectIterator<UClass> It; It; ++It)
-		if (It->IsChildOf(ABuff::StaticClass()) && !It->HasAnyClassFlags(CLASS_Abstract))
-			Buffs.Add(*It, World->SpawnActor<ABuff>(*It, Param));
+	for (const auto& Class : TObjectRange<UClass>())
+		if (Class->IsChildOf<ABuff>() && !Class->HasAnyClassFlags(CLASS_Abstract))
+			Buffs.Add(Class, World->SpawnActor<ABuff>(Class, Param));
 }
