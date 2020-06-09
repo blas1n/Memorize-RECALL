@@ -10,4 +10,14 @@ UCLASS(minimalapi)
 class AProjectRGameMode final : public AGameModeBase
 {
 	GENERATED_BODY()
+
+public:
+	UFUNCTION(BlueprintCallable)
+	class ABuff* GetBuffByClass(TSubclassOf<ABuff> BuffClass);
+
+private:
+	void BeginPlay() override;
+
+private:
+	TMap<TSubclassOf<ABuff>, ABuff*> Buffs;
 };
