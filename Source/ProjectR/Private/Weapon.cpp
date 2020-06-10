@@ -191,11 +191,11 @@ void AWeapon::EndSkill(UAnimMontage* Montage, bool bInterrupted)
 void AWeapon::OnLeftWeaponOverlapped(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, 
 	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	OnLeftWeaponHitted.Broadcast(OtherActor);
+	OnLeftWeaponHitted.Broadcast(SweepResult);
 }
 
 void AWeapon::OnRightWeaponOverlapped(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
 	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	OnRightWeaponHitted.Broadcast(OtherActor);
+	OnRightWeaponHitted.Broadcast(SweepResult);
 }
