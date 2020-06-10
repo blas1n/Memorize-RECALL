@@ -40,8 +40,8 @@ private:
 	void MoveForward(float Value);
 	void MoveRight(float Value);
 
-	void Jumping();
-	void ToggleCrouch();
+	void PressDodge();
+	void ReleaseDodge();
 
 	void SwapWeapon(uint8 Index);
 	void SwapWeapon(float Value);
