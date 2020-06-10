@@ -3,6 +3,7 @@
 #include "PlayerCharacter.h"
 #include "Camera/CameraComponent.h"
 #include "Components/InputComponent.h"
+#include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/Controller.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "TimerManager.h"
@@ -27,7 +28,9 @@ APlayerCharacter::APlayerCharacter()
 	Energy = 0;
 	MaxEnergy = 0;
 	EnergyHeal = 0.0f;
+	JumpDelay = 0.0f;
 	CurWeaponIndex = 3;
+	bIsReadyDodge = false;
 }
 
 void APlayerCharacter::EquipWeapon(FName Name, uint8 Index)
@@ -77,10 +80,8 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 
 	PlayerInputComponent->BindAxis(TEXT("Swap"), this, &APlayerCharacter::SwapWeapon);
 
-	PlayerInputComponent->BindAction(TEXT("Jump"), IE_Pressed, this, &AProjectRCharacter::Jumping);
-	PlayerInputComponent->BindAction(TEXT("Jump"), IE_Released, this, &ACharacter::StopJumping);
-
-	PlayerInputComponent->BindAction(TEXT("Crouch"), IE_Pressed, this, &AProjectRCharacter::ToggleCrouch);
+	PlayerInputComponent->BindAction(TEXT("Dodge"), IE_Pressed, this, &APlayerCharacter::PressDodge);
+	PlayerInputComponent->BindAction(TEXT("Dodge"), IE_Released, this, &APlayerCharacter::ReleaseDodge);
 
 	PlayerInputComponent->BindAction<FSpeedSetter>(TEXT("Sprint"), IE_Pressed, this, &APlayerCharacter::SetSpeed, GetRunSpeed());
 	PlayerInputComponent->BindAction<FSpeedSetter>(TEXT("Sprint"), IE_Released, this, &APlayerCharacter::SetSpeed, GetWalkSpeed());
@@ -114,6 +115,34 @@ void APlayerCharacter::MoveRight(float Value)
 	const FRotator YawRotation(0, Rotation.Yaw, 0);
 	const FVector Direction = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
 	AddMovementInput(Direction, Value);
+}
+
+void APlayerCharacter::PressDodge()
+{
+	if (IsCasting()) return;
+	SetIsCasting(true);
+
+	bIsReadyDodge = true;
+
+	GetWorldTimerManager().SetTimer(DodgeTimer, [this]
+		{
+			Jump();
+			bIsReadyDodge = false;
+			SetIsCasting(false);
+		}, JumpDelay, false);
+}
+
+void APlayerCharacter::ReleaseDodge()
+{
+	if (bIsReadyDodge)
+	{
+		GetWorldTimerManager().ClearTimer(DodgeTimer);
+		PlayAnimMontage(RollAnimMontage);
+		bIsReadyDodge = false;
+		SetIsCasting(false);
+	}
+	else if (GetCharacterMovement()->IsFalling())
+		StopJumping();
 }
 
 void APlayerCharacter::SwapWeapon(uint8 Index)

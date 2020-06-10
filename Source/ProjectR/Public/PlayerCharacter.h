@@ -56,6 +56,9 @@ private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, EditFixedSize, Category = Weapon, meta = (AllowPrivateAccess = true))
 	TArray<class AWeapon*> Weapons;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Animation, meta = (AllowPrivateAccess = true))
+	UAnimMontage* RollAnimMontage;
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Transient, Category = Stat, meta = (AllowPrivateAccess = true))
 	int32 Energy;
 
@@ -65,5 +68,10 @@ private:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Transient, Category = Stat, meta = (AllowPrivateAccess = true))
 	float EnergyHeal;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Transient, Category = Stat, meta = (AllowPrivateAccess = true))
+	float JumpDelay;
+
+	FTimerHandle DodgeTimer;
 	uint8 CurWeaponIndex;
+	bool bIsReadyDodge;
 };
