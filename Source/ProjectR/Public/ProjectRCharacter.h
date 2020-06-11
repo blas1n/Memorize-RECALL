@@ -6,8 +6,9 @@
 #include "GameFramework/Character.h"
 #include "ProjectRCharacter.generated.h"
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnDeath, AController*, Instigator);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnDamaged, AController*, Instigator);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnDeath, AController*, Instigator);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnEquipped, class AWeapon*, Weapon);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnAttack, AProjectRCharacter*, Target, int32, Damage);
 
 UCLASS(config=Game, Abstract, Blueprintable)
@@ -65,6 +66,7 @@ public:
 
 protected:
 	void BeginPlay() override;
+	
 	float TakeDamage(float DamageAmount, const FDamageEvent& DamageEvent,
 		AController* EventInstigator, AActor* DamageCauser) override;
 
@@ -104,7 +106,7 @@ public:
 	FOnDeath OnDeath;
 
 	UPROPERTY(BlueprintAssignable)
-	FOnDamaged OnDamaged;
+	FOnEquipped OnEquipped;
 
 	UPROPERTY(BlueprintAssignable)
 	FOnAttack OnAttack;
