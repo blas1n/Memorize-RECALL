@@ -18,10 +18,10 @@ struct FWeaponAnimData
 	TAssetPtr<class UAnimMontage> JumpMontage;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	TAssetPtr<class UAnimMontage> DodgeMontage;
+	TAssetPtr<UAnimMontage> DodgeMontage;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	TAssetPtr<class UAnimMontage> EquipMontage;
+	TAssetPtr<UAnimMontage> EquipMontage;
 };
 
 USTRUCT(Atomic, BlueprintType)
