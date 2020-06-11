@@ -86,6 +86,8 @@ protected:
 
 	void UseSkill(uint8 index);
 
+	FORCEINLINE AWeapon* GetUnequip() const noexcept { return Weapon; }
+
 private:
 	void Death();
 
@@ -117,6 +119,9 @@ private:
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Transient, Category = Weapon, meta = (AllowPrivateAccess = true))
 	AWeapon* Weapon;
+
+	UPROPERTY()
+	AWeapon* Unequip;
 
 	UPROPERTY(EditDefaultsOnly, Category = Weapon, meta = (AllowPrivateAccess = true))
 	class UDataTable* WeaponsData;
