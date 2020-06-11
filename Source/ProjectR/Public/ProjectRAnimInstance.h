@@ -42,5 +42,5 @@ private:
 	float Speed;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Pawn, meta = (AllowPrivateAccess = true))
-	bool IsInAir;
+	bool bIsInAir;
 };
