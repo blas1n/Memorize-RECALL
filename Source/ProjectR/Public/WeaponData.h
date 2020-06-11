@@ -15,10 +15,16 @@ struct FWeaponAnimData
 	TAssetPtr<class UBlendSpaceBase> LocomotionSpace;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	TAssetPtr<class UAnimMontage> JumpMontage;
+	TAssetPtr<class UAnimSequenceBase> JumpStart;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	TAssetPtr<UAnimMontage> DodgeMontage;
+	TAssetPtr<UAnimSequenceBase> JumpLoop;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TAssetPtr<UAnimSequenceBase> JumpEnd;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TAssetPtr<class UAnimMontage> DodgeMontage;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TAssetPtr<UAnimMontage> EquipMontage;

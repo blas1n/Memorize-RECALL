@@ -65,7 +65,9 @@ public:
 	void RegisterOnAsyncLoadEnded(const FOnAsyncLoadEndedSingle& Callback);
 
 	FORCEINLINE class UBlendSpaceBase* GetLocomotionSpace() const noexcept { return LocomotionSpace; }
-	FORCEINLINE UAnimMontage* GetJumpMontage() const noexcept { return JumpMontage; }
+	FORCEINLINE class UAnimSequenceBase* GetJumpStart() const noexcept { return JumpStart; }
+	FORCEINLINE UAnimSequenceBase* GetJumpLoop() const noexcept { return JumpLoop; }
+	FORCEINLINE UAnimSequenceBase* GetJumpEnd() const noexcept { return JumpEnd; }
 
 private:
 	void BeginPlay() override;
@@ -165,7 +167,13 @@ private:
 	UBlendSpaceBase* LocomotionSpace;
 
 	UPROPERTY(VisibleAnywhere, Category = Animation, meta = (AllowPrivateAccess = true))
-	UAnimMontage* JumpMontage;
+	UAnimSequenceBase* JumpStart;
+
+	UPROPERTY(VisibleAnywhere, Category = Animation, meta = (AllowPrivateAccess = true))
+	UAnimSequenceBase* JumpLoop;
+
+	UPROPERTY(VisibleAnywhere, Category = Animation, meta = (AllowPrivateAccess = true))
+	UAnimSequenceBase* JumpEnd;
 
 	UPROPERTY(VisibleAnywhere, Category = Animation, meta = (AllowPrivateAccess = true))
 	UAnimMontage* DodgeMontage;
