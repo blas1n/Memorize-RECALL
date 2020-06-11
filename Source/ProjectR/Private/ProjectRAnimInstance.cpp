@@ -8,7 +8,24 @@
 UProjectRAnimInstance::UProjectRAnimInstance()
 {
 	Speed = 0.0f;
-	IsInAir = false;
+	bIsInAir = false;
+}
+
+void UProjectRAnimInstance::NativeBeginPlay()
+{
+	AProjectRCharacter* Owner = Cast<AProjectRCharacter>(TryGetPawnOwner());
+	Owner->OnEquipped.AddDynamic(this, &UProjectRAnimInstance::OnEquipped);
+
+	AWeapon* CurWeapon = GetWeapon();
+	if (CurWeapon) OnEquipped(CurWeapon);
+}
+
+void UProjectRAnimInstance::OnEquipped(AWeapon* Weapon)
+{
+	LocomotionSpace = Weapon->GetLocomotionSpace();
+	JumpStart = Weapon->GetJumpStart();
+	JumpLoop = Weapon->GetJumpLoop();
+	JumpEnd = Weapon->GetJumpEnd();
 }
 
 void UProjectRAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
@@ -19,7 +36,7 @@ void UProjectRAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 	if (!IsValid(Owner)) return;
 
 	Speed = Owner->GetVelocity().Size();
-	IsInAir = Owner->GetCharacterMovement()->IsFalling();
+	bIsInAir = Owner->GetCharacterMovement()->IsFalling();
 }
 
 void UProjectRAnimInstance::AnimNotify_BeginSkill()
