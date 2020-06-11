@@ -203,4 +203,5 @@ void AProjectRCharacter::OnAttacked(AProjectRCharacter* Target, int32 Damage)
 void AProjectRCharacter::Equip()
 {
 	Weapon->Equip();
+	OnEquipped.Broadcast(Weapon);
 }
