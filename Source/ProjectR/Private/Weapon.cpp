@@ -80,12 +80,16 @@ void AWeapon::Unequip()
 
 bool AWeapon::UseSkill(uint8 Index)
 {
-	return Skills[Index]->UseSkill();
+	if (Skills.Num() > Index)
+		return Skills[Index]->UseSkill();
+	return false;
 }
 
 bool AWeapon::CanUseSkill(uint8 Index)
 {
-	return Skills[Index]->CanUseSkill();
+	if (Skills.Num() > Index)
+		return Skills[Index]->CanUseSkill();
+	return false;
 }
 
 void AWeapon::BeginSkill(UAnimMontage* Montage)
