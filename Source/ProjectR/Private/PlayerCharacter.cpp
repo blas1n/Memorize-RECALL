@@ -29,21 +29,13 @@ APlayerCharacter::APlayerCharacter()
 	MaxEnergy = 0;
 	EnergyHeal = 0.0f;
 	JumpDelay = 0.0f;
-	CurWeaponIndex = 3;
+	CurWeaponIndex = 0;
 	bIsReadyDodge = false;
 }
 
 void APlayerCharacter::EquipWeapon(FName Name, uint8 Index)
 {
 	Weapons[Index] = GenerateWeapon(Name);
-
-	bool bIsFirstWeapon = true;
-
-	for (int I = 0; I < 3; ++I)
-		bIsFirstWeapon &= I == Index || Weapons[I] == nullptr;
-
-	if (bIsFirstWeapon)
-		SwapWeapon(Index);
 }
 
 int32 APlayerCharacter::HealEnergy(int32 Value)
@@ -66,6 +58,9 @@ void APlayerCharacter::BeginPlay()
 
 	Energy = MaxEnergy;
 	OnAttack.AddDynamic(this, &APlayerCharacter::HealEnergyByAttack);
+
+	for (AWeapon* CurWeapon : Weapons)
+		CurWeapon = GetUnequip();
 }
 
 void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -83,8 +78,8 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 	PlayerInputComponent->BindAction(TEXT("Dodge"), IE_Pressed, this, &APlayerCharacter::PressDodge);
 	PlayerInputComponent->BindAction(TEXT("Dodge"), IE_Released, this, &APlayerCharacter::ReleaseDodge);
 
-	PlayerInputComponent->BindAction<FSpeedSetter>(TEXT("Sprint"), IE_Pressed, this, &APlayerCharacter::SetSpeed, GetRunSpeed());
-	PlayerInputComponent->BindAction<FSpeedSetter>(TEXT("Sprint"), IE_Released, this, &APlayerCharacter::SetSpeed, GetWalkSpeed());
+	PlayerInputComponent->BindAction<FSpeedSetter>(TEXT("Walk"), IE_Pressed, this, &APlayerCharacter::SetSpeed, GetWalkSpeed());
+	PlayerInputComponent->BindAction<FSpeedSetter>(TEXT("Walk"), IE_Released, this, &APlayerCharacter::SetSpeed, GetRunSpeed());
 
 	PlayerInputComponent->BindAction<FIndexer>(TEXT("Weapon1"), IE_Pressed, this, &APlayerCharacter::SwapWeapon, static_cast<uint8>(0));
 	PlayerInputComponent->BindAction<FIndexer>(TEXT("Weapon2"), IE_Pressed, this, &APlayerCharacter::SwapWeapon, static_cast<uint8>(1));
