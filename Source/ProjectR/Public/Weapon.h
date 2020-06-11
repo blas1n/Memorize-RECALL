@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "Engine/AssetManager.h"
 #include "Weapon.generated.h"
 
 DECLARE_DYNAMIC_DELEGATE(FOnAsyncLoadEndedSingle);
@@ -69,16 +70,40 @@ private:
 	void EquipOnce(UStaticMeshComponent* Weapon, const FWeaponInfo& Info);
 	void UnequipOnce(UStaticMeshComponent* Weapon);
 
-	void LoadWeapon(FWeaponInfo& WeaponInfo, const TAssetPtr<UStaticMesh>& Mesh, const FTransform& Transform);
-	void OnMeshLoaded(FWeaponInfo& WeaponInfo, const TAssetPtr<UStaticMesh>& MeshPtr);
+	template <class T>
+	void AsyncLoad(T* Ptr, const TAssetPtr<T>& SoftPtr)
+	{
+		if (SoftPtr.IsNull())
+		{
+			CheckAndCallAsyncLoadDelegate();
+			return;
+		}
 
-	void OnEquipMontageLoaded(const TAssetPtr<UAnimMontage>& MontagePtr);
+		if (SoftPtr.IsPending())
+		{
+			UAssetManager::GetStreamableManager().RequestAsyncLoad(
+				SoftPtr.ToSoftObjectPath(),
+				FStreamableDelegate::CreateLambda([this, &Ptr = Ptr, &SoftPtr = SoftPtr]() mutable
+					{ OnAsyncLoaded(Ptr, SoftPtr); })
+			);
+		}
+		else OnAsyncLoaded(Ptr, SoftPtr);
+	}
+
+	template <class T>
+	void OnAsyncLoaded(T* Ptr, const TAssetPtr<T>& SoftPtr)
+	{
+		Ptr = SoftPtr.Get();
+		CheckAndCallAsyncLoadDelegate();
+	}
 
 	UFUNCTION()
 	void OnLeftWeaponOverlapped(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
 	UFUNCTION()
 	void OnRightWeaponOverlapped(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+
+	FORCEINLINE void CheckAndCallAsyncLoadDelegate() { if (--AsyncLoadCount == 0) OnAsyncLoadEnded.Broadcast(); }
 
 public:
 	UPROPERTY(BlueprintAssignable)
@@ -133,7 +158,16 @@ private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Skill, meta = (AllowPrivateAccess = true))
 	TArray<class ASkill*> Skills;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Weapon, meta = (AllowPrivateAccess = true))
+	UPROPERTY(VisibleAnywhere, Category = Animation, meta = (AllowPrivateAccess = true))
+	class UBlendSpaceBase* LocomotionSpace;
+
+	UPROPERTY(VisibleAnywhere, Category = Animation, meta = (AllowPrivateAccess = true))
+	UAnimMontage* JumpMontage;
+
+	UPROPERTY(VisibleAnywhere, Category = Animation, meta = (AllowPrivateAccess = true))
+	UAnimMontage* DodgeMontage;
+
+	UPROPERTY(VisibleAnywhere, Category = Animation, meta = (AllowPrivateAccess = true))
 	UAnimMontage* EquipMontage;
 
 	FOnAsyncLoadEnded OnAsyncLoadEnded;

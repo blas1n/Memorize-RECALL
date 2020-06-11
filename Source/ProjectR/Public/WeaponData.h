@@ -7,6 +7,24 @@
 #include "WeaponData.generated.h"
 
 USTRUCT(Atomic, BlueprintType)
+struct FWeaponAnimData
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TAssetPtr<class UBlendSpaceBase> LocomotionSpace;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TAssetPtr<class UAnimMontage> JumpMontage;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TAssetPtr<class UAnimMontage> DodgeMontage;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TAssetPtr<class UAnimMontage> EquipMontage;
+};
+
+USTRUCT(Atomic, BlueprintType)
 struct FWeaponData : public FTableRowBase
 {
 	GENERATED_BODY()
@@ -33,5 +51,5 @@ struct FWeaponData : public FTableRowBase
 	TArray<TSubclassOf<class ASkill>> Skills;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	TAssetPtr<class UAnimMontage> EquipMontage;
+	FWeaponAnimData AnimData;
 };
