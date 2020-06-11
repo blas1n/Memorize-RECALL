@@ -148,11 +148,11 @@ void AWeapon::UnequipOnce(UStaticMeshComponent* Weapon)
 void AWeapon::OnLeftWeaponOverlapped(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, 
 	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	OnLeftWeaponHitted.Broadcast(SweepResult);
+	OnLeftWeaponHitted.Broadcast(OtherActor);
 }
 
 void AWeapon::OnRightWeaponOverlapped(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
 	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	OnRightWeaponHitted.Broadcast(SweepResult);
+	OnRightWeaponHitted.Broadcast(OtherActor);
 }
