@@ -18,7 +18,7 @@ AWeapon::AWeapon()
 	SetCanBeDamaged(false);
 
 	EquipMontage = nullptr;
-	AsyncLoadCount = 6;
+	AsyncLoadCount = 8;
 }
 
 void AWeapon::Initialize(const FWeaponData* WeaponData)
