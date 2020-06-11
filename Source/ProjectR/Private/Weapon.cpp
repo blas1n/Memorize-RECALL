@@ -32,7 +32,9 @@ void AWeapon::Initialize(const FWeaponData* WeaponData)
 	AsyncLoad(LeftWeaponInfo.Mesh, WeaponData->LeftMesh);
 	AsyncLoad(RightWeaponInfo.Mesh, WeaponData->RightMesh);
 	AsyncLoad(LocomotionSpace, WeaponData->AnimData.LocomotionSpace);
-	AsyncLoad(JumpMontage, WeaponData->AnimData.JumpMontage);
+	AsyncLoad(JumpStart, WeaponData->AnimData.JumpStart);
+	AsyncLoad(JumpLoop, WeaponData->AnimData.JumpLoop);
+	AsyncLoad(JumpEnd, WeaponData->AnimData.JumpEnd);
 	AsyncLoad(DodgeMontage, WeaponData->AnimData.DodgeMontage);
 	AsyncLoad(EquipMontage, WeaponData->AnimData.EquipMontage);
 
