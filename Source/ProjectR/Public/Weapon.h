@@ -64,6 +64,9 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void RegisterOnAsyncLoadEnded(const FOnAsyncLoadEndedSingle& Callback);
 
+	FORCEINLINE class UBlendSpaceBase* GetLocomotionSpace() const noexcept { return LocomotionSpace; }
+	FORCEINLINE UAnimMontage* GetJumpMontage() const noexcept { return JumpMontage; }
+
 private:
 	void BeginPlay() override;
 
@@ -159,7 +162,7 @@ private:
 	TArray<class ASkill*> Skills;
 
 	UPROPERTY(VisibleAnywhere, Category = Animation, meta = (AllowPrivateAccess = true))
-	class UBlendSpaceBase* LocomotionSpace;
+	UBlendSpaceBase* LocomotionSpace;
 
 	UPROPERTY(VisibleAnywhere, Category = Animation, meta = (AllowPrivateAccess = true))
 	UAnimMontage* JumpMontage;
