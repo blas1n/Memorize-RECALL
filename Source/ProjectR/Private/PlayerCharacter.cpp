@@ -93,6 +93,21 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 	PlayerInputComponent->BindAction<FIndexer>(TEXT("Parrying"), IE_Pressed, this, &APlayerCharacter::UseSkill, static_cast<uint8>(4));
 }
 
+void APlayerCharacter::CreateWeapons(TArray<FName>&& WeaponNames)
+{
+	FName UnequipName = TEXT("Unequip");
+	Unequip = GenerateWeapon(UnequipName);
+	
+	const int32 WeaponNum = Weapons.Num();
+	
+	TArray<FName> UnequipArray;
+	UnequipArray.Init(UnequipName, WeaponNum - WeaponNames.Num());
+	WeaponNames.Append(MoveTemp(UnequipArray));
+
+	for (uint8 Idx = 0; Idx < WeaponNum; ++Idx)
+		EquipWeapon(MoveTemp(WeaponNames[Idx]), Idx);
+}
+
 void APlayerCharacter::MoveForward(float Value)
 {
 	if (!CanMoving() || !Controller || Value == 0.0f) return;

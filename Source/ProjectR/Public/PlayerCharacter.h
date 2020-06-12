@@ -33,6 +33,7 @@ public:
 private:
 	void BeginPlay() override;
 	void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+	void CreateWeapons(TArray<FName>&& WeaponNames) override;
 
 	UFUNCTION()
 	void HealEnergyByAttack(AProjectRCharacter* Target, int32 Damage);

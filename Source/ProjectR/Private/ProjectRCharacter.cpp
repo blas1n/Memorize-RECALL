@@ -141,6 +141,8 @@ void AProjectRCharacter::BeginPlay()
 		BuffStorages.Add(Buff->GetClass(), Cast<ABuff>(Buff)->CreateStorage());
 
 	OnAttack.AddDynamic(this, &AProjectRCharacter::OnAttacked);
+
+	CreateWeapons(GetWeaponNames());
 }
 
 float AProjectRCharacter::TakeDamage(float DamageAmount, const FDamageEvent& DamageEvent,
@@ -189,6 +191,11 @@ void AProjectRCharacter::SetWeapon(AWeapon* InWeapon)
 void AProjectRCharacter::UseSkill(uint8 Index)
 {
 	if (!IsCasting() && Weapon) Weapon->UseSkill(Index);
+}
+
+void AProjectRCharacter::CreateWeapons(TArray<FName>&& WeaponNames)
+{
+	SetWeapon(GenerateWeapon(WeaponNames.Pop()));
 }
 
 void AProjectRCharacter::Death()
