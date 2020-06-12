@@ -101,18 +101,6 @@ int32 AProjectRCharacter::SetMaxHealth(int32 NewMaxHealth)
 	return Diff;
 }
 
-void AProjectRCharacter::Jumping()
-{
-	if (CanMoving())
-		Jump();
-}
-
-void AProjectRCharacter::ToggleCrouch()
-{
-	if (CanMoving())
-		CanCrouch() ? Crouch() : UnCrouch();
-}
-
 float AProjectRCharacter::GetSpeed() const noexcept
 {
 	return GetCharacterMovement()->MaxWalkSpeed;
@@ -123,12 +111,28 @@ void AProjectRCharacter::SetSpeed(float Speed) noexcept
 	GetCharacterMovement()->MaxWalkSpeed = Speed;
 }
 
+void AProjectRCharacter::RegisterOnAnimInstanceSpawned(const FOnAnimInstanceSpawnedSingle& Callback)
+{
+	check(Callback.IsBound());
+
+	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+
+	if (AnimInstance) Callback.Execute(AnimInstance);
+	else OnAnimInstanceSpawned.Add(Callback);
+}
+
+void AProjectRCharacter::BroadcastOnAnimInstanceSpawned(UAnimInstance* AnimInstance)
+{
+	if (GetMesh()->GetAnimInstance() == AnimInstance)
+		OnAnimInstanceSpawned.Broadcast(AnimInstance);
+}
+
 void AProjectRCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 
 	Health = MaxHealth;
-	SetSpeed(WalkSpeed);
+	SetSpeed(RunSpeed);
 
 	TArray<AActor*> Buffs;
 	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ABuff::StaticClass(), Buffs);
@@ -137,6 +141,8 @@ void AProjectRCharacter::BeginPlay()
 		BuffStorages.Add(Buff->GetClass(), Cast<ABuff>(Buff)->CreateStorage());
 
 	OnAttack.AddDynamic(this, &AProjectRCharacter::OnAttacked);
+
+	CreateWeapons(GetWeaponNames());
 }
 
 float AProjectRCharacter::TakeDamage(float DamageAmount, const FDamageEvent& DamageEvent,
@@ -187,6 +193,11 @@ void AProjectRCharacter::UseSkill(uint8 Index)
 	if (!IsCasting() && Weapon) Weapon->UseSkill(Index);
 }
 
+void AProjectRCharacter::CreateWeapons(TArray<FName>&& WeaponNames)
+{
+	SetWeapon(GenerateWeapon(WeaponNames.Pop()));
+}
+
 void AProjectRCharacter::Death()
 {
 	OnDeath.Broadcast(LastHitBy);
@@ -215,4 +226,5 @@ void AProjectRCharacter::OnAttacked(AProjectRCharacter* Target, int32 Damage)
 void AProjectRCharacter::Equip()
 {
 	Weapon->Equip();
+	OnEquipped.Broadcast(Weapon);
 }

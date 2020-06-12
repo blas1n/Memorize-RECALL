@@ -6,9 +6,11 @@
 #include "GameFramework/Character.h"
 #include "ProjectRCharacter.generated.h"
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnSetCombat, bool, IsCombat);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnDeath, AController*, Instigator);
+DECLARE_DYNAMIC_DELEGATE_OneParam(FOnAnimInstanceSpawnedSingle, UAnimInstance*, AnimInstance);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnAnimInstanceSpawned, UAnimInstance*, AnimInstance);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnDamaged, AController*, Instigator);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnDeath, AController*, Instigator);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnEquipped, class AWeapon*, Weapon);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnAttack, AProjectRCharacter*, Target, int32, Damage);
 
 UCLASS(config=Game, Abstract, Blueprintable)
@@ -41,16 +43,15 @@ public:
 	int32 SetMaxHealth(int32 NewMaxHealth);
 
 	UFUNCTION(BlueprintCallable)
-	void Jumping();
-
-	UFUNCTION(BlueprintCallable)
-	void ToggleCrouch();
-
-	UFUNCTION(BlueprintCallable)
 	float GetSpeed() const noexcept;
 
 	UFUNCTION(BlueprintCallable)
 	void SetSpeed(float Speed) noexcept;
+
+	UFUNCTION(BlueprintCallable)
+	void RegisterOnAnimInstanceSpawned(const FOnAnimInstanceSpawnedSingle& Callback);
+
+	void BroadcastOnAnimInstanceSpawned(UAnimInstance* AnimInstance);
 
 	FORCEINLINE class UStaticMeshComponent* GetLeftWeapon() const noexcept { return LeftWeapon; }
 	FORCEINLINE UStaticMeshComponent* GetRightWeapon() const noexcept { return RightWeapon; }
@@ -72,6 +73,7 @@ public:
 
 protected:
 	void BeginPlay() override;
+
 	float TakeDamage(float DamageAmount, const FDamageEvent& DamageEvent,
 		AController* EventInstigator, AActor* DamageCauser) override;
 
@@ -80,6 +82,9 @@ protected:
 
 	UFUNCTION(BlueprintCallable)
 	void SetWeapon(AWeapon* InWeapon);
+
+	UFUNCTION(BlueprintImplementableEvent)
+	TArray<FName> GetWeaponNames();
 
 	UFUNCTION(BlueprintImplementableEvent)
 	void OnStunApply();
@@ -93,6 +98,8 @@ protected:
 	void UseSkill(uint8 index);
 
 private:
+	virtual void CreateWeapons(TArray<FName>&& WeaponNames);
+
 	void Death();
 
 	UFUNCTION()
@@ -103,13 +110,13 @@ private:
 
 public:
 	UPROPERTY(BlueprintAssignable)
-	FOnSetCombat OnSetCombat;
+	FOnDamaged OnDamaged;
 
 	UPROPERTY(BlueprintAssignable)
 	FOnDeath OnDeath;
 
 	UPROPERTY(BlueprintAssignable)
-	FOnDamaged OnDamaged;
+	FOnEquipped OnEquipped;
 
 	UPROPERTY(BlueprintAssignable)
 	FOnAttack OnAttack;
@@ -144,6 +151,8 @@ private:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Buff, meta = (AllowPrivateAccess = true))
 	TMap<TSubclassOf<class ABuff>, class UBuffStorage*> BuffStorages;
+
+	FOnAnimInstanceSpawned OnAnimInstanceSpawned;
 
 	UObject* Parrying;
 

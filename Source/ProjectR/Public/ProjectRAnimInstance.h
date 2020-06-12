@@ -15,7 +15,14 @@ public:
 	UProjectRAnimInstance();
 
 private:
+	void NativeInitializeAnimation() override;
 	void NativeUpdateAnimation(float DeltaSeconds) override;
+
+	UFUNCTION()
+	void OnEquipped(class AWeapon* Weapon);
+
+	UFUNCTION()
+	void OnWeaponAsyncLoaded();
 
 	UFUNCTION()
 	void AnimNotify_BeginSkill();
@@ -35,12 +42,24 @@ private:
 	UFUNCTION()
 	void AnimNotify_Execute();
 
-	class AWeapon* GetWeapon() const;
+	AWeapon* GetWeapon() const;
 
 private:
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Animation, meta = (AllowPrivateAccess = true))
+	class UBlendSpaceBase* LocomotionSpace;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Animation, meta = (AllowPrivateAccess = true))
+	class UAnimSequenceBase* JumpStart;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Animation, meta = (AllowPrivateAccess = true))
+	UAnimSequenceBase* JumpLoop;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Animation, meta = (AllowPrivateAccess = true))
+	UAnimSequenceBase* JumpEnd;
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Pawn, meta = (AllowPrivateAccess = true))
 	float Speed;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Pawn, meta = (AllowPrivateAccess = true))
-	bool IsInAir;
+	bool bIsInAir;
 };
