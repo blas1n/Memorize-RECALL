@@ -76,7 +76,7 @@ private:
 	void UnequipOnce(UStaticMeshComponent* Weapon);
 
 	template <class T>
-	void AsyncLoad(T* Ptr, const TAssetPtr<T>& SoftPtr)
+	void AsyncLoad(T*& Ptr, const TAssetPtr<T>& SoftPtr)
 	{
 		if (SoftPtr.IsNull())
 		{
@@ -96,7 +96,7 @@ private:
 	}
 
 	template <class T>
-	void OnAsyncLoaded(T* Ptr, const TAssetPtr<T>& SoftPtr)
+	void OnAsyncLoaded(T*& Ptr, const TAssetPtr<T>& SoftPtr)
 	{
 		Ptr = SoftPtr.Get();
 		CheckAndCallAsyncLoadDelegate();
