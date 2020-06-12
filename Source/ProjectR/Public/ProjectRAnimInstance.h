@@ -22,6 +22,9 @@ private:
 	void OnEquipped(class AWeapon* Weapon);
 
 	UFUNCTION()
+	void OnWeaponAsyncLoaded();
+
+	UFUNCTION()
 	void AnimNotify_BeginSkill();
 
 	UFUNCTION()
