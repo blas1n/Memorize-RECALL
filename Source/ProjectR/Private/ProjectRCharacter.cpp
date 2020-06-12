@@ -108,6 +108,7 @@ float AProjectRCharacter::GetSpeed() const noexcept
 
 void AProjectRCharacter::SetSpeed(float Speed) noexcept
 {
+	if (IsCasting()) return;
 	GetCharacterMovement()->MaxWalkSpeed = Speed;
 }
 
