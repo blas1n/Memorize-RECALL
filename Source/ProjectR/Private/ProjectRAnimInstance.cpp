@@ -51,8 +51,7 @@ void UProjectRAnimInstance::OnBeginMontage(UAnimMontage* Montage)
 	{
 		if (const UAnimCastData* CastData = Cast<UAnimCastData>(Data))
 		{
-			User->SetIsCasting(CastData->IsCasting());
-			User->SetCanMoving(CastData->CanMoving());
+			User->SetCastData(CastData->IsCasting(), CastData->CanMoving());
 			break;
 		}
 	}
@@ -60,9 +59,7 @@ void UProjectRAnimInstance::OnBeginMontage(UAnimMontage* Montage)
 
 void UProjectRAnimInstance::OnEndMontage(UAnimMontage* Montage, bool bInterrupted)
 {
-	AProjectRCharacter* User = Cast<AProjectRCharacter>(TryGetPawnOwner());
-	User->SetIsCasting(false);
-	User->SetCanMoving(true);
+	Cast<AProjectRCharacter>(TryGetPawnOwner())->SetCastData();
 }
 
 void UProjectRAnimInstance::OnWeaponAsyncLoaded()
