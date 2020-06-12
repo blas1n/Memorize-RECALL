@@ -55,6 +55,9 @@ public:
 	UFUNCTION(BlueprintCallable)
 	bool CanUseSkill(uint8 Index);
 
+	UFUNCTION(BlueprintCallable)
+	void Dodge();
+
 	UFUNCTION()
 	void BeginSkill(class UAnimMontage* Montage);
 

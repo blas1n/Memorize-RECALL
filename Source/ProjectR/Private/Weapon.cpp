@@ -6,7 +6,6 @@
 #include "Animation/BlendSpaceBase.h"
 #include "Components/StaticMeshComponent.h"
 #include "Engine/World.h"
-#include "AnimCastData.h"
 #include "ProjectRCharacter.h"
 #include "Skill.h"
 #include "WeaponData.h"
@@ -102,32 +101,19 @@ bool AWeapon::CanUseSkill(uint8 Index)
 	return false;
 }
 
+void AWeapon::Dodge()
+{
+	ACharacter* Character = Cast<ACharacter>(GetInstigator());
+	Character->PlayAnimMontage(DodgeMontage);
+}
+
 void AWeapon::BeginSkill(UAnimMontage* Montage)
 {
-	AProjectRCharacter* User = Cast<AProjectRCharacter>(GetInstigator());
-	if (User->GetWeapon() != this) return;
-
-	for (const UAnimMetaData* Data : Montage->GetMetaData())
-	{
-		if (const UAnimCastData* CastData = Cast<UAnimCastData>(Data))
-		{
-			User->SetIsCasting(CastData->IsCasting());
-			User->SetCanMoving(CastData->CanMoving());
-			break;
-		}
-	}
-
 	OnBeginSkill.Broadcast();
 }
 
 void AWeapon::EndSkill(UAnimMontage* Montage, bool bInterrupted)
 {
-	AProjectRCharacter* User = Cast<AProjectRCharacter>(GetInstigator());
-	if (User->GetWeapon() != this) return;
-
-	User->SetIsCasting(false);
-	User->SetCanMoving(true);
-
 	OnEndSkill.Broadcast();
 }
 

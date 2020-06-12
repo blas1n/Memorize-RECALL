@@ -22,6 +22,12 @@ private:
 	void OnEquipped(class AWeapon* Weapon);
 
 	UFUNCTION()
+	void OnBeginMontage(UAnimMontage* Montage);
+
+	UFUNCTION()
+	void OnEndMontage(UAnimMontage* Montage, bool bInterrupted);
+
+	UFUNCTION()
 	void OnWeaponAsyncLoaded();
 
 	UFUNCTION()
