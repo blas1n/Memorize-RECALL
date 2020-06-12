@@ -3,6 +3,7 @@
 #include "PlayerCharacter.h"
 #include "Camera/CameraComponent.h"
 #include "Components/InputComponent.h"
+#include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/Controller.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "TimerManager.h"
@@ -24,23 +25,25 @@ APlayerCharacter::APlayerCharacter()
 	FollowCamera->bUsePawnControlRotation = false;
 
 	Weapons.SetNum(3);
+	Unequip = nullptr;
 	Energy = 0;
 	MaxEnergy = 0;
 	EnergyHeal = 0.0f;
-	CurWeaponIndex = 3;
+	JumpDelay = 0.0f;
+	CurWeaponIndex = 0;
+	bIsReadyDodge = false;
 }
 
 void APlayerCharacter::EquipWeapon(FName Name, uint8 Index)
 {
-	Weapons[Index] = GenerateWeapon(Name);
+	AWeapon* BeforeWeapon = Weapons[Index];
+	Weapons[Index] = Name != TEXT("Unequip") ? GenerateWeapon(Name) : Unequip;
 
-	bool bIsFirstWeapon = true;
+	if (Index == CurWeaponIndex)
+		SetWeapon(Weapons[Index]);
 
-	for (int I = 0; I < 3; ++I)
-		bIsFirstWeapon &= I == Index || Weapons[I] == nullptr;
-
-	if (bIsFirstWeapon)
-		SwapWeapon(Index);
+	if (BeforeWeapon && BeforeWeapon != Unequip)
+		BeforeWeapon->Destroy();
 }
 
 int32 APlayerCharacter::HealEnergy(int32 Value)
@@ -65,6 +68,17 @@ void APlayerCharacter::BeginPlay()
 	OnAttack.AddDynamic(this, &APlayerCharacter::HealEnergyByAttack);
 }
 
+void APlayerCharacter::EndPlay(EEndPlayReason::Type EndPlayReason)
+{
+	Super::EndPlay(EndPlayReason);
+
+	for (AWeapon* CurWeapon : Weapons)
+		if (CurWeapon != Unequip)
+			CurWeapon->Destroy();
+
+	Unequip->Destroy();
+}
+
 void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
@@ -77,13 +91,11 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 
 	PlayerInputComponent->BindAxis(TEXT("Swap"), this, &APlayerCharacter::SwapWeapon);
 
-	PlayerInputComponent->BindAction(TEXT("Jump"), IE_Pressed, this, &AProjectRCharacter::Jumping);
-	PlayerInputComponent->BindAction(TEXT("Jump"), IE_Released, this, &ACharacter::StopJumping);
+	PlayerInputComponent->BindAction(TEXT("Dodge"), IE_Pressed, this, &APlayerCharacter::PressDodge);
+	PlayerInputComponent->BindAction(TEXT("Dodge"), IE_Released, this, &APlayerCharacter::ReleaseDodge);
 
-	PlayerInputComponent->BindAction(TEXT("Crouch"), IE_Pressed, this, &AProjectRCharacter::ToggleCrouch);
-
-	PlayerInputComponent->BindAction<FSpeedSetter>(TEXT("Sprint"), IE_Pressed, this, &APlayerCharacter::SetSpeed, GetRunSpeed());
-	PlayerInputComponent->BindAction<FSpeedSetter>(TEXT("Sprint"), IE_Released, this, &APlayerCharacter::SetSpeed, GetWalkSpeed());
+	PlayerInputComponent->BindAction<FSpeedSetter>(TEXT("Walk"), IE_Pressed, this, &APlayerCharacter::SetSpeed, GetWalkSpeed());
+	PlayerInputComponent->BindAction<FSpeedSetter>(TEXT("Walk"), IE_Released, this, &APlayerCharacter::SetSpeed, GetRunSpeed());
 
 	PlayerInputComponent->BindAction<FIndexer>(TEXT("Weapon1"), IE_Pressed, this, &APlayerCharacter::SwapWeapon, static_cast<uint8>(0));
 	PlayerInputComponent->BindAction<FIndexer>(TEXT("Weapon2"), IE_Pressed, this, &APlayerCharacter::SwapWeapon, static_cast<uint8>(1));
@@ -94,6 +106,21 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 	PlayerInputComponent->BindAction<FIndexer>(TEXT("Skill2"), IE_Pressed, this, &APlayerCharacter::UseSkill, static_cast<uint8>(2));
 	PlayerInputComponent->BindAction<FIndexer>(TEXT("Skill3"), IE_Pressed, this, &APlayerCharacter::UseSkill, static_cast<uint8>(3));
 	PlayerInputComponent->BindAction<FIndexer>(TEXT("Parrying"), IE_Pressed, this, &APlayerCharacter::UseSkill, static_cast<uint8>(4));
+}
+
+void APlayerCharacter::CreateWeapons(TArray<FName>&& WeaponNames)
+{
+	FName UnequipName = TEXT("Unequip");
+	Unequip = GenerateWeapon(UnequipName);
+	
+	const int32 WeaponNum = Weapons.Num();
+	
+	TArray<FName> UnequipArray;
+	UnequipArray.Init(UnequipName, WeaponNum - WeaponNames.Num());
+	WeaponNames.Append(MoveTemp(UnequipArray));
+
+	for (uint8 Idx = 0; Idx < WeaponNum; ++Idx)
+		EquipWeapon(MoveTemp(WeaponNames[Idx]), Idx);
 }
 
 void APlayerCharacter::MoveForward(float Value)
@@ -114,6 +141,34 @@ void APlayerCharacter::MoveRight(float Value)
 	const FRotator YawRotation(0, Rotation.Yaw, 0);
 	const FVector Direction = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
 	AddMovementInput(Direction, Value);
+}
+
+void APlayerCharacter::PressDodge()
+{
+	if (IsCasting()) return;
+	SetIsCasting(true);
+
+	bIsReadyDodge = true;
+
+	GetWorldTimerManager().SetTimer(DodgeTimer, [this]
+		{
+			Jump();
+			bIsReadyDodge = false;
+			SetIsCasting(false);
+		}, JumpDelay, false);
+}
+
+void APlayerCharacter::ReleaseDodge()
+{
+	if (bIsReadyDodge)
+	{
+		GetWorldTimerManager().ClearTimer(DodgeTimer);
+		PlayAnimMontage(RollAnimMontage);
+		bIsReadyDodge = false;
+		SetIsCasting(false);
+	}
+	else if (GetCharacterMovement()->IsFalling())
+		StopJumping();
 }
 
 void APlayerCharacter::SwapWeapon(uint8 Index)

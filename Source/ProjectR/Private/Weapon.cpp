@@ -2,8 +2,9 @@
 
 #include "Weapon.h"
 #include "Animation/AnimInstance.h"
+#include "Animation/AnimMontage.h"
+#include "Animation/BlendSpaceBase.h"
 #include "Components/StaticMeshComponent.h"
-#include "Engine/AssetManager.h"
 #include "Engine/World.h"
 #include "AnimCastData.h"
 #include "ProjectRCharacter.h"
@@ -17,7 +18,7 @@ AWeapon::AWeapon()
 	SetCanBeDamaged(false);
 
 	EquipMontage = nullptr;
-	AsyncLoadCount = 3;
+	AsyncLoadCount = 8;
 }
 
 void AWeapon::Initialize(const FWeaponData* WeaponData)
@@ -25,8 +26,17 @@ void AWeapon::Initialize(const FWeaponData* WeaponData)
 	Key = WeaponData->Key;
 	Name = WeaponData->Name;
 
-	LoadWeapon(LeftWeaponInfo, WeaponData->LeftMesh, WeaponData->LeftTransform);
-	LoadWeapon(RightWeaponInfo, WeaponData->RightMesh, WeaponData->RightTransform);
+	LeftWeaponInfo.Transform = WeaponData->LeftTransform;
+	RightWeaponInfo.Transform = WeaponData->RightTransform;
+
+	AsyncLoad(LeftWeaponInfo.Mesh, WeaponData->LeftMesh);
+	AsyncLoad(RightWeaponInfo.Mesh, WeaponData->RightMesh);
+	AsyncLoad(LocomotionSpace, WeaponData->AnimData.LocomotionSpace);
+	AsyncLoad(JumpStart, WeaponData->AnimData.JumpStart);
+	AsyncLoad(JumpLoop, WeaponData->AnimData.JumpLoop);
+	AsyncLoad(JumpEnd, WeaponData->AnimData.JumpEnd);
+	AsyncLoad(DodgeMontage, WeaponData->AnimData.DodgeMontage);
+	AsyncLoad(EquipMontage, WeaponData->AnimData.EquipMontage);
 
 	FActorSpawnParameters SpawnParam;
 	SpawnParam.Owner = GetOwner();
@@ -41,24 +51,6 @@ void AWeapon::Initialize(const FWeaponData* WeaponData)
 		Skills[Index] = GetWorld()->SpawnActor<ASkill>(SkillClass, SpawnParam);
 		Skills[Index]->Initialize(this);
 	}
-
-	if (WeaponData->EquipMontage.IsNull())
-	{
-		if (--AsyncLoadCount == 0) OnAsyncLoadEnded.Broadcast();
-		return;
-	}
-
-	const TAssetPtr<UAnimMontage>& EquipMontagePtr = WeaponData->EquipMontage;
-
-	if (EquipMontagePtr.IsPending())
-	{
-		UAssetManager::GetStreamableManager().RequestAsyncLoad(
-			EquipMontagePtr.ToSoftObjectPath(),
-			FStreamableDelegate::CreateLambda([this, EquipMontagePtr]() mutable
-				{ OnEquipMontageLoaded(EquipMontagePtr); })
-		);
-	}
-	else OnEquipMontageLoaded(EquipMontagePtr);
 }
 
 void AWeapon::Equip()
@@ -88,12 +80,42 @@ void AWeapon::Unequip()
 
 bool AWeapon::UseSkill(uint8 Index)
 {
-	return Skills[Index]->UseSkill();
+	if (Skills.Num() > Index)
+		return Skills[Index]->UseSkill();
+	return false;
 }
 
 bool AWeapon::CanUseSkill(uint8 Index)
 {
-	return Skills[Index]->CanUseSkill();
+	if (Skills.Num() > Index)
+		return Skills[Index]->CanUseSkill();
+	return false;
+}
+
+void AWeapon::BeginSkill(UAnimMontage* Montage)
+{
+	AProjectRCharacter* User = Cast<AProjectRCharacter>(GetInstigator());
+
+	for (const UAnimMetaData* Data : Montage->GetMetaData())
+	{
+		if (const UAnimCastData* CastData = Cast<UAnimCastData>(Data))
+		{
+			User->SetIsCasting(CastData->IsCasting());
+			User->SetCanMoving(CastData->CanMoving());
+			break;
+		}
+	}
+
+	OnBeginSkill.Broadcast();
+}
+
+void AWeapon::EndSkill(UAnimMontage* Montage, bool bInterrupted)
+{
+	AProjectRCharacter* User = Cast<AProjectRCharacter>(GetInstigator());
+	User->SetIsCasting(false);
+	User->SetCanMoving(true);
+
+	OnEndSkill.Broadcast();
 }
 
 void AWeapon::RegisterOnAsyncLoadEnded(const FOnAsyncLoadEndedSingle& Callback)
@@ -111,8 +133,9 @@ void AWeapon::BeginPlay()
 	LeftWeapon = Character->GetLeftWeapon();
 	RightWeapon = Character->GetRightWeapon();
 
-	Character->GetMesh()->GetAnimInstance()->OnMontageStarted.AddDynamic(this, &AWeapon::BeginSkill);
-	Character->GetMesh()->GetAnimInstance()->OnMontageEnded.AddDynamic(this, &AWeapon::EndSkill);
+	FOnAnimInstanceSpawnedSingle Callback;
+	Callback.BindDynamic(this, &AWeapon::BindAnimInstance);
+	Character->RegisterOnAnimInstanceSpawned(Callback);
 }
 
 void AWeapon::EquipOnce(UStaticMeshComponent* Weapon, const FWeaponInfo& Info)
@@ -129,63 +152,10 @@ void AWeapon::UnequipOnce(UStaticMeshComponent* Weapon)
 	Weapon->SetRelativeTransform(FTransform{});
 }
 
-void AWeapon::LoadWeapon(FWeaponInfo& WeaponInfo, const TAssetPtr<UStaticMesh>& MeshPtr, const FTransform& Transform)
+void AWeapon::BindAnimInstance(UAnimInstance* AnimInstance)
 {
-	if (MeshPtr.IsNull())
-	{
-		if (--AsyncLoadCount == 0) OnAsyncLoadEnded.Broadcast();
-		return;
-	}
-
-	WeaponInfo.Transform = Transform;
-
-	if (MeshPtr.IsPending())
-	{
-		UAssetManager::GetStreamableManager().RequestAsyncLoad(
-			MeshPtr.ToSoftObjectPath(),
-			FStreamableDelegate::CreateLambda([this, &WeaponInfo = WeaponInfo, &MeshPtr = MeshPtr]() mutable
-				{ OnMeshLoaded(WeaponInfo, MeshPtr); })
-		);
-	}
-	else OnMeshLoaded(WeaponInfo, MeshPtr);
-}
-
-void AWeapon::OnMeshLoaded(FWeaponInfo& WeaponInfo, const TAssetPtr<UStaticMesh>& MeshPtr)
-{
-	WeaponInfo.Mesh = MeshPtr.Get();
-	if (--AsyncLoadCount == 0) OnAsyncLoadEnded.Broadcast();
-}
-
-void AWeapon::OnEquipMontageLoaded(const TAssetPtr<UAnimMontage>& MontagePtr)
-{
-	EquipMontage = MontagePtr.Get();
-	if (--AsyncLoadCount == 0) OnAsyncLoadEnded.Broadcast();
-}
-
-void AWeapon::BeginSkill(UAnimMontage* Montage)
-{
-	AProjectRCharacter* User = Cast<AProjectRCharacter>(GetInstigator());
-
-	for (const UAnimMetaData* Data : Montage->GetMetaData())
-	{
-		if (const UAnimCastData* CastData = Cast<UAnimCastData>(Data))
-		{
-			 User->SetIsCasting(CastData->IsCasting());
-			 User->SetCanMoving(CastData->CanMoving());
-			 break;
-		}
-	}
-
-	OnBeginSkill.Broadcast();
-}
-
-void AWeapon::EndSkill(UAnimMontage* Montage, bool bInterrupted)
-{
-	AProjectRCharacter* User = Cast<AProjectRCharacter>(GetInstigator());
-	User->SetIsCasting(false);
-	User->SetCanMoving(true);
-
-	OnEndSkill.Broadcast();
+	AnimInstance->OnMontageStarted.AddDynamic(this, &AWeapon::BeginSkill);
+	AnimInstance->OnMontageEnded.AddDynamic(this, &AWeapon::EndSkill);
 }
 
 void AWeapon::OnLeftWeaponOverlapped(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, 

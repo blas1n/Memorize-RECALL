@@ -6,7 +6,7 @@
 #include "ProjectRCharacter.h"
 #include "PlayerCharacter.generated.h"
 
-UCLASS(BlueprintType)
+UCLASS(Abstract, Blueprintable)
 class PROJECTR_API APlayerCharacter final : public AProjectRCharacter
 {
 	GENERATED_BODY()
@@ -32,7 +32,9 @@ public:
 
 private:
 	void BeginPlay() override;
+	void EndPlay(EEndPlayReason::Type EndPlayReason) override;
 	void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+	void CreateWeapons(TArray<FName>&& WeaponNames) override;
 
 	UFUNCTION()
 	void HealEnergyByAttack(AProjectRCharacter* Target, int32 Damage);
@@ -40,8 +42,8 @@ private:
 	void MoveForward(float Value);
 	void MoveRight(float Value);
 
-	void Jumping();
-	void ToggleCrouch();
+	void PressDodge();
+	void ReleaseDodge();
 
 	void SwapWeapon(uint8 Index);
 	void SwapWeapon(float Value);
@@ -56,6 +58,12 @@ private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, EditFixedSize, Category = Weapon, meta = (AllowPrivateAccess = true))
 	TArray<class AWeapon*> Weapons;
 
+	UPROPERTY()
+	AWeapon* Unequip;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Animation, meta = (AllowPrivateAccess = true))
+	UAnimMontage* RollAnimMontage;
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Transient, Category = Stat, meta = (AllowPrivateAccess = true))
 	int32 Energy;
 
@@ -65,5 +73,10 @@ private:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Transient, Category = Stat, meta = (AllowPrivateAccess = true))
 	float EnergyHeal;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Transient, Category = Stat, meta = (AllowPrivateAccess = true))
+	float JumpDelay;
+
+	FTimerHandle DodgeTimer;
 	uint8 CurWeaponIndex;
+	bool bIsReadyDodge;
 };
