@@ -145,7 +145,7 @@ void APlayerCharacter::MoveRight(float Value)
 
 void APlayerCharacter::PressDodge()
 {
-	if (IsCasting()) return;
+	if (IsCasting() || GetCharacterMovement()->IsFalling()) return;
 	SetCastData(true, true);
 	bIsReadyDodge = true;
 
