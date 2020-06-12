@@ -56,7 +56,7 @@ public:
 	bool CanUseSkill(uint8 Index);
 
 	UFUNCTION()
-	void BeginSkill(UAnimMontage* Montage);
+	void BeginSkill(class UAnimMontage* Montage);
 
 	UFUNCTION()
 	void EndSkill(UAnimMontage* Montage, bool bInterrupted);
