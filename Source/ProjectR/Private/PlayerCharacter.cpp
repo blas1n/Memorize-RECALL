@@ -163,7 +163,7 @@ void APlayerCharacter::ReleaseDodge()
 	if (bIsReadyDodge)
 	{
 		GetWorldTimerManager().ClearTimer(DodgeTimer);
-		PlayAnimMontage(RollAnimMontage);
+		GetWeapon()->Dodge();
 		bIsReadyDodge = false;
 		SetIsCasting(false);
 	}
