@@ -95,6 +95,7 @@ bool AWeapon::CanUseSkill(uint8 Index)
 void AWeapon::BeginSkill(UAnimMontage* Montage)
 {
 	AProjectRCharacter* User = Cast<AProjectRCharacter>(GetInstigator());
+	if (User->GetWeapon() != this) return;
 
 	for (const UAnimMetaData* Data : Montage->GetMetaData())
 	{
@@ -112,6 +113,8 @@ void AWeapon::BeginSkill(UAnimMontage* Montage)
 void AWeapon::EndSkill(UAnimMontage* Montage, bool bInterrupted)
 {
 	AProjectRCharacter* User = Cast<AProjectRCharacter>(GetInstigator());
+	if (User->GetWeapon() != this) return;
+
 	User->SetIsCasting(false);
 	User->SetCanMoving(true);
 
