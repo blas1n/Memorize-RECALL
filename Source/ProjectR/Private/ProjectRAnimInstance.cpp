@@ -11,14 +11,22 @@ UProjectRAnimInstance::UProjectRAnimInstance()
 	bIsInAir = false;
 }
 
-void UProjectRAnimInstance::NativeBeginPlay()
+void UProjectRAnimInstance::NativeInitializeAnimation()
 {
+	Super::NativeInitializeAnimation();
+
 	AProjectRCharacter* Owner = Cast<AProjectRCharacter>(TryGetPawnOwner());
+	if (!Owner) return;
+
 	Owner->OnEquipped.AddDynamic(this, &UProjectRAnimInstance::OnEquipped);
 	Owner->BroadcastOnAnimInstanceSpawned(this);
 
 	AWeapon* CurWeapon = GetWeapon();
-	if (CurWeapon) OnEquipped(CurWeapon);
+	if (!CurWeapon) return;
+	
+	FOnAsyncLoadEndedSingle Callback;
+	Callback.BindDynamic(this, &UProjectRAnimInstance::OnWeaponAsyncLoaded);
+	CurWeapon->RegisterOnAsyncLoadEnded(Callback);
 }
 
 void UProjectRAnimInstance::OnEquipped(AWeapon* Weapon)
