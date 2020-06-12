@@ -6,7 +6,7 @@
 #include "ProjectRCharacter.h"
 #include "PlayerCharacter.generated.h"
 
-UCLASS(BlueprintType)
+UCLASS(Abstract, Blueprintable)
 class PROJECTR_API APlayerCharacter final : public AProjectRCharacter
 {
 	GENERATED_BODY()
