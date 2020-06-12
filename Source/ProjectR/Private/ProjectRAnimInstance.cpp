@@ -16,15 +16,12 @@ UProjectRAnimInstance::UProjectRAnimInstance()
 	bIsInAir = false;
 }
 
-void UProjectRAnimInstance::NativeInitializeAnimation()
+void UProjectRAnimInstance::NativeBeginPlay()
 {
-	Super::NativeInitializeAnimation();
+	Super::NativeBeginPlay();
 
 	AProjectRCharacter* Owner = Cast<AProjectRCharacter>(TryGetPawnOwner());
-	if (!Owner) return;
-
 	Owner->OnEquipped.AddDynamic(this, &UProjectRAnimInstance::OnEquipped);
-	Owner->BroadcastOnAnimInstanceSpawned(this);
 
 	AWeapon* CurWeapon = GetWeapon();
 	if (!CurWeapon) return;
