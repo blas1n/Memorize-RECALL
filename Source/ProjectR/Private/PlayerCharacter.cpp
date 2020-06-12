@@ -25,6 +25,7 @@ APlayerCharacter::APlayerCharacter()
 	FollowCamera->bUsePawnControlRotation = false;
 
 	Weapons.SetNum(3);
+	Unequip = nullptr;
 	Energy = 0;
 	MaxEnergy = 0;
 	EnergyHeal = 0.0f;
