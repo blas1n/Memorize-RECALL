@@ -132,7 +132,7 @@ void AProjectRCharacter::BeginPlay()
 	Super::BeginPlay();
 
 	Health = MaxHealth;
-	SetSpeed(WalkSpeed);
+	SetSpeed(RunSpeed);
 
 	TArray<AActor*> Buffs;
 	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ABuff::StaticClass(), Buffs);
