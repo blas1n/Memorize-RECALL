@@ -145,27 +145,26 @@ void APlayerCharacter::MoveRight(float Value)
 
 void APlayerCharacter::PressDodge()
 {
-	if (IsCasting()) return;
-	SetIsCasting(true);
-
+	if (IsCasting() || GetCharacterMovement()->IsFalling()) return;
+	SetCastData(true, true);
 	bIsReadyDodge = true;
 
 	GetWorldTimerManager().SetTimer(DodgeTimer, [this]
-		{
-			Jump();
-			bIsReadyDodge = false;
-			SetIsCasting(false);
-		}, JumpDelay, false);
+	{
+		SetCastData();
+		bIsReadyDodge = false;
+		Jump();
+	}, JumpDelay, false);
 }
 
 void APlayerCharacter::ReleaseDodge()
 {
 	if (bIsReadyDodge)
 	{
-		GetWorldTimerManager().ClearTimer(DodgeTimer);
-		PlayAnimMontage(RollAnimMontage);
+		SetCastData();
 		bIsReadyDodge = false;
-		SetIsCasting(false);
+		GetWorldTimerManager().ClearTimer(DodgeTimer);
+		GetWeapon()->Dodge();
 	}
 	else if (GetCharacterMovement()->IsFalling())
 		StopJumping();

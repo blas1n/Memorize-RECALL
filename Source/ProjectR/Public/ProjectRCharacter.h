@@ -46,6 +46,8 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void SetSpeed(float Speed) noexcept;
 
+	void SetCastData(bool bCastData = false, bool bMoveData = true) noexcept;
+
 	FORCEINLINE class UStaticMeshComponent* GetLeftWeapon() const noexcept { return LeftWeapon; }
 	FORCEINLINE UStaticMeshComponent* GetRightWeapon() const noexcept { return RightWeapon; }
 
@@ -57,12 +59,6 @@ public:
 	FORCEINLINE float GetRunSpeed() const noexcept { return RunSpeed; }
 	FORCEINLINE TMap<TSubclassOf<class ABuff>, class UBuffStorage*>&
 		GetBuffStorages() noexcept { return BuffStorages; }
-
-	FORCEINLINE bool IsCasting() const noexcept { return bIsCasting; }
-	FORCEINLINE bool CanMoving() const noexcept { return bCanMoving; }
-
-	FORCEINLINE void SetIsCasting(bool bInIsCasting) noexcept { bIsCasting = bInIsCasting; }
-	FORCEINLINE void SetCanMoving(bool bInCanMoving) noexcept { bCanMoving = bInCanMoving; }
 
 protected:
 	void BeginPlay() override;
@@ -89,6 +85,9 @@ protected:
 	virtual void NativeOnStunRelease() {}
 
 	void UseSkill(uint8 index);
+
+	FORCEINLINE bool IsCasting() const noexcept { return bIsCasting; }
+	FORCEINLINE bool CanMoving() const noexcept { return bCanMoving; }
 
 private:
 	virtual void CreateWeapons(TArray<FName>&& WeaponNames);

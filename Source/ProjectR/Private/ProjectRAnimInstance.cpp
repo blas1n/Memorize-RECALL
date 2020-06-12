@@ -2,6 +2,7 @@
 
 #include "ProjectRAnimInstance.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "AnimCastData.h"
 #include "ProjectRCharacter.h"
 #include "Weapon.h"
 
@@ -20,6 +21,9 @@ void UProjectRAnimInstance::NativeBeginPlay()
 {
 	Super::NativeBeginPlay();
 
+	OnMontageStarted.AddDynamic(this, &UProjectRAnimInstance::OnBeginMontage);
+	OnMontageEnded.AddDynamic(this, &UProjectRAnimInstance::OnEndMontage);
+
 	AProjectRCharacter* Owner = Cast<AProjectRCharacter>(TryGetPawnOwner());
 	Owner->OnEquipped.AddDynamic(this, &UProjectRAnimInstance::OnEquipped);
 
@@ -37,6 +41,25 @@ void UProjectRAnimInstance::OnEquipped(AWeapon* Weapon)
 	JumpStart = Weapon->GetJumpStart();
 	JumpLoop = Weapon->GetJumpLoop();
 	JumpEnd = Weapon->GetJumpEnd();
+}
+
+void UProjectRAnimInstance::OnBeginMontage(UAnimMontage* Montage)
+{
+	AProjectRCharacter* User = Cast<AProjectRCharacter>(TryGetPawnOwner());
+
+	for (const UAnimMetaData* Data : Montage->GetMetaData())
+	{
+		if (const UAnimCastData* CastData = Cast<UAnimCastData>(Data))
+		{
+			User->SetCastData(CastData->IsCasting(), CastData->CanMoving());
+			break;
+		}
+	}
+}
+
+void UProjectRAnimInstance::OnEndMontage(UAnimMontage* Montage, bool bInterrupted)
+{
+	Cast<AProjectRCharacter>(TryGetPawnOwner())->SetCastData();
 }
 
 void UProjectRAnimInstance::OnWeaponAsyncLoaded()
@@ -67,6 +90,8 @@ void UProjectRAnimInstance::AnimNotify_BeginSkill()
 void UProjectRAnimInstance::AnimNotify_EndSkill()
 {
 	UAnimMontage* Montage = GetCurrentActiveMontage();
+	OnEndMontage(Montage, false);
+	
 	AWeapon* Weapon = GetWeapon();
 
 	if (IsValid(Weapon))
