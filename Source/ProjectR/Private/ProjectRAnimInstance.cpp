@@ -15,6 +15,7 @@ void UProjectRAnimInstance::NativeBeginPlay()
 {
 	AProjectRCharacter* Owner = Cast<AProjectRCharacter>(TryGetPawnOwner());
 	Owner->OnEquipped.AddDynamic(this, &UProjectRAnimInstance::OnEquipped);
+	Owner->BroadcastOnAnimInstanceSpawned(this);
 
 	AWeapon* CurWeapon = GetWeapon();
 	if (CurWeapon) OnEquipped(CurWeapon);

@@ -133,8 +133,9 @@ void AWeapon::BeginPlay()
 	LeftWeapon = Character->GetLeftWeapon();
 	RightWeapon = Character->GetRightWeapon();
 
-	Character->GetMesh()->GetAnimInstance()->OnMontageStarted.AddDynamic(this, &AWeapon::BeginSkill);
-	Character->GetMesh()->GetAnimInstance()->OnMontageEnded.AddDynamic(this, &AWeapon::EndSkill);
+	FOnAnimInstanceSpawnedSingle Callback;
+	Callback.BindDynamic(this, &AWeapon::BindAnimInstance);
+	Character->RegisterOnAnimInstanceSpawned(Callback);
 }
 
 void AWeapon::EquipOnce(UStaticMeshComponent* Weapon, const FWeaponInfo& Info)
@@ -149,6 +150,12 @@ void AWeapon::UnequipOnce(UStaticMeshComponent* Weapon)
 {
 	Weapon->SetStaticMesh(nullptr);
 	Weapon->SetRelativeTransform(FTransform{});
+}
+
+void AWeapon::BindAnimInstance(UAnimInstance* AnimInstance)
+{
+	AnimInstance->OnMontageStarted.AddDynamic(this, &AWeapon::BeginSkill);
+	AnimInstance->OnMontageEnded.AddDynamic(this, &AWeapon::EndSkill);
 }
 
 void AWeapon::OnLeftWeaponOverlapped(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, 
