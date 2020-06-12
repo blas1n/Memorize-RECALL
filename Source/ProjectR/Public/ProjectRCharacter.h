@@ -6,8 +6,6 @@
 #include "GameFramework/Character.h"
 #include "ProjectRCharacter.generated.h"
 
-DECLARE_DYNAMIC_DELEGATE_OneParam(FOnAnimInstanceSpawnedSingle, UAnimInstance*, AnimInstance);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnAnimInstanceSpawned, UAnimInstance*, AnimInstance);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnDamaged, AController*, Instigator);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnDeath, AController*, Instigator);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnEquipped, class AWeapon*, Weapon);
@@ -47,11 +45,6 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void SetSpeed(float Speed) noexcept;
-
-	UFUNCTION(BlueprintCallable)
-	void RegisterOnAnimInstanceSpawned(const FOnAnimInstanceSpawnedSingle& Callback);
-
-	void BroadcastOnAnimInstanceSpawned(UAnimInstance* AnimInstance);
 
 	FORCEINLINE class UStaticMeshComponent* GetLeftWeapon() const noexcept { return LeftWeapon; }
 	FORCEINLINE UStaticMeshComponent* GetRightWeapon() const noexcept { return RightWeapon; }
@@ -151,8 +144,6 @@ private:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Buff, meta = (AllowPrivateAccess = true))
 	TMap<TSubclassOf<class ABuff>, class UBuffStorage*> BuffStorages;
-
-	FOnAnimInstanceSpawned OnAnimInstanceSpawned;
 
 	UObject* Parrying;
 

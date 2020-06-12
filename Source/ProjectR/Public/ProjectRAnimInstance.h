@@ -15,7 +15,7 @@ public:
 	UProjectRAnimInstance();
 
 private:
-	void NativeInitializeAnimation() override;
+	void NativeBeginPlay() override;
 	void NativeUpdateAnimation(float DeltaSeconds) override;
 
 	UFUNCTION()
