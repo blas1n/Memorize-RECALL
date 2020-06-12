@@ -78,5 +78,5 @@ private:
 
 	FTimerHandle DodgeTimer;
 	uint8 CurWeaponIndex;
-	bool bIsReadyDodge;
+	uint8 bIsReadyDodge : 1;
 };

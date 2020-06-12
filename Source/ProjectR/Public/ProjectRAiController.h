@@ -58,5 +58,5 @@ private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Sense, meta = (AllowPrivateAccess = true))
 	class UAISenseConfig_Sight* SightConfig;
 
-	bool bIsInit;
+	uint8 bIsInit : 1;
 };

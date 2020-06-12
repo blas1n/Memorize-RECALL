@@ -156,6 +156,6 @@ private:
 
 	UObject* Parrying;
 
-	bool bIsCasting;
-	bool bCanMoving;
+	uint8 bIsCasting : 1;
+	uint8 bCanMoving : 1;
 };
