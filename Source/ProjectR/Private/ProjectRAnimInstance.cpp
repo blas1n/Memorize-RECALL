@@ -37,6 +37,11 @@ void UProjectRAnimInstance::OnEquipped(AWeapon* Weapon)
 	JumpEnd = Weapon->GetJumpEnd();
 }
 
+void UProjectRAnimInstance::OnWeaponAsyncLoaded()
+{
+	OnEquipped(Cast<AProjectRCharacter>(TryGetPawnOwner())->GetWeapon());
+}
+
 void UProjectRAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 {
 	Super::NativeUpdateAnimation(DeltaSeconds);
