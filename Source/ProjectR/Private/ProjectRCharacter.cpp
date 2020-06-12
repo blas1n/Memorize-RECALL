@@ -42,7 +42,6 @@ AProjectRCharacter::AProjectRCharacter()
 	RightWeapon->SetCollisionProfileName(TEXT("Weapon"));
 
 	Weapon = nullptr;
-	Unequip = nullptr;
 	WeaponsData = nullptr;
 	Health = 0;
 	MaxHealth = 0;
@@ -135,9 +134,6 @@ void AProjectRCharacter::BeginPlay()
 	Health = MaxHealth;
 	SetSpeed(WalkSpeed);
 
-	Unequip = GenerateWeapon(TEXT("Unequip"));
-	SetWeapon(Unequip);
-
 	TArray<AActor*> Buffs;
 	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ABuff::StaticClass(), Buffs);
 
@@ -182,7 +178,8 @@ void AProjectRCharacter::SetWeapon(AWeapon* InWeapon)
 {
 	if (Weapon) Weapon->Unequip();
 
-	Weapon = InWeapon ? InWeapon : Unequip;
+	Weapon = InWeapon;
+	if (!Weapon) return;
 	
 	FOnAsyncLoadEndedSingle Callback;
 	Callback.BindDynamic(this, &AProjectRCharacter::Equip);

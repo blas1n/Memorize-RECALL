@@ -73,7 +73,7 @@ public:
 
 protected:
 	void BeginPlay() override;
-	
+
 	float TakeDamage(float DamageAmount, const FDamageEvent& DamageEvent,
 		AController* EventInstigator, AActor* DamageCauser) override;
 
@@ -94,9 +94,8 @@ protected:
 
 	void UseSkill(uint8 index);
 
-	FORCEINLINE AWeapon* GetUnequip() const noexcept { return Weapon; }
-
 private:
+
 	void Death();
 
 	UFUNCTION()
@@ -127,9 +126,6 @@ private:
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Transient, Category = Weapon, meta = (AllowPrivateAccess = true))
 	AWeapon* Weapon;
-
-	UPROPERTY()
-	AWeapon* Unequip;
 
 	UPROPERTY(EditDefaultsOnly, Category = Weapon, meta = (AllowPrivateAccess = true))
 	class UDataTable* WeaponsData;

@@ -56,6 +56,9 @@ private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, EditFixedSize, Category = Weapon, meta = (AllowPrivateAccess = true))
 	TArray<class AWeapon*> Weapons;
 
+	UPROPERTY()
+	AWeapon* Unequip;
+
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Animation, meta = (AllowPrivateAccess = true))
 	UAnimMontage* RollAnimMontage;
 
