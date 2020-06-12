@@ -84,6 +84,9 @@ protected:
 	void SetWeapon(AWeapon* InWeapon);
 
 	UFUNCTION(BlueprintImplementableEvent)
+	TArray<FName> GetWeaponNames();
+
+	UFUNCTION(BlueprintImplementableEvent)
 	void OnStunApply();
 
 	UFUNCTION(BlueprintImplementableEvent)
@@ -95,6 +98,7 @@ protected:
 	void UseSkill(uint8 index);
 
 private:
+	virtual void CreateWeapons(TArray<FName>&& WeaponNames);
 
 	void Death();
 
