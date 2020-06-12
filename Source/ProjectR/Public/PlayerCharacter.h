@@ -61,9 +61,6 @@ private:
 	UPROPERTY()
 	AWeapon* Unequip;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Animation, meta = (AllowPrivateAccess = true))
-	UAnimMontage* RollAnimMontage;
-
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Transient, Category = Stat, meta = (AllowPrivateAccess = true))
 	int32 Energy;
 
