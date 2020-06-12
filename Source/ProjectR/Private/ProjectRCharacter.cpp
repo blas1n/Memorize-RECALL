@@ -111,6 +111,12 @@ void AProjectRCharacter::SetSpeed(float Speed) noexcept
 	GetCharacterMovement()->MaxWalkSpeed = Speed;
 }
 
+void AProjectRCharacter::SetCastData(bool bCastData, bool bMoveData) noexcept
+{
+	bIsCasting = bCastData;
+	bCanMoving = bMoveData;
+}
+
 void AProjectRCharacter::BeginPlay()
 {
 	Super::BeginPlay();
