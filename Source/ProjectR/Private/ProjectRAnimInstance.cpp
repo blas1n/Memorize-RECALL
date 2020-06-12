@@ -6,7 +6,12 @@
 #include "Weapon.h"
 
 UProjectRAnimInstance::UProjectRAnimInstance()
+	: Super()
 {
+	LocomotionSpace = nullptr;
+	JumpStart = nullptr;
+	JumpLoop = nullptr;
+	JumpEnd = nullptr;
 	Speed = 0.0f;
 	bIsInAir = false;
 }
