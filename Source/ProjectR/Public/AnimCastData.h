@@ -12,13 +12,15 @@ class PROJECTR_API UAnimCastData : public UAnimMetaData
 	GENERATED_BODY()
 	
 public:
+	UAnimCastData() : Super(), bIsCasting(true), bCanMoving(false) {}
+
 	FORCEINLINE bool IsCasting() const noexcept { return bIsCasting; }
 	FORCEINLINE bool CanMoving() const noexcept { return bCanMoving; }
 
 private:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = true))
-	bool bIsCasting = true;
+	uint8 bIsCasting : 1;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = true))
-	bool bCanMoving = false;
+	uint8 bCanMoving : 1;
 };

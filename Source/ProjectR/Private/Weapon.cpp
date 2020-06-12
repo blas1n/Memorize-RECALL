@@ -55,14 +55,20 @@ void AWeapon::Initialize(const FWeaponData* WeaponData)
 
 void AWeapon::Equip()
 {
+	ACharacter* Character = Cast<ACharacter>(GetInstigator());
+
 	if (EquipMontage)
-		Cast<ACharacter>(GetInstigator())->PlayAnimMontage(EquipMontage);
+		Character->PlayAnimMontage(EquipMontage);
 
 	EquipOnce(LeftWeapon, LeftWeaponInfo);
 	EquipOnce(RightWeapon, RightWeaponInfo);
 
 	LeftWeapon->OnComponentBeginOverlap.AddDynamic(this, &AWeapon::OnLeftWeaponOverlapped);
 	RightWeapon->OnComponentBeginOverlap.AddDynamic(this, &AWeapon::OnRightWeaponOverlapped);
+
+	UAnimInstance* AnimInstance = Character->GetMesh()->GetAnimInstance();
+	AnimInstance->OnMontageStarted.AddDynamic(this, &AWeapon::BeginSkill);
+	AnimInstance->OnMontageEnded.AddDynamic(this, &AWeapon::EndSkill);
 
 	OnActive.Broadcast();
 }
@@ -74,6 +80,10 @@ void AWeapon::Unequip()
 
 	LeftWeapon->OnComponentBeginOverlap.RemoveDynamic(this, &AWeapon::OnLeftWeaponOverlapped);
 	RightWeapon->OnComponentBeginOverlap.RemoveDynamic(this, &AWeapon::OnRightWeaponOverlapped);
+
+	UAnimInstance* AnimInstance = Cast<ACharacter>(GetInstigator())->GetMesh()->GetAnimInstance();
+	AnimInstance->OnMontageStarted.RemoveDynamic(this, &AWeapon::BeginSkill);
+	AnimInstance->OnMontageEnded.RemoveDynamic(this, &AWeapon::EndSkill);
 
 	OnInactive.Broadcast();
 }
@@ -95,6 +105,7 @@ bool AWeapon::CanUseSkill(uint8 Index)
 void AWeapon::BeginSkill(UAnimMontage* Montage)
 {
 	AProjectRCharacter* User = Cast<AProjectRCharacter>(GetInstigator());
+	if (User->GetWeapon() != this) return;
 
 	for (const UAnimMetaData* Data : Montage->GetMetaData())
 	{
@@ -112,6 +123,8 @@ void AWeapon::BeginSkill(UAnimMontage* Montage)
 void AWeapon::EndSkill(UAnimMontage* Montage, bool bInterrupted)
 {
 	AProjectRCharacter* User = Cast<AProjectRCharacter>(GetInstigator());
+	if (User->GetWeapon() != this) return;
+
 	User->SetIsCasting(false);
 	User->SetCanMoving(true);
 
@@ -132,10 +145,6 @@ void AWeapon::BeginPlay()
 	AProjectRCharacter* Character = Cast<AProjectRCharacter>(GetInstigator());
 	LeftWeapon = Character->GetLeftWeapon();
 	RightWeapon = Character->GetRightWeapon();
-
-	FOnAnimInstanceSpawnedSingle Callback;
-	Callback.BindDynamic(this, &AWeapon::BindAnimInstance);
-	Character->RegisterOnAnimInstanceSpawned(Callback);
 }
 
 void AWeapon::EquipOnce(UStaticMeshComponent* Weapon, const FWeaponInfo& Info)
@@ -150,12 +159,6 @@ void AWeapon::UnequipOnce(UStaticMeshComponent* Weapon)
 {
 	Weapon->SetStaticMesh(nullptr);
 	Weapon->SetRelativeTransform(FTransform{});
-}
-
-void AWeapon::BindAnimInstance(UAnimInstance* AnimInstance)
-{
-	AnimInstance->OnMontageStarted.AddDynamic(this, &AWeapon::BeginSkill);
-	AnimInstance->OnMontageEnded.AddDynamic(this, &AWeapon::EndSkill);
 }
 
 void AWeapon::OnLeftWeaponOverlapped(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, 

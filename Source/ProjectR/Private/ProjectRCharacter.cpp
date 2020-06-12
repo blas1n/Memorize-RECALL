@@ -111,22 +111,6 @@ void AProjectRCharacter::SetSpeed(float Speed) noexcept
 	GetCharacterMovement()->MaxWalkSpeed = Speed;
 }
 
-void AProjectRCharacter::RegisterOnAnimInstanceSpawned(const FOnAnimInstanceSpawnedSingle& Callback)
-{
-	check(Callback.IsBound());
-
-	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
-
-	if (AnimInstance) Callback.Execute(AnimInstance);
-	else OnAnimInstanceSpawned.Add(Callback);
-}
-
-void AProjectRCharacter::BroadcastOnAnimInstanceSpawned(UAnimInstance* AnimInstance)
-{
-	if (GetMesh()->GetAnimInstance() == AnimInstance)
-		OnAnimInstanceSpawned.Broadcast(AnimInstance);
-}
-
 void AProjectRCharacter::BeginPlay()
 {
 	Super::BeginPlay();
