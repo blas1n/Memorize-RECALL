@@ -32,6 +32,7 @@ public:
 
 private:
 	void BeginPlay() override;
+	void EndPlay(EEndPlayReason::Type EndPlayReason) override;
 	void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 	void CreateWeapons(TArray<FName>&& WeaponNames) override;
 

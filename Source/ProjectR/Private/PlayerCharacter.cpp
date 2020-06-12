@@ -36,7 +36,14 @@ APlayerCharacter::APlayerCharacter()
 
 void APlayerCharacter::EquipWeapon(FName Name, uint8 Index)
 {
-	Weapons[Index] = GenerateWeapon(Name);
+	AWeapon* BeforeWeapon = Weapons[Index];
+	Weapons[Index] = Name != TEXT("Unequip") ? GenerateWeapon(Name) : Unequip;
+
+	if (Index == CurWeaponIndex)
+		SetWeapon(Weapons[Index]);
+
+	if (BeforeWeapon && BeforeWeapon != Unequip)
+		BeforeWeapon->Destroy();
 }
 
 int32 APlayerCharacter::HealEnergy(int32 Value)
@@ -59,9 +66,17 @@ void APlayerCharacter::BeginPlay()
 
 	Energy = MaxEnergy;
 	OnAttack.AddDynamic(this, &APlayerCharacter::HealEnergyByAttack);
+}
+
+void APlayerCharacter::EndPlay(EEndPlayReason::Type EndPlayReason)
+{
+	Super::EndPlay(EndPlayReason);
 
 	for (AWeapon* CurWeapon : Weapons)
-		CurWeapon = GetUnequip();
+		if (CurWeapon != Unequip)
+			CurWeapon->Destroy();
+
+	Unequip->Destroy();
 }
 
 void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
