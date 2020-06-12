@@ -17,7 +17,7 @@ ASkill::ASkill()
 
 bool ASkill::UseSkill()
 {
-	if (User->IsCasting() || !CanUseSkill())
+	if (!CanUseSkill())
 		return false;
 
 	OnSkill();
