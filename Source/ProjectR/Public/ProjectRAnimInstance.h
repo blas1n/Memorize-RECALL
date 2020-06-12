@@ -15,7 +15,7 @@ public:
 	UProjectRAnimInstance();
 
 private:
-	void NativeInitializeAnimation() override;
+	void NativeBeginPlay() override;
 	void NativeUpdateAnimation(float DeltaSeconds) override;
 
 	UFUNCTION()
@@ -61,5 +61,5 @@ private:
 	float Speed;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Pawn, meta = (AllowPrivateAccess = true))
-	bool bIsInAir;
+	uint8 bIsInAir : 1;
 };
