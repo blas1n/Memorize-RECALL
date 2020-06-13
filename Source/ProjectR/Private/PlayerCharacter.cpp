@@ -291,7 +291,29 @@ bool APlayerCharacter::CheckLockOn(const AActor* Enemy, float& OutAngle, float& 
 		(Hit, PlayerEye, EnemyLocation, ECollisionChannel::ECC_Visibility, Params);
 
 	if (bHaveObstacle) return false;
-	if (!LockOnEnemy || SizeSquare < OutDistance)
+	if (!LockOnEnemy)
+	{
+		OutAngle = Angle;
+		OutDistance = SizeSquare;
+		return true;
+	}
+
+	const float AllowAngle = FMath::DegreesToRadians(LockOnAngle * 0.05f);
+	const float AngleDiff = OutAngle - Angle;
+
+	if (FMath::Abs(AngleDiff) > AllowAngle)
+	{
+		if (AngleDiff > 0.0f)
+		{
+			OutAngle = Angle;
+			OutDistance = SizeSquare;
+			return true;
+		}
+		
+		return false;
+	}
+
+	if (OutDistance > SizeSquare)
 	{
 		OutAngle = Angle;
 		OutDistance = SizeSquare;
