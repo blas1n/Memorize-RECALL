@@ -294,7 +294,7 @@ bool APlayerCharacter::CheckLockOn(const AActor* Enemy, float& OutAngle, float& 
 		(Hit, PlayerEye, EnemyLocation, ECollisionChannel::ECC_Visibility, Params);
 
 	if (bHaveObstacle) return false;
-	if (!LockOnEnemy || Angle < OutAngle)
+	if (!LockOnEnemy || SizeSquare < OutDistance)
 	{
 		OutAngle = Angle;
 		OutDistance = SizeSquare;
