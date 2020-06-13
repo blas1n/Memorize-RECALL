@@ -66,12 +66,6 @@ int32 APlayerCharacter::SetMaxEnergy(int32 NewMaxEnergy)
 	return Diff;
 }
 
-void APlayerCharacter::LockOff()
-{
-	LockOnEnemy->SetLockOn(false);
-	LockOnEnemy = nullptr;
-}
-
 void APlayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();
@@ -88,7 +82,8 @@ void APlayerCharacter::Tick(float DeltaTimes)
 
 	if (LockOnEnemy->IsDeath())
 	{
-		LockOff();
+		LockOnEnemy->SetLockOn(false);
+		LockOnEnemy = nullptr;
 		return;
 	}
 
@@ -98,7 +93,8 @@ void APlayerCharacter::Tick(float DeltaTimes)
 
 	if (LengthSquare > FMath::Square(LoseLockOnDistance))
 	{
-		LockOff();
+		LockOnEnemy->SetLockOn(false);
+		LockOnEnemy = nullptr;
 		return;
 	}
 
@@ -242,7 +238,8 @@ void APlayerCharacter::LockOn()
 {
 	if (LockOnEnemy)
 	{
-		LockOff();
+		LockOnEnemy->SetLockOn(false);
+		LockOnEnemy = nullptr;
 		return;
 	}
 
@@ -294,7 +291,29 @@ bool APlayerCharacter::CheckLockOn(const AActor* Enemy, float& OutAngle, float& 
 		(Hit, PlayerEye, EnemyLocation, ECollisionChannel::ECC_Visibility, Params);
 
 	if (bHaveObstacle) return false;
-	if (!LockOnEnemy || SizeSquare < OutDistance)
+	if (!LockOnEnemy)
+	{
+		OutAngle = Angle;
+		OutDistance = SizeSquare;
+		return true;
+	}
+
+	const float AllowAngle = FMath::DegreesToRadians(LockOnAngle * 0.05f);
+	const float AngleDiff = OutAngle - Angle;
+
+	if (FMath::Abs(AngleDiff) > AllowAngle)
+	{
+		if (AngleDiff > 0.0f)
+		{
+			OutAngle = Angle;
+			OutDistance = SizeSquare;
+			return true;
+		}
+		
+		return false;
+	}
+
+	if (OutDistance > SizeSquare)
 	{
 		OutAngle = Angle;
 		OutDistance = SizeSquare;
