@@ -63,6 +63,8 @@ public:
 	FORCEINLINE TMap<TSubclassOf<class ABuff>, class UBuffStorage*>&
 		GetBuffStorages() noexcept { return BuffStorages; }
 
+	FORCEINLINE bool IsDeath() const noexcept { return bIsDeath; }
+
 protected:
 	void BeginPlay() override;
 
@@ -150,6 +152,9 @@ private:
 	TMap<TSubclassOf<class ABuff>, class UBuffStorage*> BuffStorages;
 
 	UObject* Parrying;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Transient, meta = (AllowPrivateAccess = true))
+	uint8 bIsDeath : 1;
 
 	uint8 bIsCasting : 1;
 	uint8 bCanMoving : 1;

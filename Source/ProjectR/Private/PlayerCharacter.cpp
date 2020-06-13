@@ -243,16 +243,22 @@ void APlayerCharacter::LockOn()
 	TArray<AActor*> Enemys;
 	UGameplayStatics::GetAllActorsOfClass(GetWorld(), EnemyClass, Enemys);
 
+	float Angle = 0.0f, Distance = 0.0f;
+
 	for (AActor* Enemy : Enemys)
-		if (CheckLockOn(Enemy))
+		if (CheckLockOn(Enemy, Angle, Distance))
 			LockOnEnemy = Cast<AProjectRCharacter>(Enemy);
 
 	if (LockOnEnemy)
 		LockOnEnemy->SetLockOn(true);
 }
 
-bool APlayerCharacter::CheckLockOn(const AActor* Enemy) const
+bool APlayerCharacter::CheckLockOn(const AActor* Enemy, float& OutAngle, float& OutDistance) const
 {
+	if (auto* EnemyChararcter = Cast<AProjectRCharacter>(Enemy))
+		if (EnemyChararcter->IsDeath())
+			return false;
+
 	const FVector PlayerLocation = GetActorLocation();
 	const FVector EnemyLocation = Enemy->GetActorLocation();
 	FVector Diff = (EnemyLocation - PlayerLocation);
@@ -265,9 +271,9 @@ bool APlayerCharacter::CheckLockOn(const AActor* Enemy) const
 	const FVector Direction = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
 
 	Diff.Normalize();
-	const float Dot = FVector::DotProduct(Diff, Direction);
+	const float Angle = FMath::Acos(FVector::DotProduct(Diff, Direction));
 
-	if (FMath::Acos(Dot) > FMath::DegreesToRadians(LockOnAngle * 0.5f))
+	if (Angle > FMath::DegreesToRadians(LockOnAngle * 0.5f))
 		return false;
 
 	FVector PlayerEye; FRotator EyeRot;
@@ -282,12 +288,14 @@ bool APlayerCharacter::CheckLockOn(const AActor* Enemy) const
 		(Hit, PlayerEye, EnemyLocation, ECollisionChannel::ECC_Visibility, Params);
 
 	if (bHaveObstacle) return false;
-	if (!LockOnEnemy) return true;
+	if (!LockOnEnemy || Angle < OutAngle)
+	{
+		OutAngle = Angle;
+		OutDistance = SizeSquare;
+		return true;
+	}
 
-	const FVector LockOnEnemyLocation = LockOnEnemy->GetActorLocation();
-	const float LockOnSizeSquare = (EnemyLocation - PlayerLocation).SizeSquared();
-
-	return LockOnSizeSquare > SizeSquare;
+	return false;
 }
 
 void APlayerCharacter::HealEnergyByAttack(AProjectRCharacter* Target, int32 Damage)

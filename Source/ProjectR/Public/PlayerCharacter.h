@@ -55,7 +55,7 @@ private:
 	// Need Optimization
 	void LockOn();
 
-	bool CheckLockOn(const AActor* Enemy) const;
+	bool CheckLockOn(const AActor* Enemy, float& OutAngle, float& OutDistance) const;
 
 	UFUNCTION()
 	void HealEnergyByAttack(AProjectRCharacter* Target, int32 Damage);

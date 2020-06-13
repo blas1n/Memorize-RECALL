@@ -49,6 +49,7 @@ AProjectRCharacter::AProjectRCharacter()
 	WalkSpeed = 0.0f;
 	RunSpeed = 0.0f;
 	Parrying = nullptr;
+	bIsDeath = false;
 	bIsCasting = false;
 	bCanMoving = true;
 }
@@ -190,6 +191,7 @@ void AProjectRCharacter::CreateWeapons(TArray<FName>&& WeaponNames)
 
 void AProjectRCharacter::Death()
 {
+	bIsDeath = true;
 	OnDeath.Broadcast(LastHitBy);
 
 	// Enable Ragdoll.
