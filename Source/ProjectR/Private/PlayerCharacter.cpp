@@ -66,6 +66,12 @@ int32 APlayerCharacter::SetMaxEnergy(int32 NewMaxEnergy)
 	return Diff;
 }
 
+void APlayerCharacter::LockOff()
+{
+	LockOnEnemy->SetLockOn(false);
+	LockOnEnemy = nullptr;
+}
+
 void APlayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();
@@ -86,8 +92,7 @@ void APlayerCharacter::Tick(float DeltaTimes)
 
 	if (LengthSquare > FMath::Square(LoseLockOnDistance))
 	{
-		LockOnEnemy->SetLockOn(false);
-		LockOnEnemy = nullptr;
+		LockOff();
 		return;
 	}
 
@@ -231,8 +236,7 @@ void APlayerCharacter::LockOn()
 {
 	if (LockOnEnemy)
 	{
-		LockOnEnemy->SetLockOn(false);
-		LockOnEnemy = nullptr;
+		LockOff();
 		return;
 	}
 
