@@ -23,6 +23,9 @@ public:
 	UFUNCTION(BlueprintCallable)
 	int32 SetMaxEnergy(int32 NewMaxEnergy);
 
+	UFUNCTION(BlueprintCallable)
+	void LockOff();
+
 	FORCEINLINE class USpringArmComponent* GetCameraBoom() const noexcept { return CameraBoom; }
 	FORCEINLINE class UCameraComponent* GetFollowCamera() const noexcept { return FollowCamera; }
 
@@ -32,21 +35,30 @@ public:
 
 private:
 	void BeginPlay() override;
+	void Tick(float DeltaTimes) override;
 	void EndPlay(EEndPlayReason::Type EndPlayReason) override;
 	void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 	void CreateWeapons(TArray<FName>&& WeaponNames) override;
 
-	UFUNCTION()
-	void HealEnergyByAttack(AProjectRCharacter* Target, int32 Damage);
-
 	void MoveForward(float Value);
 	void MoveRight(float Value);
+
+	void AddYawInput(float Value);
+	void AddPitchInput(float Value);
 
 	void PressDodge();
 	void ReleaseDodge();
 
 	void SwapWeapon(uint8 Index);
 	void SwapWeapon(float Value);
+
+	// Need Optimization
+	void LockOn();
+
+	bool CheckLockOn(const AActor* Enemy, float& OutAngle, float& OutDistance) const;
+
+	UFUNCTION()
+	void HealEnergyByAttack(AProjectRCharacter* Target, int32 Damage);
 
 private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = true))
@@ -69,6 +81,21 @@ private:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Transient, Category = Stat, meta = (AllowPrivateAccess = true))
 	float EnergyHeal;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = LockOn, meta = (AllowPrivateAccess = true))
+	TSubclassOf<AProjectRCharacter> EnemyClass;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = LockOn, meta = (AllowPrivateAccess = true))
+	float LockOnDistance;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = LockOn, meta = (AllowPrivateAccess = true))
+	float LoseLockOnDistance;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = LockOn, meta = (AllowPrivateAccess = true))
+	float LockOnAngle;
+
+	UPROPERTY()
+	AProjectRCharacter* LockOnEnemy;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Transient, Category = Stat, meta = (AllowPrivateAccess = true))
 	float JumpDelay;

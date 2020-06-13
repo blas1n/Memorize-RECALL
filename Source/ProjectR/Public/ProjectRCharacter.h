@@ -46,6 +46,9 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void SetSpeed(float Speed) noexcept;
 
+	UFUNCTION(BlueprintNativeEvent)
+	void SetLockOn(bool bIsLockOn);
+
 	void SetCastData(bool bCastData = false, bool bMoveData = true) noexcept;
 
 	FORCEINLINE class UStaticMeshComponent* GetLeftWeapon() const noexcept { return LeftWeapon; }
@@ -59,6 +62,8 @@ public:
 	FORCEINLINE float GetRunSpeed() const noexcept { return RunSpeed; }
 	FORCEINLINE TMap<TSubclassOf<class ABuff>, class UBuffStorage*>&
 		GetBuffStorages() noexcept { return BuffStorages; }
+
+	FORCEINLINE bool IsDeath() const noexcept { return bIsDeath; }
 
 protected:
 	void BeginPlay() override;
@@ -99,6 +104,8 @@ private:
 
 	UFUNCTION()
 	void Equip();
+
+	FORCEINLINE void SetLockOn_Implementation(bool bIsLockOn) {}
 
 public:
 	UPROPERTY(BlueprintAssignable)
@@ -145,6 +152,9 @@ private:
 	TMap<TSubclassOf<class ABuff>, class UBuffStorage*> BuffStorages;
 
 	UObject* Parrying;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Transient, meta = (AllowPrivateAccess = true))
+	uint8 bIsDeath : 1;
 
 	uint8 bIsCasting : 1;
 	uint8 bCanMoving : 1;
