@@ -80,8 +80,18 @@ void APlayerCharacter::Tick(float DeltaTimes)
 
 	if (!LockOnEnemy) return;
 
-	const FVector CameraLocation = GetFollowCamera()->GetComponentLocation();
 	const FVector EnemyLocation = LockOnEnemy->GetActorLocation();
+	const FVector PlayerLocation = GetActorLocation();
+	const float LengthSquare = (EnemyLocation - PlayerLocation).SizeSquared();
+
+	if (LengthSquare > FMath::Square(LoseLockOnDistance))
+	{
+		LockOnEnemy->SetLockOn(false);
+		LockOnEnemy = nullptr;
+		return;
+	}
+
+	const FVector CameraLocation = GetFollowCamera()->GetComponentLocation();
 	const FRotator LookRotation = UKismetMathLibrary::FindLookAtRotation(CameraLocation, EnemyLocation);
 	const FRotator NowRotation = FMath::Lerp(GetControlRotation(), LookRotation, DeltaTimes * 5.0f);
 	GetController()->SetControlRotation(NowRotation);

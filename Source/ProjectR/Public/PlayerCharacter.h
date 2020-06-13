@@ -86,6 +86,9 @@ private:
 	float LockOnDistance;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = LockOn, meta = (AllowPrivateAccess = true))
+	float LoseLockOnDistance;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = LockOn, meta = (AllowPrivateAccess = true))
 	float LockOnAngle;
 
 	UPROPERTY()
