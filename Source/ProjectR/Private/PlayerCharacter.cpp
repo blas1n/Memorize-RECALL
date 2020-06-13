@@ -3,9 +3,12 @@
 #include "PlayerCharacter.h"
 #include "Camera/CameraComponent.h"
 #include "Components/InputComponent.h"
+#include "Engine/World.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/Controller.h"
 #include "GameFramework/SpringArmComponent.h"
+#include "Kismet/GameplayStatics.h"
+#include "Kismet/KismetMathLibrary.h"
 #include "TimerManager.h"
 #include "Weapon.h"
 
@@ -29,6 +32,9 @@ APlayerCharacter::APlayerCharacter()
 	Energy = 0;
 	MaxEnergy = 0;
 	EnergyHeal = 0.0f;
+	LockOnDistance = 0.0f;
+	LockOnAngle = 0.0f;
+	LockOnEnemy = nullptr;
 	JumpDelay = 0.0f;
 	CurWeaponIndex = 0;
 	bIsReadyDodge = false;
@@ -66,6 +72,18 @@ void APlayerCharacter::BeginPlay()
 
 	Energy = MaxEnergy;
 	OnAttack.AddDynamic(this, &APlayerCharacter::HealEnergyByAttack);
+}
+
+void APlayerCharacter::Tick(float DeltaTimes)
+{
+	Super::Tick(DeltaTimes);
+
+	if (!LockOnEnemy) return;
+
+	const FVector CameraLocation = GetFollowCamera()->GetComponentLocation();
+	const FVector EnemyLocation = LockOnEnemy->GetActorLocation();
+	const FRotator LookRotation = UKismetMathLibrary::FindLookAtRotation(CameraLocation, EnemyLocation);
+	GetController()->SetControlRotation(LookRotation);
 }
 
 void APlayerCharacter::EndPlay(EEndPlayReason::Type EndPlayReason)
@@ -106,6 +124,8 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 	PlayerInputComponent->BindAction<FIndexer>(TEXT("Skill2"), IE_Pressed, this, &APlayerCharacter::UseSkill, static_cast<uint8>(2));
 	PlayerInputComponent->BindAction<FIndexer>(TEXT("Skill3"), IE_Pressed, this, &APlayerCharacter::UseSkill, static_cast<uint8>(3));
 	PlayerInputComponent->BindAction<FIndexer>(TEXT("Parrying"), IE_Pressed, this, &APlayerCharacter::UseSkill, static_cast<uint8>(4));
+
+	PlayerInputComponent->BindAction(TEXT("LockOn"), IE_Pressed, this, &APlayerCharacter::LockOn);
 }
 
 void APlayerCharacter::CreateWeapons(TArray<FName>&& WeaponNames)
@@ -182,6 +202,65 @@ void APlayerCharacter::SwapWeapon(float Value)
 {
 	uint8 Index = (CurWeaponIndex + FMath::RoundToInt(Value) + 3) % 3;
 	SwapWeapon(Index);
+}
+
+void APlayerCharacter::LockOn()
+{
+	if (LockOnEnemy)
+	{
+		LockOnEnemy->SetLockOn(false);
+		LockOnEnemy = nullptr;
+		return;
+	}
+
+	TArray<AActor*> Enemys;
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), EnemyClass, Enemys);
+
+	for (AActor* Enemy : Enemys)
+		if (CheckLockOn(Enemy))
+			LockOnEnemy = Cast<AProjectRCharacter>(Enemy);
+
+	if (LockOnEnemy)
+		LockOnEnemy->SetLockOn(true);
+}
+
+bool APlayerCharacter::CheckLockOn(const AActor* Enemy) const
+{
+	const FVector PlayerLocation = GetActorLocation();
+	const FVector EnemyLocation = Enemy->GetActorLocation();
+	FVector Diff = (EnemyLocation - PlayerLocation);
+
+	const float SizeSquare = Diff.SizeSquared();
+	if (SizeSquare > FMath::Square(LockOnDistance)) return false;
+
+	const FRotator Rotation = Controller->GetControlRotation();
+	const FRotator YawRotation(0, Rotation.Yaw, 0);
+	const FVector Direction = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
+
+	Diff.Normalize();
+	const float Dot = FVector::DotProduct(Diff, Direction);
+
+	if (FMath::Acos(Dot) > FMath::DegreesToRadians(LockOnAngle * 0.5f))
+		return false;
+
+	FVector PlayerEye; FRotator EyeRot;
+	GetActorEyesViewPoint(PlayerEye, EyeRot);
+
+	FCollisionQueryParams Params;
+	Params.AddIgnoredActor(this);
+	Params.AddIgnoredActor(Enemy);
+
+	FHitResult Hit;
+	bool bHaveObstacle = GetWorld()->LineTraceSingleByChannel
+		(Hit, PlayerEye, EnemyLocation, ECollisionChannel::ECC_Visibility, Params);
+
+	if (bHaveObstacle) return false;
+	if (!LockOnEnemy) return true;
+
+	const FVector LockOnEnemyLocation = LockOnEnemy->GetActorLocation();
+	const float LockOnSizeSquare = (EnemyLocation - PlayerLocation).SizeSquared();
+
+	return LockOnSizeSquare > SizeSquare;
 }
 
 void APlayerCharacter::HealEnergyByAttack(AProjectRCharacter* Target, int32 Damage)
