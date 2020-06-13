@@ -23,9 +23,6 @@ public:
 	UFUNCTION(BlueprintCallable)
 	int32 SetMaxEnergy(int32 NewMaxEnergy);
 
-	UFUNCTION(BlueprintCallable)
-	void LockOff();
-
 	FORCEINLINE class USpringArmComponent* GetCameraBoom() const noexcept { return CameraBoom; }
 	FORCEINLINE class UCameraComponent* GetFollowCamera() const noexcept { return FollowCamera; }
 
