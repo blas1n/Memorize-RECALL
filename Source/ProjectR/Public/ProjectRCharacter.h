@@ -46,6 +46,9 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void SetSpeed(float Speed) noexcept;
 
+	UFUNCTION(BlueprintNativeEvent)
+	void SetLockOn(bool bIsLockOn);
+
 	void SetCastData(bool bCastData = false, bool bMoveData = true) noexcept;
 
 	FORCEINLINE class UStaticMeshComponent* GetLeftWeapon() const noexcept { return LeftWeapon; }
@@ -99,6 +102,8 @@ private:
 
 	UFUNCTION()
 	void Equip();
+
+	FORCEINLINE void SetLockOn_Implementation(bool bIsLockOn) {}
 
 public:
 	UPROPERTY(BlueprintAssignable)
