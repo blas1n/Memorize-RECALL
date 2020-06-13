@@ -83,7 +83,8 @@ void APlayerCharacter::Tick(float DeltaTimes)
 	const FVector CameraLocation = GetFollowCamera()->GetComponentLocation();
 	const FVector EnemyLocation = LockOnEnemy->GetActorLocation();
 	const FRotator LookRotation = UKismetMathLibrary::FindLookAtRotation(CameraLocation, EnemyLocation);
-	GetController()->SetControlRotation(LookRotation);
+	const FRotator NowRotation = FMath::Lerp(GetControlRotation(), LookRotation, DeltaTimes * 5.0f);
+	GetController()->SetControlRotation(NowRotation);
 }
 
 void APlayerCharacter::EndPlay(EEndPlayReason::Type EndPlayReason)
@@ -104,8 +105,8 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 	PlayerInputComponent->BindAxis(TEXT("MoveForward"), this, &APlayerCharacter::MoveForward);
 	PlayerInputComponent->BindAxis(TEXT("MoveRight"), this, &APlayerCharacter::MoveRight);
 
-	PlayerInputComponent->BindAxis(TEXT("Turn"), this, &APawn::AddControllerYawInput);
-	PlayerInputComponent->BindAxis(TEXT("LookUp"), this, &APawn::AddControllerPitchInput);
+	PlayerInputComponent->BindAxis(TEXT("Turn"), this, &APlayerCharacter::AddYawInput);
+	PlayerInputComponent->BindAxis(TEXT("LookUp"), this, &APlayerCharacter::AddPitchInput);
 
 	PlayerInputComponent->BindAxis(TEXT("Swap"), this, &APlayerCharacter::SwapWeapon);
 
@@ -161,6 +162,18 @@ void APlayerCharacter::MoveRight(float Value)
 	const FRotator YawRotation(0, Rotation.Yaw, 0);
 	const FVector Direction = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
 	AddMovementInput(Direction, Value);
+}
+
+void APlayerCharacter::AddYawInput(float Value)
+{
+	if (!LockOnEnemy)
+		AddControllerYawInput(Value);
+}
+
+void APlayerCharacter::AddPitchInput(float Value)
+{
+	if (!LockOnEnemy)
+		AddControllerPitchInput(Value);
 }
 
 void APlayerCharacter::PressDodge()

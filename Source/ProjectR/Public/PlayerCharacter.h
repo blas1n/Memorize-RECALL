@@ -40,6 +40,9 @@ private:
 	void MoveForward(float Value);
 	void MoveRight(float Value);
 
+	void AddYawInput(float Value);
+	void AddPitchInput(float Value);
+
 	void PressDodge();
 	void ReleaseDodge();
 
