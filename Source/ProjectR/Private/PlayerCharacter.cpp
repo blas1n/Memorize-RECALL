@@ -86,6 +86,12 @@ void APlayerCharacter::Tick(float DeltaTimes)
 
 	if (!LockOnEnemy) return;
 
+	if (LockOnEnemy->IsDeath())
+	{
+		LockOff();
+		return;
+	}
+
 	const FVector EnemyLocation = LockOnEnemy->GetActorLocation();
 	const FVector PlayerLocation = GetActorLocation();
 	const float LengthSquare = (EnemyLocation - PlayerLocation).SizeSquared();
