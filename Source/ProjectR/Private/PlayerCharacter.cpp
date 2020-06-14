@@ -130,8 +130,7 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 	PlayerInputComponent->BindAction(TEXT("Dodge"), IE_Pressed, this, &APlayerCharacter::PressDodge);
 	PlayerInputComponent->BindAction(TEXT("Dodge"), IE_Released, this, &APlayerCharacter::ReleaseDodge);
 
-	PlayerInputComponent->BindAction<FSpeedSetter>(TEXT("Walk"), IE_Pressed, this, &APlayerCharacter::SetSpeed, GetWalkSpeed());
-	PlayerInputComponent->BindAction<FSpeedSetter>(TEXT("Walk"), IE_Released, this, &APlayerCharacter::SetSpeed, GetRunSpeed());
+	PlayerInputComponent->BindAction(TEXT("ToggleRun"), IE_Pressed, this, &APlayerCharacter::ToggleRun);
 
 	PlayerInputComponent->BindAction<FIndexer>(TEXT("Weapon1"), IE_Pressed, this, &APlayerCharacter::SwapWeapon, static_cast<uint8>(0));
 	PlayerInputComponent->BindAction<FIndexer>(TEXT("Weapon2"), IE_Pressed, this, &APlayerCharacter::SwapWeapon, static_cast<uint8>(1));
@@ -191,6 +190,14 @@ void APlayerCharacter::AddPitchInput(float Value)
 {
 	if (!LockOnEnemy)
 		AddControllerPitchInput(Value);
+}
+
+void APlayerCharacter::ToggleRun()
+{
+	bIsRun = !bIsRun;
+	SetSpeed(bIsRun ? RunSpeed : WalkSpeed);
+
+	if (bIsRun) LockOff();
 }
 
 void APlayerCharacter::PressDodge()
