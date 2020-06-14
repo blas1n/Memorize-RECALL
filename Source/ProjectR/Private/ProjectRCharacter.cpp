@@ -46,8 +46,6 @@ AProjectRCharacter::AProjectRCharacter()
 	Health = 0;
 	MaxHealth = 0;
 	HealthHeal = 0.0f;
-	WalkSpeed = 0.0f;
-	RunSpeed = 0.0f;
 	Parrying = nullptr;
 	bIsDeath = false;
 	bIsCasting = false;
@@ -123,7 +121,6 @@ void AProjectRCharacter::BeginPlay()
 	Super::BeginPlay();
 
 	Health = MaxHealth;
-	SetSpeed(RunSpeed);
 
 	TArray<AActor*> Buffs;
 	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ABuff::StaticClass(), Buffs);

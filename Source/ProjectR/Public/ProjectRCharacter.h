@@ -58,8 +58,6 @@ public:
 	FORCEINLINE int32 GetHealth() const noexcept { return Health; }
 	FORCEINLINE int32 GetMaxHealth() const noexcept { return MaxHealth; }
 	FORCEINLINE float GetHealthHeal() const noexcept { return HealthHeal; }
-	FORCEINLINE float GetWalkSpeed() const noexcept { return WalkSpeed; }
-	FORCEINLINE float GetRunSpeed() const noexcept { return RunSpeed; }
 	FORCEINLINE TMap<TSubclassOf<class ABuff>, class UBuffStorage*>&
 		GetBuffStorages() noexcept { return BuffStorages; }
 
@@ -141,12 +139,6 @@ private:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Transient, Category = Stat, meta = (AllowPrivateAccess = true))
 	float HealthHeal;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Transient, Category = Stat, meta = (AllowPrivateAccess = true))
-	float WalkSpeed;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Transient, Category = Stat, meta = (AllowPrivateAccess = true))
-	float RunSpeed;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Buff, meta = (AllowPrivateAccess = true))
 	TMap<TSubclassOf<class ABuff>, class UBuffStorage*> BuffStorages;
