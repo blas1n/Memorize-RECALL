@@ -43,6 +43,8 @@ private:
 	void AddYawInput(float Value);
 	void AddPitchInput(float Value);
 
+	void ToggleRun();
+
 	void PressDodge();
 	void ReleaseDodge();
 
