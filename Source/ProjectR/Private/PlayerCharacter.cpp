@@ -13,7 +13,6 @@
 #include "Weapon.h"
 
 DECLARE_DELEGATE_OneParam(FIndexer, uint8);
-DECLARE_DELEGATE_OneParam(FSpeedSetter, float);
 
 APlayerCharacter::APlayerCharacter()
 	: Super()
@@ -32,6 +31,8 @@ APlayerCharacter::APlayerCharacter()
 	Energy = 0;
 	MaxEnergy = 0;
 	EnergyHeal = 0.0f;
+	WalkSpeed = 0.0f;
+	RunSpeed = 0.0f;
 	LockOnDistance = 0.0f;
 	LockOnAngle = 0.0f;
 	LockOnEnemy = nullptr;
@@ -71,6 +72,7 @@ void APlayerCharacter::BeginPlay()
 	Super::BeginPlay();
 
 	Energy = MaxEnergy;
+	SetSpeed(WalkSpeed);
 	OnAttack.AddDynamic(this, &APlayerCharacter::HealEnergyByAttack);
 }
 
@@ -87,8 +89,8 @@ void APlayerCharacter::Tick(float DeltaTimes)
 		return;
 	}
 
-	const FVector EnemyLocation = LockOnEnemy->GetActorLocation();
 	const FVector PlayerLocation = GetActorLocation();
+	const FVector EnemyLocation = LockOnEnemy->GetActorLocation();
 	const float LengthSquare = (EnemyLocation - PlayerLocation).SizeSquared();
 
 	if (LengthSquare > FMath::Square(LoseLockOnDistance))
@@ -102,6 +104,11 @@ void APlayerCharacter::Tick(float DeltaTimes)
 	const FRotator LookRotation = UKismetMathLibrary::FindLookAtRotation(CameraLocation, EnemyLocation);
 	const FRotator NowRotation = FMath::Lerp(GetControlRotation(), LookRotation, DeltaTimes * 5.0f);
 	GetController()->SetControlRotation(NowRotation);
+
+	FRotator NewRotation = UKismetMathLibrary::FindLookAtRotation(PlayerLocation, EnemyLocation);
+	NewRotation.Roll = NewRotation.Pitch = 0.0f;
+
+	SetActorRotation(FMath::Lerp(GetActorRotation(), NewRotation, DeltaTimes * 10.0f));
 }
 
 void APlayerCharacter::EndPlay(EEndPlayReason::Type EndPlayReason)
@@ -130,8 +137,8 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 	PlayerInputComponent->BindAction(TEXT("Dodge"), IE_Pressed, this, &APlayerCharacter::PressDodge);
 	PlayerInputComponent->BindAction(TEXT("Dodge"), IE_Released, this, &APlayerCharacter::ReleaseDodge);
 
-	PlayerInputComponent->BindAction<FSpeedSetter>(TEXT("Walk"), IE_Pressed, this, &APlayerCharacter::SetSpeed, GetWalkSpeed());
-	PlayerInputComponent->BindAction<FSpeedSetter>(TEXT("Walk"), IE_Released, this, &APlayerCharacter::SetSpeed, GetRunSpeed());
+	PlayerInputComponent->BindAction(TEXT("Run"), IE_Pressed, this, &APlayerCharacter::Run);
+	PlayerInputComponent->BindAction(TEXT("Run"), IE_Released, this, &APlayerCharacter::Walk);
 
 	PlayerInputComponent->BindAction<FIndexer>(TEXT("Weapon1"), IE_Pressed, this, &APlayerCharacter::SwapWeapon, static_cast<uint8>(0));
 	PlayerInputComponent->BindAction<FIndexer>(TEXT("Weapon2"), IE_Pressed, this, &APlayerCharacter::SwapWeapon, static_cast<uint8>(1));
@@ -193,6 +200,17 @@ void APlayerCharacter::AddPitchInput(float Value)
 		AddControllerPitchInput(Value);
 }
 
+void APlayerCharacter::Run()
+{
+	SetSpeed(RunSpeed);
+	LockOff();
+}
+
+void APlayerCharacter::Walk()
+{
+	SetSpeed(WalkSpeed);
+}
+
 void APlayerCharacter::PressDodge()
 {
 	if (IsCasting() || GetCharacterMovement()->IsFalling()) return;
@@ -238,8 +256,7 @@ void APlayerCharacter::LockOn()
 {
 	if (LockOnEnemy)
 	{
-		LockOnEnemy->SetLockOn(false);
-		LockOnEnemy = nullptr;
+		LockOff();
 		return;
 	}
 
@@ -253,7 +270,20 @@ void APlayerCharacter::LockOn()
 			LockOnEnemy = Cast<AProjectRCharacter>(Enemy);
 
 	if (LockOnEnemy)
+	{
+		GetCharacterMovement()->bOrientRotationToMovement = false;
 		LockOnEnemy->SetLockOn(true);
+		Walk();
+	}
+}
+
+void APlayerCharacter::LockOff()
+{
+	if (!LockOnEnemy) return;
+	
+	GetCharacterMovement()->bOrientRotationToMovement = true;
+	LockOnEnemy->SetLockOn(false);
+	LockOnEnemy = nullptr;
 }
 
 bool APlayerCharacter::CheckLockOn(const AActor* Enemy, float& OutAngle, float& OutDistance) const
