@@ -43,7 +43,8 @@ private:
 	void AddYawInput(float Value);
 	void AddPitchInput(float Value);
 
-	void ToggleRun();
+	void Run();
+	void Walk();
 
 	void PressDodge();
 	void ReleaseDodge();
@@ -109,5 +110,4 @@ private:
 	FTimerHandle DodgeTimer;
 	uint8 CurWeaponIndex;
 	uint8 bIsReadyDodge : 1;
-	uint8 bIsRun : 1;
 };
