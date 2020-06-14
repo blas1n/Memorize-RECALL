@@ -13,7 +13,6 @@
 #include "Weapon.h"
 
 DECLARE_DELEGATE_OneParam(FIndexer, uint8);
-DECLARE_DELEGATE_OneParam(FSpeedSetter, float);
 
 APlayerCharacter::APlayerCharacter()
 	: Super()
@@ -32,12 +31,15 @@ APlayerCharacter::APlayerCharacter()
 	Energy = 0;
 	MaxEnergy = 0;
 	EnergyHeal = 0.0f;
+	WalkSpeed = 0.0f;
+	RunSpeed = 0.0f;
 	LockOnDistance = 0.0f;
 	LockOnAngle = 0.0f;
 	LockOnEnemy = nullptr;
 	JumpDelay = 0.0f;
 	CurWeaponIndex = 0;
 	bIsReadyDodge = false;
+	bIsRun = false;
 }
 
 void APlayerCharacter::EquipWeapon(FName Name, uint8 Index)
@@ -71,6 +73,7 @@ void APlayerCharacter::BeginPlay()
 	Super::BeginPlay();
 
 	Energy = MaxEnergy;
+	SetSpeed(WalkSpeed);
 	OnAttack.AddDynamic(this, &APlayerCharacter::HealEnergyByAttack);
 }
 
@@ -87,8 +90,8 @@ void APlayerCharacter::Tick(float DeltaTimes)
 		return;
 	}
 
-	const FVector EnemyLocation = LockOnEnemy->GetActorLocation();
 	const FVector PlayerLocation = GetActorLocation();
+	const FVector EnemyLocation = LockOnEnemy->GetActorLocation();
 	const float LengthSquare = (EnemyLocation - PlayerLocation).SizeSquared();
 
 	if (LengthSquare > FMath::Square(LoseLockOnDistance))
@@ -102,6 +105,11 @@ void APlayerCharacter::Tick(float DeltaTimes)
 	const FRotator LookRotation = UKismetMathLibrary::FindLookAtRotation(CameraLocation, EnemyLocation);
 	const FRotator NowRotation = FMath::Lerp(GetControlRotation(), LookRotation, DeltaTimes * 5.0f);
 	GetController()->SetControlRotation(NowRotation);
+
+	FRotator NewRotation = UKismetMathLibrary::FindLookAtRotation(PlayerLocation, EnemyLocation);
+	NewRotation.Roll = NewRotation.Pitch = 0.0f;
+
+	SetActorRotation(FMath::Lerp(GetActorRotation(), NewRotation, DeltaTimes * 10.0f));
 }
 
 void APlayerCharacter::EndPlay(EEndPlayReason::Type EndPlayReason)
@@ -245,8 +253,7 @@ void APlayerCharacter::LockOn()
 {
 	if (LockOnEnemy)
 	{
-		LockOnEnemy->SetLockOn(false);
-		LockOnEnemy = nullptr;
+		LockOff();
 		return;
 	}
 
@@ -260,7 +267,18 @@ void APlayerCharacter::LockOn()
 			LockOnEnemy = Cast<AProjectRCharacter>(Enemy);
 
 	if (LockOnEnemy)
+	{
 		LockOnEnemy->SetLockOn(true);
+		if (bIsRun) ToggleRun();
+	}
+}
+
+void APlayerCharacter::LockOff()
+{
+	if (!LockOnEnemy) return;
+	
+	LockOnEnemy->SetLockOn(false);
+	LockOnEnemy = nullptr;
 }
 
 bool APlayerCharacter::CheckLockOn(const AActor* Enemy, float& OutAngle, float& OutDistance) const

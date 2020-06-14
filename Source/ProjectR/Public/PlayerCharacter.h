@@ -53,6 +53,7 @@ private:
 
 	// Need Optimization
 	void LockOn();
+	void LockOff();
 
 	bool CheckLockOn(const AActor* Enemy, float& OutAngle, float& OutDistance) const;
 
@@ -81,6 +82,12 @@ private:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Transient, Category = Stat, meta = (AllowPrivateAccess = true))
 	float EnergyHeal;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Transient, Category = Stat, meta = (AllowPrivateAccess = true))
+	float RunSpeed;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Transient, Category = Stat, meta = (AllowPrivateAccess = true))
+	float WalkSpeed;
+
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = LockOn, meta = (AllowPrivateAccess = true))
 	TSubclassOf<AProjectRCharacter> EnemyClass;
 
@@ -102,4 +109,5 @@ private:
 	FTimerHandle DodgeTimer;
 	uint8 CurWeaponIndex;
 	uint8 bIsReadyDodge : 1;
+	uint8 bIsRun : 1;
 };
