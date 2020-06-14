@@ -39,7 +39,6 @@ APlayerCharacter::APlayerCharacter()
 	JumpDelay = 0.0f;
 	CurWeaponIndex = 0;
 	bIsReadyDodge = false;
-	bIsRun = false;
 }
 
 void APlayerCharacter::EquipWeapon(FName Name, uint8 Index)
@@ -138,7 +137,8 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 	PlayerInputComponent->BindAction(TEXT("Dodge"), IE_Pressed, this, &APlayerCharacter::PressDodge);
 	PlayerInputComponent->BindAction(TEXT("Dodge"), IE_Released, this, &APlayerCharacter::ReleaseDodge);
 
-	PlayerInputComponent->BindAction(TEXT("ToggleRun"), IE_Pressed, this, &APlayerCharacter::ToggleRun);
+	PlayerInputComponent->BindAction(TEXT("Run"), IE_Pressed, this, &APlayerCharacter::Run);
+	PlayerInputComponent->BindAction(TEXT("Run"), IE_Released, this, &APlayerCharacter::Walk);
 
 	PlayerInputComponent->BindAction<FIndexer>(TEXT("Weapon1"), IE_Pressed, this, &APlayerCharacter::SwapWeapon, static_cast<uint8>(0));
 	PlayerInputComponent->BindAction<FIndexer>(TEXT("Weapon2"), IE_Pressed, this, &APlayerCharacter::SwapWeapon, static_cast<uint8>(1));
@@ -200,12 +200,15 @@ void APlayerCharacter::AddPitchInput(float Value)
 		AddControllerPitchInput(Value);
 }
 
-void APlayerCharacter::ToggleRun()
+void APlayerCharacter::Run()
 {
-	bIsRun = !bIsRun;
-	SetSpeed(bIsRun ? RunSpeed : WalkSpeed);
+	SetSpeed(RunSpeed);
+	LockOff();
+}
 
-	if (bIsRun) LockOff();
+void APlayerCharacter::Walk()
+{
+	SetSpeed(WalkSpeed);
 }
 
 void APlayerCharacter::PressDodge()
@@ -268,8 +271,9 @@ void APlayerCharacter::LockOn()
 
 	if (LockOnEnemy)
 	{
+		GetCharacterMovement()->bOrientRotationToMovement = false;
 		LockOnEnemy->SetLockOn(true);
-		if (bIsRun) ToggleRun();
+		Walk();
 	}
 }
 
@@ -277,6 +281,7 @@ void APlayerCharacter::LockOff()
 {
 	if (!LockOnEnemy) return;
 	
+	GetCharacterMovement()->bOrientRotationToMovement = true;
 	LockOnEnemy->SetLockOn(false);
 	LockOnEnemy = nullptr;
 }
