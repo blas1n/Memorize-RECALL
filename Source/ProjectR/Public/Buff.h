@@ -3,17 +3,15 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameFramework/Actor.h"
+#include "UObject/NoExportTypes.h"
 #include "Buff.generated.h"
 
-UCLASS(Abstract, Blueprintable)
-class PROJECTR_API ABuff : public AActor
+UCLASS(Abstract, BlueprintType)
+class PROJECTR_API UBuff final : public UObject
 {
 	GENERATED_BODY()
-	
-public:
-	ABuff();
 
+public:
 	UFUNCTION(BlueprintCallable)
 	void ApplyBuff(class AProjectRCharacter* Target, float Duration);
 
@@ -21,9 +19,9 @@ public:
 	class UBuffStorage* CreateStorage() const;
 
 protected:
-	UFUNCTION(BlueprintImplementableEvent)
-	void OnBeginBuff(AProjectRCharacter* Target, UBuffStorage* BuffStorage);
+	UFUNCTION(BlueprintImplementableEvent, meta = (WorldContext = WorldContext))
+	void OnBeginBuff(UObject* WorldContext, AProjectRCharacter* Target, UBuffStorage* BuffStorage);
 
-	UFUNCTION(BlueprintImplementableEvent)
-	void OnEndBuff(AProjectRCharacter* Target, UBuffStorage* BuffStorage);
+	UFUNCTION(BlueprintImplementableEvent, meta = (WorldContext = WorldContext))
+	void OnEndBuff(UObject* WorldContext, AProjectRCharacter* Target, UBuffStorage* BuffStorage);
 };

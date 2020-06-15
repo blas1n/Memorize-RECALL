@@ -1,24 +1,22 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "Buff.h"
+#include "Engine/World.h"
+#include "TimerManager.h"
 #include "BuffStorage.h"
 #include "ProjectRCharacter.h"
-#include "TimerManager.h"
+#include "ProjectRPlayerState.h"
 
-ABuff::ABuff()
-	: Super()
+void UBuff::ApplyBuff(AProjectRCharacter* Target, float Duration)
 {
-	PrimaryActorTick.bCanEverTick = false;
-}
+	UWorld* World = Target->GetWorld();
 
-void ABuff::ApplyBuff(AProjectRCharacter* Target, float Duration)
-{
-	UBuffStorage* BuffStorage = *Target->GetBuffStorages().Find(GetClass());
-	OnBeginBuff(Target, BuffStorage);
+	UBuffStorage* BuffStorage = *Target->GetPlayerState<AProjectRPlayerState>()->GetBuffStorages().Find(GetClass());
+	OnBeginBuff(World, Target, BuffStorage);
 
 	FTimerHandle Handle;
-	GetWorldTimerManager().SetTimer(Handle, [this, Target, BuffStorage]
+	World->GetTimerManager().SetTimer(Handle, [this, Target, BuffStorage, World]
 		{
-			OnEndBuff(Target, BuffStorage);
+			OnEndBuff(World, Target, BuffStorage);
 		}, Duration, false);
 }
