@@ -3,54 +3,65 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameFramework/Actor.h"
+#include "UObject/NoExportTypes.h"
 #include "Skill.generated.h"
 
 UCLASS(Abstract, Blueprintable)
-class PROJECTR_API ASkill : public AActor
+class PROJECTR_API USkill final : public UObject
 {
 	GENERATED_BODY()
 	
-public:	
-	ASkill();
-
+public:
 	UFUNCTION(BlueprintNativeEvent)
-	void Initialize(class AWeapon* InWeapon);
+	void Initialize();
 
 	UFUNCTION(BlueprintCallable)
-	bool UseSkill();
+	void Use();
 
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
-	bool CanUseSkill();
+	bool CanUse();
+
+	UWorld* GetWorld() const override;
 
 protected:
-	void BeginPlay() override;
-
 	UFUNCTION(BlueprintImplementableEvent)
-	void OnSkill();
+	void OnUse();
 
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintCallable, meta = (BlueprintProtected))
 	bool IsNotCoolTime() const;
 
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintCallable, meta = (BlueprintProtected))
 	void ApplyCooltime();
+
+	UFUNCTION(BlueprintCallable, meta = (BlueprintProtected))
+	bool IsEnoughEnergy() const;
+
+	UFUNCTION(BlueprintCallable, meta = (BlueprintProtected))
+	void ApplyEnergy();
 
 	FORCEINLINE class AProjectRCharacter* GetUser() noexcept { return User; }
 	FORCEINLINE const AProjectRCharacter* GetUser() const noexcept { return User; }
 
+	FORCEINLINE class UWeapon* GetWeapon() noexcept { return Weapon; }
+	FORCEINLINE const UWeapon* GetWeapon() const noexcept { return Weapon; }
+
 private:
-	FORCEINLINE void Initialize_Implementation(AWeapon* InWeapon) { Weapon = InWeapon; }
-	FORCEINLINE bool CanUseSkill_Implementation() { return true; }
+	void Initialize_Implementation();
+
+	FORCEINLINE bool CanUse_Implementation() { return true; }
 
 private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Owner, meta = (AllowPrivateAccess = true))
-	class AProjectRCharacter* User;
+	AProjectRCharacter* User;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Owner, meta = (AllowPrivateAccess = true))
-	AWeapon* Weapon;
+	UWeapon* Weapon;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = Limit, meta = (AllowPrivateAccess = true))
 	float CoolTime;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Limit, meta = (AllowPrivateAccess = true))
+	uint8 UseEnergy;
 
 	float NextUseTime;
 };
