@@ -1,31 +1,36 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "ProjectRPlayerState.h"
+#include "GameFramework/Character.h"
+#include "GameFramework/CharacterMovementComponent.h"
 
-void AProjectRPlayerState::HealHealth(uint8 Value) noexcept
+void FStat::HealStat(uint8 Value) noexcept
 {
-	Health += Value;
-	Health = FMath::Clamp(Health, static_cast<uint8>(0u), MaxHealth);
+	CurStat += Value;
+	CurStat = FMath::Clamp(CurStat, static_cast<uint8>(0u), MaxStat);
 }
 
-void AProjectRPlayerState::SetMaxHealth(uint8 Value, bool bWithHealth) noexcept
+void FStat::HealStatByDamage(uint8 Damage) noexcept
 {
-	MaxHealth += Value;
-
-	if (bWithHealth)
-		Health += Value;
+	if (Damage > 0.0f && StatHeal != 0.0f)
+		HealStat(static_cast<float>(Damage) * StatHeal);
 }
 
-void AProjectRPlayerState::HealEnergy(uint8 Value) noexcept
+void FStat::SetMaxStat(uint8 Value, bool bWithCur) noexcept
 {
-	Energy += Value;
-	Energy = FMath::Clamp(Energy, static_cast<uint8>(0u), MaxEnergy);
+	MaxStat += Value;
+
+	if (bWithCur)
+		CurStat += Value;
 }
 
-void AProjectRPlayerState::SetMaxEnergy(uint8 Value, bool bWithHealth) noexcept
+void FStat::SetStatHeal(float Value) noexcept
 {
-	MaxEnergy += Value;
+	StatHeal = Value;
+}
 
-	if (bWithHealth)
-		Energy += Value;
+void AProjectRPlayerState::SetCrouchSpeed(float Value) noexcept
+{
+	GetPawn<ACharacter>()->GetCharacterMovement()
+		->MaxWalkSpeedCrouched = CrouchSpeed = Value;
 }
