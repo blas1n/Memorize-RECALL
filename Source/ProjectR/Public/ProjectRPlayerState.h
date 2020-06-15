@@ -6,31 +6,56 @@
 #include "GameFramework/PlayerState.h"
 #include "ProjectRPlayerState.generated.h"
 
+USTRUCT(Atomic, BlueprintType)
+struct FStat
+{
+	GENERATED_BODY()
+
+public:
+	UFUNCTION(BlueprintCallable)
+	void HealStat(uint8 Value) noexcept;
+
+	UFUNCTION(BlueprintCallable)
+	void HealStatByDamage(uint8 Damage) noexcept;
+
+	UFUNCTION(BlueprintCallable)
+	void SetMaxStat(uint8 Value, bool bWithCur = true) noexcept;
+
+	UFUNCTION(BlueprintCallable)
+	void SetStatHeal(float Value) noexcept;
+
+	FORCEINLINE uint8 GetStat() const noexcept { return CurStat; }
+	FORCEINLINE uint8 GetMaxStat() const noexcept { return MaxStat; }
+	FORCEINLINE float GetStatHeal() const noexcept { return StatHeal; }
+
+private:
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Stat, meta = (AllowPrivateAccess = true))
+	uint8 CurStat;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Stat, meta = (AllowPrivateAccess = true))
+	uint8 MaxStat;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Stat, meta = (AllowPrivateAccess = true))
+	float StatHeal;
+};
+
 UCLASS()
 class PROJECTR_API AProjectRPlayerState : public APlayerState
 {
 	GENERATED_BODY()
 
 public:
-	void HealHealth(uint8 Value) noexcept;
-	void SetMaxHealth(uint8 Value, bool bWithHealth = true) noexcept;
-	FORCEINLINE void SetHealthHeal(float Value) noexcept { HealthHeal = Value; }
+	FORCEINLINE FStat& GetHealth() noexcept { return Health; }
+	FORCEINLINE const FStat& GetHealth() const noexcept { return Health; }
 
-	void HealEnergy(uint8 Value) noexcept;
-	void SetMaxEnergy(uint8 Value, bool bWithHealth = true) noexcept;
-	FORCEINLINE void SetEnergyHeal(float Value) noexcept { EnergyHeal = Value; }
+	FORCEINLINE FStat& GetEnergy() noexcept { return Energy; }
+	FORCEINLINE const FStat& GetEnergy() const noexcept { return Energy; }
 
 	FORCEINLINE void SetRunSpeed(float Value) noexcept { RunSpeed = Value; }
 	FORCEINLINE void SetWalkSpeed(float Value) noexcept { WalkSpeed = Value; }
-	FORCEINLINE void SetCrouchSpeed(float Value) noexcept { CrouchSpeed = Value; }
 
-	FORCEINLINE uint8 GetHealth() const noexcept { return Health; }
-	FORCEINLINE uint8 GetMaxHealth() const noexcept { return MaxHealth; }
-	FORCEINLINE float GetHealthHeal() const noexcept { return HealthHeal; }
-
-	FORCEINLINE uint8 GetEnergy() const noexcept { return Energy; }
-	FORCEINLINE uint8 GetMaxEnergy() const noexcept { return MaxEnergy; }
-	FORCEINLINE float GetEnergyHeal() const noexcept { return EnergyHeal; }
+	UFUNCTION(BlueprintSetter)
+	void SetCrouchSpeed(float Value) noexcept;
 
 	FORCEINLINE float GetRunSpeed() const noexcept { return RunSpeed; }
 	FORCEINLINE float GetWalkSpeed() const noexcept { return WalkSpeed; }
@@ -40,23 +65,11 @@ public:
 	FORCEINLINE const TMap<TSubclassOf<UBuff>, UBuffStorage*>& GetBuffStorages() const noexcept { return BuffStorages; }
 
 private:
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Stat, meta = (AllowPrivateAccess = true))
-	uint8 Health;
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Stat, meta = (AllowPrivateAccess = true))
+	FStat Health;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Stat, meta = (AllowPrivateAccess = true))
-	uint8 MaxHealth;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Stat, meta = (AllowPrivateAccess = true))
-	float HealthHeal;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Stat, meta = (AllowPrivateAccess = true))
-	uint8 Energy;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Stat, meta = (AllowPrivateAccess = true))
-	uint8 MaxEnergy;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Stat, meta = (AllowPrivateAccess = true))
-	float EnergyHeal;
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Stat, meta = (AllowPrivateAccess = true))
+	FStat Energy;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Speed, meta = (AllowPrivateAccess = true))
 	float RunSpeed;
@@ -64,7 +77,7 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Speed, meta = (AllowPrivateAccess = true))
 	float WalkSpeed;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Speed, meta = (AllowPrivateAccess = true))
+	UPROPERTY(EditAnywhere, BlueprintSetter = SetCrouchSpeed, Category = Speed, meta = (AllowPrivateAccess = true))
 	float CrouchSpeed;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Buff, meta = (AllowPrivateAccess = true))
