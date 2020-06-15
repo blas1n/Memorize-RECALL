@@ -11,7 +11,7 @@ void UBuff::ApplyBuff(AProjectRCharacter* Target, float Duration)
 {
 	UWorld* World = Target->GetWorld();
 
-	UBuffStorage* BuffStorage = *Target->GetPlayerState<AProjectRPlayerState>()->GetBuffStorages().Find(GetClass());
+	auto* BuffStorage = *Target->GetPlayerState<AProjectRPlayerState>()->GetBuffStorages().Find(GetClass());
 	OnBeginBuff(World, Target, BuffStorage);
 
 	FTimerHandle Handle;
