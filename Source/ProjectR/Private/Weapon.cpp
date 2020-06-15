@@ -2,159 +2,91 @@
 
 #include "Weapon.h"
 #include "Animation/AnimInstance.h"
-#include "Animation/AnimMontage.h"
-#include "Animation/BlendSpaceBase.h"
-#include "Components/StaticMeshComponent.h"
-#include "Engine/World.h"
+#include "Components/SkeletalMeshComponent.h"
+#include "Engine/AssetManager.h"
+#include "Engine/StaticMesh.h"
 #include "ProjectRCharacter.h"
 #include "Skill.h"
 #include "WeaponData.h"
 
-AWeapon::AWeapon()
-	: Super()
+void UWeapon::Initialize(const FName& InName, const FWeaponData& Data)
 {
- 	PrimaryActorTick.bCanEverTick = false;
-	SetCanBeDamaged(false);
+	User = Cast<AProjectRCharacter>(GetOuter());
 
-	EquipMontage = nullptr;
-	AsyncLoadCount = 8;
-}
+	Name = InName;
+	Key = Data.Key;
+	UpperAnimInstance = Data.UpperAnimInstance;
+	RightWeaponTransform = Data.RightTransform;
+	LeftWeaponTransform = Data.LeftTransform;
+	
+	AsyncLoadCount = 2;
+	AsyncLoad(RightWeaponMesh, Data.RightMesh);
+	AsyncLoad(LeftWeaponMesh, Data.LeftMesh);
 
-void AWeapon::Initialize(const FWeaponData* WeaponData)
-{
-	Key = WeaponData->Key;
-	Name = WeaponData->Name;
+	Skills.SetNum(Data.Skills.Num());
 
-	LeftWeaponInfo.Transform = WeaponData->LeftTransform;
-	RightWeaponInfo.Transform = WeaponData->RightTransform;
-
-	AsyncLoad(LeftWeaponInfo.Mesh, WeaponData->LeftMesh);
-	AsyncLoad(RightWeaponInfo.Mesh, WeaponData->RightMesh);
-	AsyncLoad(LocomotionSpace, WeaponData->AnimData.LocomotionSpace);
-	AsyncLoad(JumpStart, WeaponData->AnimData.JumpStart);
-	AsyncLoad(JumpLoop, WeaponData->AnimData.JumpLoop);
-	AsyncLoad(JumpEnd, WeaponData->AnimData.JumpEnd);
-	AsyncLoad(DodgeMontage, WeaponData->AnimData.DodgeMontage);
-	AsyncLoad(EquipMontage, WeaponData->AnimData.EquipMontage);
-
-	FActorSpawnParameters SpawnParam;
-	SpawnParam.Owner = GetOwner();
-	SpawnParam.Instigator = GetInstigator();
-	SpawnParam.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-
-	Skills.SetNum(WeaponData->Skills.Num());
-
-	for (int32 Index = 0; Index < WeaponData->Skills.Num(); ++Index)
+	for (int32 Index = 0; Index < Data.Skills.Num(); ++Index)
 	{
-		TSubclassOf<ASkill> SkillClass = WeaponData->Skills[Index];
-		Skills[Index] = GetWorld()->SpawnActor<ASkill>(SkillClass, SpawnParam);
-		Skills[Index]->Initialize(this);
+		TSubclassOf<USkill> SkillClass = Data.Skills[Index];
+		Skills[Index] = NewObject<USkill>(this, SkillClass);
+		Skills[Index]->Initialize();
 	}
 }
 
-void AWeapon::Equip()
+void UWeapon::Equip()
 {
-	ACharacter* Character = Cast<ACharacter>(GetInstigator());
-
-	if (EquipMontage)
-		Character->PlayAnimMontage(EquipMontage);
-
-	EquipOnce(LeftWeapon, LeftWeaponInfo);
-	EquipOnce(RightWeapon, RightWeaponInfo);
-
-	LeftWeapon->OnComponentBeginOverlap.AddDynamic(this, &AWeapon::OnLeftWeaponOverlapped);
-	RightWeapon->OnComponentBeginOverlap.AddDynamic(this, &AWeapon::OnRightWeaponOverlapped);
-
-	UAnimInstance* AnimInstance = Character->GetMesh()->GetAnimInstance();
-	AnimInstance->OnMontageStarted.AddDynamic(this, &AWeapon::BeginSkill);
-	AnimInstance->OnMontageEnded.AddDynamic(this, &AWeapon::EndSkill);
-
-	OnActive.Broadcast();
+	auto* AnimInstance = User->GetMesh()->GetAnimInstance();
+	AnimInstance->LinkAnimClassLayers(UpperAnimInstance);
 }
 
-void AWeapon::Unequip()
+void UWeapon::Unequip()
 {
-	UnequipOnce(LeftWeapon);
-	UnequipOnce(RightWeapon);
-
-	LeftWeapon->OnComponentBeginOverlap.RemoveDynamic(this, &AWeapon::OnLeftWeaponOverlapped);
-	RightWeapon->OnComponentBeginOverlap.RemoveDynamic(this, &AWeapon::OnRightWeaponOverlapped);
-
-	UAnimInstance* AnimInstance = Cast<ACharacter>(GetInstigator())->GetMesh()->GetAnimInstance();
-	AnimInstance->OnMontageStarted.RemoveDynamic(this, &AWeapon::BeginSkill);
-	AnimInstance->OnMontageEnded.RemoveDynamic(this, &AWeapon::EndSkill);
-
-	OnInactive.Broadcast();
+	auto* AnimInstance = User->GetMesh()->GetAnimInstance();
+	AnimInstance->UnlinkAnimClassLayers(UpperAnimInstance);
 }
 
-bool AWeapon::UseSkill(uint8 Index)
+void UWeapon::UseSkill(uint8 Index)
 {
-	if (Skills.Num() > Index)
-		return Skills[Index]->UseSkill();
-	return false;
+	USkill* Skill = Skills[Index];
+	if (Skill) Skill->Use();
 }
 
-bool AWeapon::CanUseSkill(uint8 Index)
+bool UWeapon::CanUseSkill(uint8 Index)
 {
-	if (Skills.Num() > Index)
-		return Skills[Index]->CanUseSkill();
-	return false;
+	USkill* Skill = Skills[Index];
+	return Skill ? Skill->CanUse() : false;
 }
 
-void AWeapon::Dodge()
-{
-	ACharacter* Character = Cast<ACharacter>(GetInstigator());
-	Character->PlayAnimMontage(DodgeMontage);
-}
-
-void AWeapon::BeginSkill(UAnimMontage* Montage)
-{
-	OnBeginSkill.Broadcast();
-}
-
-void AWeapon::EndSkill(UAnimMontage* Montage, bool bInterrupted)
-{
-	OnEndSkill.Broadcast();
-}
-
-void AWeapon::RegisterOnAsyncLoadEnded(const FOnAsyncLoadEndedSingle& Callback)
+void UWeapon::RegisterOnAsyncLoadEnded(const FOnAsyncLoadEndedSingle& Callback)
 {
 	check(Callback.IsBound());
 	if (AsyncLoadCount) OnAsyncLoadEnded.Add(Callback);
 	else Callback.Execute();
 }
 
-void AWeapon::BeginPlay()
+void UWeapon::AsyncLoad(UStaticMesh*& Ptr, const TAssetPtr<UStaticMesh>& SoftPtr)
 {
-	Super::BeginPlay();
-	
-	AProjectRCharacter* Character = Cast<AProjectRCharacter>(GetInstigator());
-	LeftWeapon = Character->GetLeftWeapon();
-	RightWeapon = Character->GetRightWeapon();
-}
+	if (SoftPtr.IsNull())
+	{
+		CheckAndCallAsyncLoadDelegate();
+		return;
+	}
 
-void AWeapon::EquipOnce(UStaticMeshComponent* Weapon, const FWeaponInfo& Info)
-{
-	if (!Info.Mesh) return;
+	auto OnAsyncLoaded = [this, &Ptr = Ptr, &SoftPtr = SoftPtr]() mutable
+	{
+		Ptr = SoftPtr.Get();
+		CheckAndCallAsyncLoadDelegate();
+	};
 
-	Weapon->SetStaticMesh(Info.Mesh);
-	Weapon->SetRelativeTransform(Info.Transform);
-}
+	if (SoftPtr.IsPending())
+	{
+		FStreamableDelegate Callback;
+		Callback.BindLambda([this, OnAsyncLoaded = MoveTemp(OnAsyncLoaded)]() mutable
+		{
+			OnAsyncLoaded();
+		});
 
-void AWeapon::UnequipOnce(UStaticMeshComponent* Weapon)
-{
-	Weapon->SetStaticMesh(nullptr);
-	Weapon->SetRelativeTransform(FTransform{});
-}
-
-void AWeapon::OnLeftWeaponOverlapped(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, 
-	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
-{
-	OnLeftWeaponHitted.Broadcast(OtherActor);
-}
-
-void AWeapon::OnRightWeaponOverlapped(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
-	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
-{
-	OnRightWeaponHitted.Broadcast(OtherActor);
+		UAssetManager::GetStreamableManager().RequestAsyncLoad(SoftPtr.ToSoftObjectPath(), MoveTemp(Callback));
+	}
+	else OnAsyncLoaded();
 }
