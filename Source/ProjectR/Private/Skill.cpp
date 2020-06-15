@@ -3,39 +3,41 @@
 #include "Skill.h"
 #include "Engine/World.h"
 #include "ProjectRCharacter.h"
+#include "ProjectRPlayerState.h"
+#include "Weapon.h"
 
-ASkill::ASkill()
-	: Super()
+void USkill::Use()
 {
- 	PrimaryActorTick.bCanEverTick = false;
-
-	User = nullptr;
-	Weapon = nullptr;
-	CoolTime = 0.0f;
-	NextUseTime = 0.0f;
+	if (CanUse()) OnUse();
 }
 
-bool ASkill::UseSkill()
+UWorld* USkill::GetWorld() const
 {
-	if (!CanUseSkill())
-		return false;
-
-	OnSkill();
-	return true;
+	return User->GetWorld();
 }
 
-void ASkill::BeginPlay()
-{
-	User = Cast<AProjectRCharacter>(GetInstigator());
-	Super::BeginPlay();
-}
-
-bool ASkill::IsNotCoolTime() const
+bool USkill::IsNotCoolTime() const
 {
 	return FMath::IsNearlyEqual(NextUseTime, 0.0f) || NextUseTime <= GetWorld()->GetTimeSeconds();
 }
 
-void ASkill::ApplyCooltime()
+void USkill::ApplyCooltime()
 {
 	NextUseTime = GetWorld()->GetTimeSeconds() + CoolTime;
+}
+
+bool USkill::IsEnoughEnergy() const
+{
+	return User->GetPlayerState<AProjectRPlayerState>()->GetEnergy() >= UseEnergy;
+}
+
+void USkill::ApplyEnergy()
+{
+	User->GetPlayerState<AProjectRPlayerState>()->HealEnergy(-UseEnergy);
+}
+
+void USkill::Initialize_Implementation()
+{
+	Weapon = Cast<UWeapon>(GetOuter());
+	User = Cast<AProjectRCharacter>(Weapon->GetOuter());
 }
