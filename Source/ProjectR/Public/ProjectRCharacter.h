@@ -85,8 +85,11 @@ public:
 	FOnDamaged OnDamaged;
 
 private:
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Weapon, meta = (AllowPrivateAccess = true))
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = true))
 	UWeaponComponent* WeaponComponent;
+
+	UPROPERTY(EditAnywhere, Category = Data, meta = (AllowPrivateAccess = true))
+	FName StatDataRowName;
 
 	UPROPERTY()
 	UObject* Parrying;
