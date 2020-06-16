@@ -33,6 +33,7 @@ AProjectRCharacter::AProjectRCharacter()
 	LockedTarget = nullptr;
 	bIsCasting = false;
 	bCanMoving = true;
+	bIsRunning = false;
 	bIsDeath = false;
 }
 
@@ -72,12 +73,14 @@ void AProjectRCharacter::Run()
 {
 	GetCharacterMovement()->MaxWalkSpeed = GetPlayerState<AProjectRPlayerState>()->GetRunSpeed();
 	SetLockTarget(nullptr);
+	bIsRunning = true;
 	UnCrouch();
 }
 
 void AProjectRCharacter::Walk()
 {
 	GetCharacterMovement()->MaxWalkSpeed = GetPlayerState<AProjectRPlayerState>()->GetWalkSpeed();
+	bIsRunning = false;
 }
 
 void AProjectRCharacter::BeginPlay()
