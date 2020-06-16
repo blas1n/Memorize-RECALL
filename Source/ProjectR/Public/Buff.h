@@ -6,7 +6,7 @@
 #include "UObject/NoExportTypes.h"
 #include "Buff.generated.h"
 
-UCLASS(Abstract, BlueprintType)
+UCLASS(Abstract, Blueprintable)
 class PROJECTR_API UBuff final : public UObject
 {
 	GENERATED_BODY()
