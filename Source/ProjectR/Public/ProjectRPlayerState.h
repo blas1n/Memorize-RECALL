@@ -12,6 +12,8 @@ class PROJECTR_API AProjectRPlayerState : public APlayerState
 	GENERATED_BODY()
 
 public:
+	void InitFromDataTable(const FName& Name);
+
 	UFUNCTION(BlueprintCallable) 
 	void HealHealth(uint8 Value) noexcept;
 

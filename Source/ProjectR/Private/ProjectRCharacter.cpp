@@ -89,6 +89,8 @@ void AProjectRCharacter::BeginPlay()
 
 	OnAttack.AddDynamic(this, &AProjectRCharacter::HealHealthAndEnergy);
 
+	GetPlayerState<AProjectRPlayerState>()->InitFromDataTable(StatDataRowName);
+
 	TArray<FName> WeaponNames = GetWeaponNames();
 	uint8 WeaponNum = FMath::Min(WeaponNames.Num(), 3);
 

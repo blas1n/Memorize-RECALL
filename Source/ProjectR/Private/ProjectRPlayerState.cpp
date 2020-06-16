@@ -2,10 +2,29 @@
 
 #include "ProjectRPlayerState.h"
 #include "Engine/World.h"
-#include "GameFramework/Character.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
+#include "ProjectRCharacter.h"
+#include "ProjectRGameInstance.h"
 #include "ProjectRGameState.h"
+#include "StatData.h"
+
+void AProjectRPlayerState::InitFromDataTable(const FName& Name)
+{
+	const auto* GameInstance = Cast<UProjectRGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
+	const auto* DataTable = GameInstance->GetDataTable(TEXT("StatData"));
+	const auto& StatData = *DataTable->FindRow<FStatData>(Name, "", false);
+
+	SetMaxHealth(StatData.MaxHealth);
+	SetMaxHealth(StatData.HealthHeal);
+
+	SetMaxEnergy(StatData.MaxEnergy);
+	SetEnergyHeal(StatData.EnergyHeal);
+
+	SetRunSpeed(StatData.RunSpeed);
+	SetWalkSpeed(StatData.WalkSpeed);
+	SetCrouchSpeed(StatData.CrouchSpeed);
+}
 
 void AProjectRPlayerState::HealHealth(uint8 Value) noexcept
 {
