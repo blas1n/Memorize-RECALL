@@ -6,7 +6,7 @@
 #include "GameFramework/PlayerState.h"
 #include "ProjectRPlayerState.generated.h"
 
-UCLASS()
+UCLASS(BlueprintType)
 class PROJECTR_API AProjectRPlayerState : public APlayerState
 {
 	GENERATED_BODY()
