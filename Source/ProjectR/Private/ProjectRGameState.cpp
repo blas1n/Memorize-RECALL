@@ -13,7 +13,7 @@ UBuff* AProjectRGameState::GetBuffByClass(TSubclassOf<UBuff> BuffClass)
 void AProjectRGameState::InitBuffStorages(TMap<TSubclassOf<UBuff>, UBuffStorage*>& BuffStorages)
 {
 	for (const auto& Buff : Buffs)
-		BuffStorages.Add(Buff.Key, Buff.Value->CreateStorage());
+		BuffStorages.Add(Buff.Key, NewObject<UBuffStorage>(this, Buff.Value->GetBuffStorageClass()));
 }
 
 void AProjectRGameState::BeginPlay()
