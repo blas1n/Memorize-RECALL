@@ -79,6 +79,13 @@ void UWeaponComponent::EquipWeapon(UWeapon* NewWeapon)
 
 	CurWeapon->Equip();
 
+	FOnAsyncLoadEndedSingle Callback;
+	Callback.BindDynamic(this, &UWeaponComponent::SetWeaponMesh);
+	CurWeapon->RegisterOnAsyncLoadEnded(Callback);
+}
+
+void UWeaponComponent::SetWeaponMesh()
+{
 	RightWeapon->GetStaticMeshComponent()->SetStaticMesh(CurWeapon->GetRightWeaponMesh());
 	RightWeapon->SetActorRelativeTransform(CurWeapon->GetRightWeaponTransform());
 
@@ -102,12 +109,13 @@ AStaticMeshActor* UWeaponComponent::CreateWeaponActor(FName Socket)
 	FActorSpawnParameters Param;
 	Param.Owner = Param.Instigator = Cast<APawn>(GetOwner());
 	auto* WeaponActor = GetWorld()->SpawnActor<AStaticMeshActor>(Param);
+	WeaponActor->SetMobility(EComponentMobility::Movable);
 	WeaponActor->OnActorBeginOverlap.AddDynamic(this, &UWeaponComponent::OnWeaponOverlapped);
 
 	auto* MeshComponent = Cast<ACharacter>(GetOwner())->GetMesh();
 	auto Rules = FAttachmentTransformRules::SnapToTargetNotIncludingScale;
 	WeaponActor->AttachToComponent(MeshComponent, Rules, Socket);
-
+	
 	auto* WeaponComponent = WeaponActor->GetStaticMeshComponent();
 	WeaponComponent->CanCharacterStepUpOn = ECanBeCharacterBase::ECB_No;
 	WeaponComponent->SetCollisionProfileName(TEXT("Weapon"));

@@ -35,6 +35,8 @@ private:
 
 	void EquipWeapon(UWeapon* NewWeapon);
 
+	UFUNCTION()
+	void SetWeaponMesh();
 
 	UFUNCTION()
 	void OnWeaponOverlapped(AActor* OverlappedActor, AActor* OtherActor);
