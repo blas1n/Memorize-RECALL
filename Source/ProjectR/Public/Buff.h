@@ -15,13 +15,17 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void ApplyBuff(class AProjectRCharacter* Target, float Duration);
 
-	UFUNCTION(BlueprintImplementableEvent)
-	class UBuffStorage* CreateStorage() const;
+	FORCEINLINE const TSubclassOf<class UBuffStorage>&
+	GetBuffStorageClass() const { return BuffStorageClass; }
 
 protected:
-	UFUNCTION(BlueprintImplementableEvent, meta = (WorldContext = WorldContext))
-	void OnBeginBuff(UObject* WorldContext, AProjectRCharacter* Target, UBuffStorage* BuffStorage);
+	UFUNCTION(BlueprintImplementableEvent)
+	void OnBeginBuff(AProjectRCharacter* Target, UBuffStorage* BuffStorage);
 
-	UFUNCTION(BlueprintImplementableEvent, meta = (WorldContext = WorldContext))
-	void OnEndBuff(UObject* WorldContext, AProjectRCharacter* Target, UBuffStorage* BuffStorage);
+	UFUNCTION(BlueprintImplementableEvent)
+	void OnEndBuff(AProjectRCharacter* Target, UBuffStorage* BuffStorage);
+
+private:
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = BuffStorage, meta = (AllowPrivateAccess = true))
+	TSubclassOf<UBuffStorage> BuffStorageClass;
 };
