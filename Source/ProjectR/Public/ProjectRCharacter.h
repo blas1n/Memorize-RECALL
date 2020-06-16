@@ -10,7 +10,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnDeath, AController*, Instigator);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnAttack, AProjectRCharacter*, Target, uint8, Damage);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnDamaged, AController*, Instigator, uint8 , Damage);
 
-UCLASS()
+UCLASS(Abstract, Blueprintable)
 class PROJECTR_API AProjectRCharacter final : public ACharacter
 {
 	GENERATED_BODY()

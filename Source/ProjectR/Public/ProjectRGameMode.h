@@ -6,7 +6,7 @@
 #include "GameFramework/GameModeBase.h"
 #include "ProjectRGameMode.generated.h"
 
-UCLASS()
+UCLASS(Abstract, Blueprintable)
 class PROJECTR_API AProjectRGameMode : public AGameModeBase
 {
 	GENERATED_BODY()

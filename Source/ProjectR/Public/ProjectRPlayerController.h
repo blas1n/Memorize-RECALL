@@ -19,7 +19,7 @@ struct FKeyHolder
 	float Duration;
 };
 
-UCLASS()
+UCLASS(Abstract, Blueprintable)
 class PROJECTR_API AProjectRPlayerController final : public APlayerController
 {
 	GENERATED_BODY()
