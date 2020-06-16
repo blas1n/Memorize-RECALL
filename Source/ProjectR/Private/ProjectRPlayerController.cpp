@@ -15,6 +15,7 @@ void AProjectRPlayerController::BeginPlay()
 	Super::BeginPlay();
 
 	User = GetPawn<AProjectRCharacter>();
+	check(IsValid(User));
 
 	auto OnShort = FOnKeyHolderUsed::CreateLambda([WeaponComponent = User->GetWeaponComponent()]
 		{ WeaponComponent->UseSkill(5); });
@@ -26,6 +27,8 @@ void AProjectRPlayerController::BeginPlay()
 
 void AProjectRPlayerController::Tick(float DeltaSeconds)
 {
+	if (!IsValid(User->GetLockedTarget())) return;
+
 	const FVector UserLocation = User->GetActorLocation();
 	const FVector TargetLocation = User->GetLockedTarget()->GetActorLocation();
 	const float LengthSquare = (TargetLocation - UserLocation).SizeSquared();
