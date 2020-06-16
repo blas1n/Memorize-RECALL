@@ -45,6 +45,7 @@ public:
 	FORCEINLINE bool CanMoving() const noexcept { return bCanMoving; }
 	FORCEINLINE void SetMove(bool bCanMove) noexcept { bCanMoving = bCanMove; }
 
+	FORCEINLINE bool IsRunning() const noexcept { return bIsRunning; }
 	FORCEINLINE bool IsDeath() const noexcept { return bIsDeath; }
 
 protected:
@@ -95,5 +96,6 @@ private:
 
 	uint8 bIsCasting : 1;
 	uint8 bCanMoving : 1;
+	uint8 bIsRunning : 1;
 	uint8 bIsDeath : 1;
 };
