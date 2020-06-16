@@ -36,8 +36,11 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void SetEnergyHeal(float Value) noexcept;
 
-	FORCEINLINE void SetRunSpeed(float Value) noexcept { RunSpeed = Value; }
-	FORCEINLINE void SetWalkSpeed(float Value) noexcept { WalkSpeed = Value; }
+	UFUNCTION(BlueprintSetter)
+	void SetRunSpeed(float Value) noexcept;
+
+	UFUNCTION(BlueprintSetter)
+	void SetWalkSpeed(float Value) noexcept;
 
 	UFUNCTION(BlueprintSetter)
 	void SetCrouchSpeed(float Value) noexcept;
@@ -79,10 +82,10 @@ private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Stat, meta = (AllowPrivateAccess = true))
 	float EnergyHeal;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Speed, meta = (AllowPrivateAccess = true))
+	UPROPERTY(EditAnywhere, BlueprintSetter = SetRunSpeed, Category = Speed, meta = (AllowPrivateAccess = true))
 	float RunSpeed;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Speed, meta = (AllowPrivateAccess = true))
+	UPROPERTY(EditAnywhere, BlueprintSetter = SetWalkSpeed, Category = Speed, meta = (AllowPrivateAccess = true))
 	float WalkSpeed;
 
 	UPROPERTY(EditAnywhere, BlueprintSetter = SetCrouchSpeed, Category = Speed, meta = (AllowPrivateAccess = true))

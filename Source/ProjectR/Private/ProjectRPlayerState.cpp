@@ -53,6 +53,24 @@ void AProjectRPlayerState::SetEnergyHeal(float Value) noexcept
 	EnergyHeal = Value;
 }
 
+void AProjectRPlayerState::SetRunSpeed(float Value) noexcept
+{
+	RunSpeed = Value;
+
+	auto* User = GetPawn<AProjectRCharacter>();
+	if (IsValid(User) && User->IsRunning())
+		User->GetCharacterMovement()->MaxWalkSpeed = RunSpeed;
+}
+
+void AProjectRPlayerState::SetWalkSpeed(float Value) noexcept
+{
+	WalkSpeed = Value;
+
+	auto* User = GetPawn<AProjectRCharacter>();
+	if (IsValid(User) && !User->IsRunning())
+		User->GetCharacterMovement()->MaxWalkSpeed = WalkSpeed;
+}
+
 void AProjectRPlayerState::SetCrouchSpeed(float Value) noexcept
 {
 	GetPawn<ACharacter>()->GetCharacterMovement()
