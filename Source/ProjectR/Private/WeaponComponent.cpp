@@ -102,6 +102,7 @@ AStaticMeshActor* UWeaponComponent::CreateWeaponActor(FName Socket)
 	FActorSpawnParameters Param;
 	Param.Owner = Param.Instigator = Cast<APawn>(GetOwner());
 	auto* WeaponActor = GetWorld()->SpawnActor<AStaticMeshActor>(Param);
+	WeaponActor->OnActorBeginOverlap.AddDynamic(this, &UWeaponComponent::OnWeaponOverlapped);
 
 	auto* MeshComponent = Cast<ACharacter>(GetOwner())->GetMesh();
 	auto Rules = FAttachmentTransformRules::SnapToTargetNotIncludingScale;

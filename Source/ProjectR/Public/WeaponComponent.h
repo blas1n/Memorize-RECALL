@@ -37,8 +37,7 @@ private:
 
 
 	UFUNCTION()
-	void OnWeaponOverlapped(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
-		UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+	void OnWeaponOverlapped(AActor* OverlappedActor, AActor* OtherActor);
 
 	UFUNCTION()
 	void EnableRagdoll(AController* Instigator);
