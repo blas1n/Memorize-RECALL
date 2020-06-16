@@ -8,8 +8,8 @@
 
 DECLARE_DYNAMIC_DELEGATE(FOnAsyncLoadEndedSingle);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnAsyncLoadEnded);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnActive);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnInactive);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnEquipped);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnUnequipped);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnBeginSkill);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnEndSkill);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnBeginAttack);
@@ -52,10 +52,10 @@ private:
 
 public:
 	UPROPERTY(BlueprintAssignable)
-	FOnActive OnActive;
+	FOnEquipped OnEquipped;
 
 	UPROPERTY(BlueprintAssignable)
-	FOnInactive OnInactive;
+	FOnUnequipped OnUnequipped;
 
 	UPROPERTY(BlueprintAssignable)
 	FOnBeginSkill OnBeginSkill;
