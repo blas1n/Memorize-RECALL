@@ -31,9 +31,11 @@ public:
 
 private:
 	void BeginPlay() override;
+	void EndPlay(EEndPlayReason::Type EndPlayReason);
+
 	void EquipWeapon(UWeapon* NewWeapon);
 	UWeapon* CreateWeapon(const FName& Name);
-	
+
 	UFUNCTION()
 	void OnWeaponOverlapped(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
 		UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
@@ -41,12 +43,15 @@ private:
 	UFUNCTION()
 	void EnableRagdoll(AController* Instigator);
 
+	class AStaticMeshActor* CreateWeaponActor(FName Socket);
+	void DetachWeapon(AStaticMeshActor* Weapon);
+
 private:
 	UPROPERTY()
-	class UStaticMeshComponent* RightWeapon;
+	AStaticMeshActor* RightWeapon;
 
 	UPROPERTY()
-	class UStaticMeshComponent* LeftWeapon;
+	AStaticMeshActor* LeftWeapon;
 
 	UPROPERTY()
 	TArray<UWeapon*> Weapons;

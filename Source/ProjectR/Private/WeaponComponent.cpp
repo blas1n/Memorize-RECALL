@@ -4,6 +4,7 @@
 #include "Components/SkeletalMeshComponent.h"
 #include "Components/StaticMeshComponent.h"
 #include "Engine/DataTable.h"
+#include "Engine/StaticMeshActor.h"
 #include "Kismet/GameplayStatics.h"
 #include "ProjectRCharacter.h"
 #include "ProjectRGameInstance.h"
@@ -15,16 +16,8 @@ UWeaponComponent::UWeaponComponent()
 {
 	PrimaryComponentTick.bCanEverTick = false;
 
-	RightWeapon = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Right Weapon"));
-	RightWeapon->CanCharacterStepUpOn = ECanBeCharacterBase::ECB_No;
-	RightWeapon->SetCollisionProfileName(TEXT("Weapon"));
-	RightWeapon->SetGenerateOverlapEvents(false);
-
-	LeftWeapon = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Left Weapon"));
-	LeftWeapon->CanCharacterStepUpOn = ECanBeCharacterBase::ECB_No;
-	LeftWeapon->SetCollisionProfileName(TEXT("Weapon"));
-	LeftWeapon->SetGenerateOverlapEvents(false);
-
+	RightWeapon = nullptr;
+	LeftWeapon = nullptr;
 	Weapons.Init(nullptr, 3);
 	CurWeapon = nullptr;
 	CurIndex = 0;
@@ -63,9 +56,17 @@ void UWeaponComponent::BeginPlay()
 	auto* User = Cast<AProjectRCharacter>(GetOwner());
 	User->OnDeath.AddDynamic(this, &UWeaponComponent::EnableRagdoll);
 
-	auto* MeshComponent = User->GetMesh();
-	RightWeapon->SetupAttachment(MeshComponent, TEXT("weapon_r"));
-	LeftWeapon->SetupAttachment(MeshComponent, TEXT("weapon_l"));
+	FActorSpawnParameters Param;
+	Param.Owner = Param.Instigator = Cast<APawn>(GetOwner());
+
+	RightWeapon = CreateWeaponActor(TEXT("weapon_r"));
+	LeftWeapon = CreateWeaponActor(TEXT("weapon_l"));
+}
+
+void UWeaponComponent::EndPlay(EEndPlayReason::Type EndPlayReason)
+{
+	RightWeapon->Destroy();
+	LeftWeapon->Destroy();
 }
 
 void UWeaponComponent::EquipWeapon(UWeapon* NewWeapon)
@@ -78,11 +79,11 @@ void UWeaponComponent::EquipWeapon(UWeapon* NewWeapon)
 
 	CurWeapon->Equip();
 
-	RightWeapon->SetStaticMesh(CurWeapon->GetRightWeaponMesh());
-	RightWeapon->SetRelativeTransform(CurWeapon->GetRightWeaponTransform());
+	RightWeapon->GetStaticMeshComponent()->SetStaticMesh(CurWeapon->GetRightWeaponMesh());
+	RightWeapon->SetActorRelativeTransform(CurWeapon->GetRightWeaponTransform());
 
-	LeftWeapon->SetStaticMesh(CurWeapon->GetLeftWeaponMesh());
-	LeftWeapon->SetRelativeTransform(CurWeapon->GetLeftWeaponTransform());
+	LeftWeapon->GetStaticMeshComponent()->SetStaticMesh(CurWeapon->GetLeftWeaponMesh());
+	LeftWeapon->SetActorRelativeTransform(CurWeapon->GetLeftWeaponTransform());
 }
 
 UWeapon* UWeaponComponent::CreateWeapon(const FName& Name)
@@ -104,13 +105,34 @@ void UWeaponComponent::OnWeaponOverlapped(UPrimitiveComponent* OverlappedCompone
 
 void UWeaponComponent::EnableRagdoll(AController* Instigator)
 {
-	FDetachmentTransformRules Rules = FDetachmentTransformRules{ EDetachmentRule::KeepWorld, true };
+	DetachWeapon(RightWeapon);
+	DetachWeapon(LeftWeapon);
+}
 
-	LeftWeapon->SetCollisionProfileName(TEXT("Ragdoll"));
-	LeftWeapon->SetSimulatePhysics(true);
-	LeftWeapon->DetachFromComponent(Rules);
+AStaticMeshActor* UWeaponComponent::CreateWeaponActor(FName Socket)
+{
+	FActorSpawnParameters Param;
+	Param.Owner = Param.Instigator = Cast<APawn>(GetOwner());
+	auto* WeaponActor = GetWorld()->SpawnActor<AStaticMeshActor>(Param);
 
-	RightWeapon->SetCollisionProfileName(TEXT("Ragdoll"));
-	RightWeapon->SetSimulatePhysics(true);
-	RightWeapon->DetachFromComponent(Rules);
+	auto* MeshComponent = Cast<ACharacter>(GetOwner())->GetMesh();
+	auto Rules = FAttachmentTransformRules::SnapToTargetNotIncludingScale;
+	WeaponActor->AttachToComponent(MeshComponent, Rules, Socket);
+
+	auto* WeaponComponent = WeaponActor->GetStaticMeshComponent();
+	WeaponComponent->CanCharacterStepUpOn = ECanBeCharacterBase::ECB_No;
+	WeaponComponent->SetCollisionProfileName(TEXT("Weapon"));
+	WeaponComponent->SetGenerateOverlapEvents(false);
+
+	return WeaponActor;
+}
+
+void UWeaponComponent::DetachWeapon(AStaticMeshActor* Weapon)
+{
+	auto Component = Weapon->GetStaticMeshComponent();
+	Component->SetCollisionProfileName(TEXT("Ragdoll"));
+	Component->SetSimulatePhysics(true);
+
+	auto Rules = FDetachmentTransformRules::KeepWorldTransform;
+	Weapon->DetachFromActor(Rules);
 }
