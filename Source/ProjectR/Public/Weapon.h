@@ -24,7 +24,7 @@ class PROJECTR_API UWeapon final : public UObject
 	GENERATED_BODY()
 	
 public:
-	void Initialize(const FName& InName, const struct FWeaponData& Data);
+	void Initialize(const FName& InName);
 
 	void Equip();
 	void Unequip();
