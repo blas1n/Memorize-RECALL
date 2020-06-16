@@ -50,6 +50,7 @@ void UWeaponComponent::SwapWeapon(uint8 Index)
 
 void UWeaponComponent::SetNewWeapon(FName Name, uint8 Index)
 {
+	check(Index < 3);
 	Weapons[Index] = CreateWeapon(Name);
 	if (CurIndex == Index)
 		EquipWeapon(Weapons[Index]);
