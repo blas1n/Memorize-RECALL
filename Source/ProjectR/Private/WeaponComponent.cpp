@@ -4,8 +4,8 @@
 #include "Components/SkeletalMeshComponent.h"
 #include "Components/StaticMeshComponent.h"
 #include "Engine/DataTable.h"
-#include "GameFramework/Character.h"
 #include "Kismet/GameplayStatics.h"
+#include "ProjectRCharacter.h"
 #include "ProjectRGameInstance.h"
 #include "Weapon.h"
 #include "WeaponData.h"
@@ -60,7 +60,10 @@ void UWeaponComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
-	auto* MeshComponent = Cast<ACharacter>(GetOwner())->GetMesh();
+	auto* User = Cast<AProjectRCharacter>(GetOwner());
+	User->OnDeath.AddDynamic(this, &UWeaponComponent::EnableRagdoll);
+
+	auto* MeshComponent = User->GetMesh();
 	RightWeapon->SetupAttachment(MeshComponent, TEXT("weapon_r"));
 	LeftWeapon->SetupAttachment(MeshComponent, TEXT("weapon_l"));
 }
