@@ -72,6 +72,8 @@ private:
 	UFUNCTION()
 	void HealHealthAndEnergy(AProjectRCharacter* Target, uint8 Damage);
 
+	void SetControlRotationIfLocked(float DeltaSeconds);
+
 	void Death();
 
 public:
