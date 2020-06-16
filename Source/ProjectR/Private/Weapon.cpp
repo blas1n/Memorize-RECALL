@@ -37,12 +37,14 @@ void UWeapon::Equip()
 {
 	auto* AnimInstance = User->GetMesh()->GetAnimInstance();
 	AnimInstance->LinkAnimClassLayers(UpperAnimInstance);
+	OnEquipped.Broadcast();
 }
 
 void UWeapon::Unequip()
 {
 	auto* AnimInstance = User->GetMesh()->GetAnimInstance();
 	AnimInstance->UnlinkAnimClassLayers(UpperAnimInstance);
+	OnUnequipped.Broadcast();
 }
 
 void UWeapon::UseSkill(uint8 Index)
