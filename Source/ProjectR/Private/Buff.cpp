@@ -9,14 +9,12 @@
 
 void UBuff::ApplyBuff(AProjectRCharacter* Target, float Duration)
 {
-	UWorld* World = Target->GetWorld();
-
 	auto* BuffStorage = *Target->GetPlayerState<AProjectRPlayerState>()->GetBuffStorages().Find(GetClass());
-	OnBeginBuff(World, Target, BuffStorage);
+	OnBeginBuff(Target, BuffStorage);
 
 	FTimerHandle Handle;
-	World->GetTimerManager().SetTimer(Handle, [this, Target, BuffStorage, World]
+	Target->GetWorld()->GetTimerManager().SetTimer(Handle, [this, Target, BuffStorage]
 		{
-			OnEndBuff(World, Target, BuffStorage);
+			OnEndBuff(Target, BuffStorage);
 		}, Duration, false);
 }
