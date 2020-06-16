@@ -26,11 +26,20 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void SetNewWeapon(FName Name, uint8 Index);
 
+	FORCEINLINE class UWeapon* GetWeapon() const noexcept { return CurWeapon; }
+	FORCEINLINE uint8 GetWeaponIndex() const noexcept { return CurIndex; }
+
 private:
 	void BeginPlay() override;
-	class UWeapon* CreateWeapon(const FName& Name);
 	void EquipWeapon(UWeapon* NewWeapon);
-	void EnableRagdoll();
+	UWeapon* CreateWeapon(const FName& Name);
+	
+	UFUNCTION()
+	void OnWeaponOverlapped(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
+		UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+
+	UFUNCTION()
+	void EnableRagdoll(AController* Instigator);
 
 private:
 	UPROPERTY()
