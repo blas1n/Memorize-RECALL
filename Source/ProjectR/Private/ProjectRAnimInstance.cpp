@@ -28,6 +28,8 @@ void UProjectRAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 {
 	Super::NativeUpdateAnimation(DeltaSeconds);
 
+	if (!IsValid(User)) return;
+
 	Speed = User->GetVelocity().Size();
 	bIsInAir = User->GetCharacterMovement()->IsFalling();
 }
