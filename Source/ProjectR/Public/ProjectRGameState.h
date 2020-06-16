@@ -6,7 +6,7 @@
 #include "GameFramework/GameStateBase.h"
 #include "ProjectRGameState.generated.h"
 
-UCLASS()
+UCLASS(BlueprintType)
 class PROJECTR_API AProjectRGameState final : public AGameStateBase
 {
 	GENERATED_BODY()
