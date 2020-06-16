@@ -55,14 +55,13 @@ void UWeapon::Unequip()
 
 void UWeapon::UseSkill(uint8 Index)
 {
-	USkill* Skill = Skills[Index];
-	if (Skill) Skill->Use();
+	if (Skills.Num() > Index)
+		Skills[Index]->Use();
 }
 
 bool UWeapon::CanUseSkill(uint8 Index)
 {
-	USkill* Skill = Skills[Index];
-	return Skill ? Skill->CanUse() : false;
+	return Skills.Num() > Index ? Skills[Index]->CanUse() : false;
 }
 
 void UWeapon::RegisterOnAsyncLoadEnded(const FOnAsyncLoadEndedSingle& Callback)
