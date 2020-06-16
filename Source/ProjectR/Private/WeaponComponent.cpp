@@ -65,17 +65,6 @@ void UWeaponComponent::BeginPlay()
 	LeftWeapon->SetupAttachment(MeshComponent, TEXT("weapon_l"));
 }
 
-UWeapon* UWeaponComponent::CreateWeapon(const FName& Name)
-{
-	UWeapon* Ret = NewObject<UWeapon>(GetOwner());
-
-	const auto* GameInstance = Cast<UProjectRGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
-	const UDataTable* DataTable = GameInstance->GetDataTable(TEXT("WeaponData"));
-	const FWeaponData* WeaponData = DataTable->FindRow<FWeaponData>(Name, "", false);
-	Ret->Initialize(Name, *WeaponData);
-	return Ret;
-}
-
 void UWeaponComponent::EquipWeapon(UWeapon* NewWeapon)
 {
 	if (CurWeapon)
@@ -93,7 +82,24 @@ void UWeaponComponent::EquipWeapon(UWeapon* NewWeapon)
 	LeftWeapon->SetRelativeTransform(CurWeapon->GetLeftWeaponTransform());
 }
 
-void UWeaponComponent::EnableRagdoll()
+UWeapon* UWeaponComponent::CreateWeapon(const FName& Name)
+{
+	UWeapon* Ret = NewObject<UWeapon>(GetOwner());
+
+	const auto* GameInstance = Cast<UProjectRGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
+	const UDataTable* DataTable = GameInstance->GetDataTable(TEXT("WeaponData"));
+	const FWeaponData* WeaponData = DataTable->FindRow<FWeaponData>(Name, "", false);
+	Ret->Initialize(Name, *WeaponData);
+	return Ret;
+}
+
+void UWeaponComponent::OnWeaponOverlapped(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
+	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+	CurWeapon->OnWeaponHitted.Broadcast(Cast<AProjectRCharacter>(OtherActor));
+}
+
+void UWeaponComponent::EnableRagdoll(AController* Instigator)
 {
 	FDetachmentTransformRules Rules = FDetachmentTransformRules{ EDetachmentRule::KeepWorld, true };
 
