@@ -63,7 +63,6 @@ void AProjectRCharacter::EndParrying(UObject* InParrying)
 void AProjectRCharacter::SetLockTarget(AProjectRCharacter* Target)
 {
 	const bool bIsLockOn = Target != nullptr;
-	GetCharacterMovement()->bOrientRotationToMovement = !bIsLockOn;
 	bIsLockOn ? Target->OnLockedOn(this) : LockedTarget->OnLockedOff(this);
 	LockedTarget = Target;
 	if (bIsLockOn) Walk();
@@ -107,20 +106,11 @@ void AProjectRCharacter::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
 
-	if (!LockedTarget) return;
+	SetControlRotationIfLocked(DeltaSeconds);
 
-	if (LockedTarget->IsDeath())
-	{
-		SetLockTarget(nullptr);
-		return;
-	}
+	if (!LockedTarget && GetCharacterMovement()->Velocity.SizeSquared() <= 0.0f) return;
 
-	const FVector TargetLocation = LockedTarget->GetActorLocation();
-	const FRotator LookRotation = UKismetMathLibrary::FindLookAtRotation(GetViewLocation(), TargetLocation);
-	const FRotator NowRotation = FMath::Lerp(GetControlRotation(), LookRotation, DeltaSeconds * 5.0f);
-	GetController()->SetControlRotation(NowRotation);
-
-	FRotator NewRotation = UKismetMathLibrary::FindLookAtRotation(GetActorLocation(), TargetLocation);
+	FRotator NewRotation = GetControlRotation();
 	NewRotation.Roll = NewRotation.Pitch = 0.0f;
 	SetActorRotation(FMath::Lerp(GetActorRotation(), NewRotation, DeltaSeconds * 10.0f));
 }
@@ -151,6 +141,22 @@ void AProjectRCharacter::HealHealthAndEnergy(AProjectRCharacter* Target, uint8 D
 	auto* MyPlayerState = GetPlayerState<AProjectRPlayerState>();
 	MyPlayerState->HealHealthByDamage(Damage);
 	MyPlayerState->HealEnergyByDamage(Damage);
+}
+
+void AProjectRCharacter::SetControlRotationIfLocked(float DeltaSeconds)
+{
+	if (!LockedTarget) return;
+
+	if (LockedTarget->IsDeath())
+	{
+		SetLockTarget(nullptr);
+		return;
+	}
+
+	const FVector TargetLocation = LockedTarget->GetActorLocation();
+	const FRotator LookRotation = UKismetMathLibrary::FindLookAtRotation(GetViewLocation(), TargetLocation);
+	const FRotator NowRotation = FMath::Lerp(GetControlRotation(), LookRotation, DeltaSeconds * 5.0f);
+	GetController()->SetControlRotation(NowRotation);
 }
 
 void AProjectRCharacter::Death()
