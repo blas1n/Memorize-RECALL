@@ -3,13 +3,10 @@
 #include "WeaponComponent.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "Components/StaticMeshComponent.h"
-#include "Engine/DataTable.h"
 #include "Engine/StaticMeshActor.h"
 #include "Kismet/GameplayStatics.h"
 #include "ProjectRCharacter.h"
-#include "ProjectRGameInstance.h"
 #include "Weapon.h"
-#include "WeaponData.h"
 
 UWeaponComponent::UWeaponComponent()
 	: Super()
@@ -89,11 +86,7 @@ void UWeaponComponent::EquipWeapon(UWeapon* NewWeapon)
 UWeapon* UWeaponComponent::CreateWeapon(const FName& Name)
 {
 	UWeapon* Ret = NewObject<UWeapon>(GetOwner());
-
-	const auto* GameInstance = Cast<UProjectRGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
-	const UDataTable* DataTable = GameInstance->GetDataTable(TEXT("WeaponData"));
-	const FWeaponData* WeaponData = DataTable->FindRow<FWeaponData>(Name, "", false);
-	Ret->Initialize(Name, *WeaponData);
+	Ret->Initialize(Name);
 	return Ret;
 }
 

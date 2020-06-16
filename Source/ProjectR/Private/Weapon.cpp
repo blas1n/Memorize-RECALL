@@ -5,29 +5,35 @@
 #include "Components/SkeletalMeshComponent.h"
 #include "Engine/AssetManager.h"
 #include "Engine/StaticMesh.h"
+#include "Kismet/GameplayStatics.h"
 #include "ProjectRCharacter.h"
+#include "ProjectRGameInstance.h"
 #include "Skill.h"
 #include "WeaponData.h"
 
-void UWeapon::Initialize(const FName& InName, const FWeaponData& Data)
+void UWeapon::Initialize(const FName& InName)
 {
 	User = Cast<AProjectRCharacter>(GetOuter());
-
 	Name = InName;
-	Key = Data.Key;
-	UpperAnimInstance = Data.UpperAnimInstance;
-	RightWeaponTransform = Data.RightTransform;
-	LeftWeaponTransform = Data.LeftTransform;
+
+	const auto* GameInstance = Cast<UProjectRGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
+	const auto* DataTable = GameInstance->GetDataTable(TEXT("WeaponData"));
+	const auto& WeaponData = *DataTable->FindRow<FWeaponData>(Name, "", false);
+
+	Key = WeaponData.Key;
+	UpperAnimInstance = WeaponData.UpperAnimInstance;
+	RightWeaponTransform = WeaponData.RightTransform;
+	LeftWeaponTransform = WeaponData.LeftTransform;
 	
 	AsyncLoadCount = 2;
-	AsyncLoad(RightWeaponMesh, Data.RightMesh);
-	AsyncLoad(LeftWeaponMesh, Data.LeftMesh);
+	AsyncLoad(RightWeaponMesh, WeaponData.RightMesh);
+	AsyncLoad(LeftWeaponMesh, WeaponData.LeftMesh);
 
-	Skills.SetNum(Data.Skills.Num());
+	Skills.SetNum(WeaponData.Skills.Num());
 
-	for (int32 Index = 0; Index < Data.Skills.Num(); ++Index)
+	for (int32 Index = 0; Index < WeaponData.Skills.Num(); ++Index)
 	{
-		TSubclassOf<USkill> SkillClass = Data.Skills[Index];
+		TSubclassOf<USkill> SkillClass = WeaponData.Skills[Index];
 		Skills[Index] = NewObject<USkill>(this, SkillClass);
 		Skills[Index]->Initialize();
 	}
