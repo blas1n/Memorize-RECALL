@@ -16,8 +16,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnBeginAttack);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnEndAttack);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnShoot);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnExecute);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnLeftWeaponHitted, class AProjectRCharacter*, Target);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnRightWeaponHitted, class AProjectRCharacter*, Target);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnWeaponHitted, class AProjectRCharacter*, Target);
 
 UCLASS(BlueprintType)
 class PROJECTR_API UWeapon final : public UObject
@@ -76,10 +75,7 @@ public:
 	FOnExecute OnExecute;
 
 	UPROPERTY(BlueprintAssignable)
-	FOnLeftWeaponHitted OnLeftWeaponHitted;
-
-	UPROPERTY(BlueprintAssignable)
-	FOnRightWeaponHitted OnRightWeaponHitted;
+	FOnWeaponHitted OnWeaponHitted;
 
 private:
 	UPROPERTY()
