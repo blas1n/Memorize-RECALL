@@ -34,7 +34,7 @@ private:
 	void EndPlay(EEndPlayReason::Type EndPlayReason);
 
 	void EquipWeapon(UWeapon* NewWeapon);
-	UWeapon* CreateWeapon(const FName& Name);
+
 
 	UFUNCTION()
 	void OnWeaponOverlapped(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,

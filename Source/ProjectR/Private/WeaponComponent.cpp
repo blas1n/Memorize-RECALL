@@ -41,7 +41,10 @@ void UWeaponComponent::SwapWeapon(uint8 Index)
 void UWeaponComponent::SetNewWeapon(FName Name, uint8 Index)
 {
 	check(Index < 3);
-	Weapons[Index] = CreateWeapon(Name);
+
+	Weapons[Index] = NewObject<UWeapon>(GetOwner());
+	Weapons[Index]->Initialize(Name);
+
 	if (CurIndex == Index)
 		EquipWeapon(Weapons[Index]);
 }
@@ -83,15 +86,7 @@ void UWeaponComponent::EquipWeapon(UWeapon* NewWeapon)
 	LeftWeapon->SetActorRelativeTransform(CurWeapon->GetLeftWeaponTransform());
 }
 
-UWeapon* UWeaponComponent::CreateWeapon(const FName& Name)
-{
-	UWeapon* Ret = NewObject<UWeapon>(GetOwner());
-	Ret->Initialize(Name);
-	return Ret;
-}
-
-void UWeaponComponent::OnWeaponOverlapped(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
-	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+void UWeaponComponent::OnWeaponOverlapped(AActor* OverlappedActor, AActor* OtherActor)
 {
 	CurWeapon->OnWeaponHitted.Broadcast(Cast<AProjectRCharacter>(OtherActor));
 }
