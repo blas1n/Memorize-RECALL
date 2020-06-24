@@ -39,14 +39,14 @@ public:
 	FORCEINLINE class UWeaponComponent* GetWeaponComponent() const noexcept { return WeaponComponent; }
 	FORCEINLINE AProjectRCharacter* GetLockedTarget() const noexcept { return LockedTarget; }
 
+	FORCEINLINE bool IsRunning() const noexcept { return bIsRunning; }
+	FORCEINLINE bool IsDeath() const noexcept { return bIsDeath; }
+
 	FORCEINLINE bool IsCasting() const noexcept { return bIsCasting; }
 	FORCEINLINE void SetCast(bool bIsCast) noexcept { bIsCasting = bIsCast; }
 
 	FORCEINLINE bool CanMoving() const noexcept { return bCanMoving; }
 	FORCEINLINE void SetMove(bool bCanMove) noexcept { bCanMoving = bCanMove; }
-
-	FORCEINLINE bool IsRunning() const noexcept { return bIsRunning; }
-	FORCEINLINE bool IsDeath() const noexcept { return bIsDeath; }
 
 protected:
 	UFUNCTION(BlueprintImplementableEvent)
@@ -99,8 +99,12 @@ private:
 	UPROPERTY()
 	AProjectRCharacter* LockedTarget;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = true))
+	uint8 bIsRunning : 1;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = true))
+	uint8 bIsDeath : 1;
+
 	uint8 bIsCasting : 1;
 	uint8 bCanMoving : 1;
-	uint8 bIsRunning : 1;
-	uint8 bIsDeath : 1;
 };
