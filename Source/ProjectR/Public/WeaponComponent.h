@@ -26,6 +26,8 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void SetNewWeapon(FName Name, uint8 Index);
 
+	void SetWeaponCollision(bool bEnableRight, bool bEnableLeft);
+
 	FORCEINLINE class UWeapon* GetWeapon() const noexcept { return CurWeapon; }
 	FORCEINLINE uint8 GetWeaponIndex() const noexcept { return CurIndex; }
 
@@ -44,8 +46,8 @@ private:
 	UFUNCTION()
 	void EnableRagdoll(AController* Instigator);
 
-	class AStaticMeshActor* CreateWeaponActor(FName Socket);
-	void DetachWeapon(AStaticMeshActor* Weapon);
+	void DetachWeapon(class AStaticMeshActor* Weapon);
+	AStaticMeshActor* CreateWeaponActor(FName Socket);
 
 private:
 	UPROPERTY()

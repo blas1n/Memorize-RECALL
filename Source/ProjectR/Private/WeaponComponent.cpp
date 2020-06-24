@@ -49,6 +49,12 @@ void UWeaponComponent::SetNewWeapon(FName Name, uint8 Index)
 		EquipWeapon(Weapons[Index]);
 }
 
+void UWeaponComponent::SetWeaponCollision(bool bEnableRight, bool bEnableLeft)
+{
+	RightWeapon->GetStaticMeshComponent()->SetGenerateOverlapEvents(bEnableRight);
+	LeftWeapon->GetStaticMeshComponent()->SetGenerateOverlapEvents(bEnableLeft);
+}
+
 void UWeaponComponent::BeginPlay()
 {
 	Super::BeginPlay();
@@ -104,6 +110,16 @@ void UWeaponComponent::EnableRagdoll(AController* Instigator)
 	DetachWeapon(LeftWeapon);
 }
 
+void UWeaponComponent::DetachWeapon(AStaticMeshActor* Weapon)
+{
+	auto Component = Weapon->GetStaticMeshComponent();
+	Component->SetCollisionProfileName(TEXT("Ragdoll"));
+	Component->SetSimulatePhysics(true);
+
+	auto Rules = FDetachmentTransformRules::KeepWorldTransform;
+	Weapon->DetachFromActor(Rules);
+}
+
 AStaticMeshActor* UWeaponComponent::CreateWeaponActor(FName Socket)
 {
 	FActorSpawnParameters Param;
@@ -122,14 +138,4 @@ AStaticMeshActor* UWeaponComponent::CreateWeaponActor(FName Socket)
 	WeaponComponent->SetGenerateOverlapEvents(false);
 
 	return WeaponActor;
-}
-
-void UWeaponComponent::DetachWeapon(AStaticMeshActor* Weapon)
-{
-	auto Component = Weapon->GetStaticMeshComponent();
-	Component->SetCollisionProfileName(TEXT("Ragdoll"));
-	Component->SetSimulatePhysics(true);
-
-	auto Rules = FDetachmentTransformRules::KeepWorldTransform;
-	Weapon->DetachFromActor(Rules);
 }
