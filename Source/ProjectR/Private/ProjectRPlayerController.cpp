@@ -237,6 +237,9 @@ void AProjectRPlayerController::PressKeyHolder(const FName& Name)
 void AProjectRPlayerController::ReleaseKeyHolder(const FName& Name)
 {
 	auto KeyHolder = KeyHolders.Find(Name);
+	if (!GetWorldTimerManager().IsTimerActive(KeyHolder->Timer))
+		return;
+
 	GetWorldTimerManager().ClearTimer(KeyHolder->Timer);
 	KeyHolder->OnShort.ExecuteIfBound();
 }
