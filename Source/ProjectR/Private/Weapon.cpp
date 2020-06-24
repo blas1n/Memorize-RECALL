@@ -9,6 +9,7 @@
 #include "ProjectRCharacter.h"
 #include "ProjectRGameInstance.h"
 #include "Skill.h"
+#include "WeaponComponent.h"
 #include "WeaponData.h"
 
 void UWeapon::Initialize(const FName& InName)
@@ -62,6 +63,11 @@ void UWeapon::UseSkill(uint8 Index)
 bool UWeapon::CanUseSkill(uint8 Index)
 {
 	return Skills.Num() > Index ? Skills[Index]->CanUse() : false;
+}
+
+void UWeapon::SetWeaponCollision(bool bRightWeaponEnable, bool bLeftWeaponEnable)
+{
+	User->GetWeaponComponent()->SetWeaponCollision(bRightWeaponEnable, bLeftWeaponEnable);
 }
 
 void UWeapon::RegisterOnAsyncLoadEnded(const FOnAsyncLoadEndedSingle& Callback)

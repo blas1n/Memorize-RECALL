@@ -33,6 +33,9 @@ public:
 	bool CanUseSkill(uint8 Index);
 
 	UFUNCTION(BlueprintCallable)
+	void SetWeaponCollision(bool bRightWeaponEnable, bool bLeftWeaponEnable);
+
+	UFUNCTION(BlueprintCallable)
 	void RegisterOnAsyncLoadEnded(const FOnAsyncLoadEndedSingle& Callback);
 
 	FORCEINLINE const FName& GetName() const noexcept { return Name; }
