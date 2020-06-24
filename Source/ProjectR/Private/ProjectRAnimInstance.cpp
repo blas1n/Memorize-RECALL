@@ -2,6 +2,7 @@
 
 #include "ProjectRAnimInstance.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "Kismet/KismetMathLibrary.h"
 #include "ProjectRCharacter.h"
 #include "Weapon.h"
 #include "WeaponComponent.h"
@@ -10,7 +11,9 @@ UProjectRAnimInstance::UProjectRAnimInstance()
 	: Super()
 {
 	User = nullptr;
-	Speed = 0.0f;
+	WalkState = EWalkState::Idle;
+	bIsRunning = false;
+	bIsCrouched = false;
 	bIsInAir = false;
 }
 
@@ -26,12 +29,25 @@ void UProjectRAnimInstance::NativeBeginPlay()
 
 void UProjectRAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 {
+	constexpr static EWalkState WALK_STATE_MAPPER[3]{ EWalkState::Backward, EWalkState::Idle, EWalkState::Forward };
+
 	Super::NativeUpdateAnimation(DeltaSeconds);
 
 	if (!IsValid(User)) return;
 
-	Speed = User->GetVelocity().Size();
-	bIsInAir = User->GetCharacterMovement()->IsFalling();
+	const auto* Movement = User->GetCharacterMovement();
+
+	const FVector Velocity = User->GetActorRotation().UnrotateVector(Movement->Velocity);
+	const int32 Sign = FMath::Sign(static_cast<int32>(Velocity.X));
+	WalkState = WALK_STATE_MAPPER[Sign + 1];
+
+	if (WalkState == EWalkState::Idle && Velocity.Y != 0.0f)
+		WalkState = EWalkState::Forward;
+	
+	bIsRunning = User->IsRunning();
+	bIsCrouched = Movement->IsCrouching();
+	bIsInAir = Movement->IsFalling();
+	
 }
 
 void UProjectRAnimInstance::OnBeginMontage(UAnimMontage* Montage)
