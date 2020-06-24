@@ -40,7 +40,6 @@ private:
 
 	void Run();
 	void Walk();
-	void Crouch();
 
 	void SwapWeapon(uint8 Index);
 	void SwapWeapon(float Value);

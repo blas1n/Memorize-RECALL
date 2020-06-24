@@ -54,7 +54,6 @@ void AProjectRPlayerController::SetupInputComponent()
 
 	InputComponent->BindAction(TEXT("Run"), IE_Pressed, this, &AProjectRPlayerController::Run);
 	InputComponent->BindAction(TEXT("Run"), IE_Released, this, &AProjectRPlayerController::Walk);
-	InputComponent->BindAction(TEXT("Crouch"), IE_Pressed, this, &AProjectRPlayerController::Crouch);
 
 	InputComponent->BindAction<FIndexer>(TEXT("Weapon1"), IE_Pressed, this, &AProjectRPlayerController::SwapWeapon, static_cast<uint8>(0));
 	InputComponent->BindAction<FIndexer>(TEXT("Weapon2"), IE_Pressed, this, &AProjectRPlayerController::SwapWeapon, static_cast<uint8>(1));
@@ -111,13 +110,6 @@ void AProjectRPlayerController::Run()
 void AProjectRPlayerController::Walk()
 {
 	User->Walk();
-}
-
-void AProjectRPlayerController::Crouch()
-{
-	if (User->CanCrouch())
-		User->Crouch();
-	else User->UnCrouch();
 }
 
 void AProjectRPlayerController::SwapWeapon(uint8 Index)
