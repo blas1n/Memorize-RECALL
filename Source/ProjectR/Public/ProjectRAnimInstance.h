@@ -6,6 +6,14 @@
 #include "Animation/AnimInstance.h"
 #include "ProjectRAnimInstance.generated.h"
 
+UENUM(BlueprintType)
+enum class EWalkState : uint8
+{
+	Idle UMETA(DisplayName = "Idle"),
+	Forward UMETA(DisplayName = "Forward"),
+	Backward UMETA(DisplayName = "Backward"),
+};
+
 UCLASS()
 class PROJECTR_API UProjectRAnimInstance final : public UAnimInstance
 {
@@ -51,11 +59,17 @@ private:
 	class UWeapon* GetWeapon() const;
 
 private:
-	UPROPERTY()
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Pawn, meta = (AllowPrivateAccess = true))
 	class AProjectRCharacter* User;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Pawn, meta = (AllowPrivateAccess = true))
-	float Speed;
+	EWalkState WalkState;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Pawn, meta = (AllowPrivateAccess = true))
+	uint8 bIsRunning : 1;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Pawn, meta = (AllowPrivateAccess = true))
+	uint8 bIsCrouched : 1;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Pawn, meta = (AllowPrivateAccess = true))
 	uint8 bIsInAir : 1;
