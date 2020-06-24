@@ -13,7 +13,6 @@ UProjectRAnimInstance::UProjectRAnimInstance()
 	User = nullptr;
 	WalkState = EWalkState::Idle;
 	bIsRunning = false;
-	bIsCrouched = false;
 	bIsInAir = false;
 }
 
@@ -45,7 +44,6 @@ void UProjectRAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 		WalkState = EWalkState::Forward;
 	
 	bIsRunning = User->IsRunning();
-	bIsCrouched = Movement->IsCrouching();
 	bIsInAir = Movement->IsFalling();
 	
 }
