@@ -62,10 +62,16 @@ void AProjectRCharacter::EndParrying(UObject* InParrying)
 
 void AProjectRCharacter::SetLockTarget(AProjectRCharacter* Target)
 {
-	const bool bIsLockOn = Target != nullptr;
-	bIsLockOn ? Target->OnLockedOn(this) : LockedTarget->OnLockedOff(this);
+	if (LockedTarget == Target) return;
+
+	if (IsValid(LockedTarget))
+		LockedTarget->OnLockedOff(this);
+
+	if (IsValid(Target))
+		Target->OnLockedOn(this);
+
 	LockedTarget = Target;
-	if (bIsLockOn) Walk();
+	if (LockedTarget) Walk();
 }
 
 void AProjectRCharacter::Run()
