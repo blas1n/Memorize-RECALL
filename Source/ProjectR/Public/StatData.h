@@ -4,31 +4,31 @@
 
 #include "CoreMinimal.h"
 #include "Engine/DataTable.h"
-#include "WeaponData.generated.h"
+#include "StatData.generated.h"
 
 USTRUCT(Atomic, BlueprintType)
-struct FWeaponData : public FTableRowBase
+struct FStatData : public FTableRowBase
 {
 	GENERATED_BODY()
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	uint8 MaxHealth;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	int32 Key;
+	float HealthHeal;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	TArray<TSubclassOf<class USkill>> Skills;
+	uint8 MaxEnergy;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	TSubclassOf<class UAnimInstance> UpperAnimInstance;
+	float EnergyHeal;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	TAssetPtr<class UStaticMesh> RightMesh;
+	float RunSpeed;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	FTransform RightTransform;
+	float WalkSpeed;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	TAssetPtr<UStaticMesh> LeftMesh;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	FTransform LeftTransform;
+	float CrouchSpeed;
 };
