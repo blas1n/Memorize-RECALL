@@ -6,19 +6,6 @@
 #include "GameFramework/PlayerController.h"
 #include "ProjectRPlayerController.generated.h"
 
-DECLARE_DELEGATE(FOnKeyHolderUsed);
-
-struct FKeyHolder
-{
-	FKeyHolder(FTimerHandle InTimer, FOnKeyHolderUsed InOnShort, FOnKeyHolderUsed InOnLong, float InDuration)
-		: Timer(MoveTemp(InTimer)), OnShort(MoveTemp(InOnShort)), OnLong(MoveTemp(InOnLong)), Duration(MoveTemp(InDuration)) {}
-
-	FTimerHandle Timer;
-	FOnKeyHolderUsed OnShort;
-	FOnKeyHolderUsed OnLong;
-	float Duration;
-};
-
 UCLASS(Abstract, Blueprintable)
 class PROJECTR_API AProjectRPlayerController final : public APlayerController
 {
@@ -49,9 +36,8 @@ private:
 	void LockOn();
 	bool CheckLockOn(const AActor* Enemy, float& OutAngle, float& OutDistance) const;
 
-	void RegisterKeyHolder(const FName& Name, FOnKeyHolderUsed OnShort, FOnKeyHolderUsed OnLong, float Duration);
-	void PressKeyHolder(const FName& Name);
-	void ReleaseKeyHolder(const FName& Name);
+	void SetUserTransformByInput();
+	void CheckLockTarget();
 
 	FVector GetDirectionVector(EAxis::Type Axis) const noexcept;
 
@@ -71,5 +57,5 @@ private:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Data, meta = (AllowPrivateAccess = true))
 	float LockOnAngle;
 
-	TMap<FName, FKeyHolder> KeyHolders;
+	FVector MoveInput;
 };
