@@ -21,23 +21,21 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
 	bool CanUse();
 
-	UWorld* GetWorld() const override;
-
 protected:
 	UFUNCTION(BlueprintImplementableEvent)
 	void OnUse();
-
-	UFUNCTION(BlueprintCallable, meta = (BlueprintProtected))
-	bool IsNotCoolTime() const;
-
-	UFUNCTION(BlueprintCallable, meta = (BlueprintProtected))
-	void ApplyCooltime();
 
 	UFUNCTION(BlueprintCallable, meta = (BlueprintProtected))
 	bool IsEnoughEnergy() const;
 
 	UFUNCTION(BlueprintCallable, meta = (BlueprintProtected))
 	void ApplyEnergy();
+
+	UFUNCTION(BlueprintCallable, meta = (BlueprintProtected))
+	bool IsNotCoolTime() const;
+
+	UFUNCTION(BlueprintCallable, meta = (BlueprintProtected))
+	void ApplyCooltime();
 
 	FORCEINLINE class AProjectRCharacter* GetUser() noexcept { return User; }
 	FORCEINLINE const AProjectRCharacter* GetUser() const noexcept { return User; }
@@ -57,11 +55,11 @@ private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Owner, meta = (AllowPrivateAccess = true))
 	UWeapon* Weapon;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = Limit, meta = (AllowPrivateAccess = true))
-	float CoolTime;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Limit, meta = (AllowPrivateAccess = true))
+	UPROPERTY(EditDefaultsOnly, Category = Limit, meta = (AllowPrivateAccess = true))
 	uint8 UseEnergy;
+
+	UPROPERTY(EditDefaultsOnly, Category = Limit, meta = (AllowPrivateAccess = true))
+	float CoolTime;
 
 	float NextUseTime;
 };
