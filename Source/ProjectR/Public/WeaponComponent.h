@@ -29,6 +29,7 @@ public:
 	void SetWeaponCollision(bool bEnableRight, bool bEnableLeft);
 
 	FORCEINLINE class UWeapon* GetWeapon() const noexcept { return CurWeapon; }
+	FORCEINLINE uint8 GetWeaponNum() const noexcept { return WeaponNum; }
 	FORCEINLINE uint8 GetWeaponIndex() const noexcept { return CurIndex; }
 
 private:
@@ -65,5 +66,6 @@ private:
 	UPROPERTY()
 	UWeapon* CurWeapon;
 
+	uint8 WeaponNum;
 	uint8 CurIndex;
 };

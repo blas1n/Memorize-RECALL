@@ -123,9 +123,13 @@ void AProjectRPlayerController::SwapWeapon(uint8 Index)
 
 void AProjectRPlayerController::SwapWeapon(float Value)
 {
-	uint8 CurIndex = User->GetWeaponComponent()->GetWeaponIndex();
-	uint8 Index = (CurIndex + FMath::RoundToInt(Value) + 3) % 3;
-	SwapWeapon(Index);
+	const auto* WeaponComponent = User->GetWeaponComponent();
+	const uint8 WeaponNum = WeaponComponent->GetWeaponNum();
+
+	const uint8 CurIdx = WeaponComponent->GetWeaponIndex();
+	const int32 SetIdx = static_cast<int32>(CurIdx) + FMath::RoundToInt(Value);
+	const uint8 Idx = ((SetIdx % WeaponNum) + WeaponNum) % WeaponNum;
+	SwapWeapon(Idx);
 }
 
 void AProjectRPlayerController::UseSkill(uint8 Index)
