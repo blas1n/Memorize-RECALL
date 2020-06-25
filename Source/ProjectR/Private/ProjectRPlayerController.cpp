@@ -54,30 +54,35 @@ void AProjectRPlayerController::SetupInputComponent()
 	InputComponent->BindAction<FIndexer>(TEXT("Skill3"), IE_Pressed, this, &AProjectRPlayerController::UseSkill, static_cast<uint8>(3));
 	InputComponent->BindAction<FIndexer>(TEXT("Parrying"), IE_Pressed, this, &AProjectRPlayerController::UseSkill, static_cast<uint8>(4));
 
-	InputComponent->BindAction(TEXT("LockOn"), IE_Pressed, this, &AProjectRPlayerController::LockOn);
+	InputComponent->BindAction(TEXT("Lock"), IE_Pressed, this, &AProjectRPlayerController::LockOn);
+	InputComponent->BindAction(TEXT("Lock"), IE_Released, this, &AProjectRPlayerController::LockOff);
 }
 
 void AProjectRPlayerController::MoveForward(float Value)
 {
-	if (User->CanMoving() && Value != 0.0f)
-		User->AddMovementInput(GetDirectionVector(EAxis::X), Value);
+	if (User->IsLooking())
+		User->AddMovementInput(GetDirectionVectorByActor(EAxis::X), Value);
+	else
+		MoveInput.X = Value;
 }
 
 void AProjectRPlayerController::MoveRight(float Value)
 {
-	if (User->CanMoving() && Value != 0.0f)
-		User->AddMovementInput(GetDirectionVector(EAxis::Y), Value);
+	if (User->IsLooking())
+		User->AddMovementInput(GetDirectionVectorByActor(EAxis::Y), Value);
+	else
+		MoveInput.Y = Value;
 }
 
 void AProjectRPlayerController::InputYaw(float Value)
 {
-	if (!User->GetLockedTarget())
+	if (!User->IsLooking())
 		AddYawInput(Value);
 }
 
 void AProjectRPlayerController::InputPitch(float Value)
 {
-	if (!User->GetLockedTarget())
+	if (!User->IsLooking())
 		AddPitchInput(Value);
 }
 
@@ -123,12 +128,6 @@ void AProjectRPlayerController::UseSkill(uint8 Index)
 
 void AProjectRPlayerController::LockOn()
 {
-	if (User->GetLockedTarget())
-	{
-		User->SetLockTarget(nullptr);
-		return;
-	}
-
 	TArray<AActor*> Enemys;
 	UGameplayStatics::GetAllActorsOfClass(GetWorld(), AProjectRCharacter::StaticClass(), Enemys);
 
@@ -139,8 +138,12 @@ void AProjectRPlayerController::LockOn()
 		if (CheckLockOn(Enemy, Angle, Distance))
 			LockTarget = Cast<AProjectRCharacter>(Enemy);
 
-	if (LockTarget)
-		User->SetLockTarget(LockTarget);
+	User->SetLockTarget(LockTarget);
+}
+
+void AProjectRPlayerController::LockOff()
+{
+	User->ClearLockTarget();
 }
 
 bool AProjectRPlayerController::CheckLockOn(const AActor* Enemy, float& OutAngle, float& OutDistance) const
@@ -157,7 +160,7 @@ bool AProjectRPlayerController::CheckLockOn(const AActor* Enemy, float& OutAngle
 	if (SizeSquare > FMath::Square(LockOnDistance)) return false;
 
 	Diff.Normalize();
-	const float Angle = FMath::Acos(FVector::DotProduct(Diff, GetDirectionVector(EAxis::X)));
+	const float Angle = FMath::Acos(FVector::DotProduct(Diff, GetDirectionVectorByController(EAxis::X)));
 
 	if (Angle > FMath::DegreesToRadians(LockOnAngle * 0.5f))
 		return false;
@@ -206,31 +209,55 @@ bool AProjectRPlayerController::CheckLockOn(const AActor* Enemy, float& OutAngle
 	return false;
 }
 
-void AProjectRPlayerController::RegisterKeyHolder(const FName& Name, FOnKeyHolderUsed OnShort, FOnKeyHolderUsed OnLong, float Duration)
+void AProjectRPlayerController::SetUserTransformByInput()
 {
-	check(!KeyHolders.Contains(Name));
-	KeyHolders.Add(Name, { FTimerHandle{}, MoveTemp(OnShort), MoveTemp(OnLong), MoveTemp(Duration) });
+	if (User->IsLooking() || MoveInput.IsZero()) return;
+
+	const FVector Direction = MoveInput.GetUnsafeNormal();
+	float Angle = FMath::Acos(FVector::DotProduct(Direction, FVector::ForwardVector));
+	const bool IsClockwise = FVector::CrossProduct(Direction, FVector::ForwardVector).Z <= 0.0f;
+	Angle = FMath::RadiansToDegrees(IsClockwise ? Angle : -Angle);
+
+	const float Yaw = FRotator::NormalizeAxis(GetControlRotation().Yaw + Angle);
+	User->SetTurnRotate(Yaw);
+
+	if (User->CanMoving())
+	{
+		const FVector Forward = GetDirectionVectorByActor(EAxis::X);
+		const float Value = FMath::Max(FMath::Abs(MoveInput.X), FMath::Abs(MoveInput.Y));
+		User->AddMovementInput(Forward, Value);
+	}
 }
 
-void AProjectRPlayerController::PressKeyHolder(const FName& Name)
+void AProjectRPlayerController::CheckLockTarget()
 {
-	auto KeyHolder = KeyHolders.Find(Name);
-	GetWorldTimerManager().SetTimer(KeyHolder->Timer, KeyHolder->OnLong, KeyHolder->Duration, false);
-}
+	const auto* LockTarget = User->GetLockedTarget();
+	if (!IsValid(LockTarget)) return;
 
-void AProjectRPlayerController::ReleaseKeyHolder(const FName& Name)
-{
-	auto KeyHolder = KeyHolders.Find(Name);
-	if (!GetWorldTimerManager().IsTimerActive(KeyHolder->Timer))
+	if (LockTarget->IsDeath())
+	{
+		LockOn();
 		return;
+	}
 
-	GetWorldTimerManager().ClearTimer(KeyHolder->Timer);
-	KeyHolder->OnShort.ExecuteIfBound();
+	const FVector UserLocation = User->GetActorLocation();
+	const FVector TargetLocation = LockTarget->GetActorLocation();
+	const float LengthSquare = (TargetLocation - UserLocation).SizeSquared();
+
+	if (LengthSquare > FMath::Square(LoseLockOnDistance))
+		LockOn();
 }
 
-FVector AProjectRPlayerController::GetDirectionVector(EAxis::Type Axis) const noexcept
+FVector AProjectRPlayerController::GetDirectionVectorByActor(EAxis::Type Axis) const noexcept
+{
+	const FRotator Rotation = User->GetActorRotation();
+	const FRotator YawRotation(0, Rotation.Yaw, 0);
+	return FRotationMatrix(YawRotation).GetUnitAxis(Axis);
+}
+
+FVector AProjectRPlayerController::GetDirectionVectorByController(EAxis::Type Axis) const noexcept
 {
 	const FRotator Rotation = GetControlRotation();
 	const FRotator YawRotation(0, Rotation.Yaw, 0);
-	return  FRotationMatrix(YawRotation).GetUnitAxis(Axis);
+	return FRotationMatrix(YawRotation).GetUnitAxis(Axis);
 }
