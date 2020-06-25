@@ -19,7 +19,7 @@ public:
 	AProjectRCharacter();
 
 	UFUNCTION(BlueprintCallable)
-	void Attack(AProjectRCharacter* Target, uint8 Damage, AActor* Causer);
+	void Attack(AProjectRCharacter* Target, uint8 Damage);
 
 	UFUNCTION(BlueprintCallable)
 	void BeginParrying(UObject* InParrying);
