@@ -10,7 +10,7 @@ UCLASS()
 class PROJECTR_API UProjectRAnimInstance final : public UAnimInstance
 {
 	GENERATED_BODY()
-	
+
 public:
 	UProjectRAnimInstance();
 
@@ -19,16 +19,10 @@ private:
 	void NativeUpdateAnimation(float DeltaSeconds) override;
 
 	UFUNCTION()
-	void OnEquipped(class AWeapon* Weapon);
-
-	UFUNCTION()
 	void OnBeginMontage(UAnimMontage* Montage);
 
 	UFUNCTION()
 	void OnEndMontage(UAnimMontage* Montage, bool bInterrupted);
-
-	UFUNCTION()
-	void OnWeaponAsyncLoaded();
 
 	UFUNCTION()
 	void AnimNotify_BeginSkill();
@@ -48,23 +42,26 @@ private:
 	UFUNCTION()
 	void AnimNotify_Execute();
 
-	AWeapon* GetWeapon() const;
+	UFUNCTION()
+	void AnimNotify_EnableMove();
+
+	UFUNCTION()
+	void AnimNotify_DisableMove();
+
+	class UWeapon* GetWeapon() const;
 
 private:
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Animation, meta = (AllowPrivateAccess = true))
-	class UBlendSpaceBase* LocomotionSpace;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Pawn, meta = (AllowPrivateAccess = true))
+	class AProjectRCharacter* User;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Animation, meta = (AllowPrivateAccess = true))
-	class UAnimSequenceBase* JumpStart;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Animation, meta = (AllowPrivateAccess = true))
-	UAnimSequenceBase* JumpLoop;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Animation, meta = (AllowPrivateAccess = true))
-	UAnimSequenceBase* JumpEnd;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Pawn, meta = (AllowPrivateAccess = true))
+	FVector Velocity;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Pawn, meta = (AllowPrivateAccess = true))
 	float Speed;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Pawn, meta = (AllowPrivateAccess = true))
+	uint8 bIsLooking : 1;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Pawn, meta = (AllowPrivateAccess = true))
 	uint8 bIsInAir : 1;

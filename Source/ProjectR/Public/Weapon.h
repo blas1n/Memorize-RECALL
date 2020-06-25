@@ -3,122 +3,61 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameFramework/Actor.h"
-#include "Engine/AssetManager.h"
+#include "UObject/NoExportTypes.h"
 #include "Weapon.generated.h"
 
 DECLARE_DYNAMIC_DELEGATE(FOnAsyncLoadEndedSingle);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnAsyncLoadEnded);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnActive);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnInactive);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnEquipped);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnUnequipped);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnBeginSkill);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnEndSkill);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnBeginAttack);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnEndAttack);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnShoot);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnExecute);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnLeftWeaponHitted, AActor*, Target);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnRightWeaponHitted, AActor*, Target);
-
-USTRUCT(Atomic, BlueprintType)
-struct PROJECTR_API FWeaponInfo
-{
-	GENERATED_BODY()
-
-public:
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	UStaticMesh* Mesh;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	FTransform Transform;
-};
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnWeaponHitted, class AProjectRCharacter*, Target);
 
 UCLASS(BlueprintType)
-class PROJECTR_API AWeapon final : public AActor
+class PROJECTR_API UWeapon final : public UObject
 {
 	GENERATED_BODY()
-
+	
 public:
-	AWeapon();
+	void Initialize(const FName& InName);
 
-	void Initialize(const struct FWeaponData* WeaponData);
-
-	UFUNCTION(BlueprintCallable)
 	void Equip();
-
-	UFUNCTION(BlueprintCallable)
 	void Unequip();
 
-	UFUNCTION(BlueprintCallable)
-	bool UseSkill(uint8 Index);
-
-	UFUNCTION(BlueprintCallable)
+	void UseSkill(uint8 Index);
 	bool CanUseSkill(uint8 Index);
 
 	UFUNCTION(BlueprintCallable)
-	void Dodge();
-
-	UFUNCTION()
-	void BeginSkill(class UAnimMontage* Montage);
-
-	UFUNCTION()
-	void EndSkill(UAnimMontage* Montage, bool bInterrupted);
+	void SetWeaponCollision(bool bRightWeaponEnable, bool bLeftWeaponEnable);
 
 	UFUNCTION(BlueprintCallable)
 	void RegisterOnAsyncLoadEnded(const FOnAsyncLoadEndedSingle& Callback);
 
-	FORCEINLINE class UBlendSpaceBase* GetLocomotionSpace() const noexcept { return LocomotionSpace; }
-	FORCEINLINE class UAnimSequenceBase* GetJumpStart() const noexcept { return JumpStart; }
-	FORCEINLINE UAnimSequenceBase* GetJumpLoop() const noexcept { return JumpLoop; }
-	FORCEINLINE UAnimSequenceBase* GetJumpEnd() const noexcept { return JumpEnd; }
+	FORCEINLINE const FName& GetName() const noexcept { return Name; }
+	FORCEINLINE uint8 GetKey() const noexcept { return Key; }
+
+	FORCEINLINE class UStaticMesh* GetRightWeaponMesh() const noexcept { return RightWeaponMesh; }
+	FORCEINLINE const FTransform& GetRightWeaponTransform() const noexcept { return RightWeaponTransform; }
+
+	FORCEINLINE UStaticMesh* GetLeftWeaponMesh() const noexcept { return LeftWeaponMesh; }
+	FORCEINLINE const FTransform& GetLeftWeaponTransform() const noexcept { return LeftWeaponTransform; }
 
 private:
-	void BeginPlay() override;
-
-	void EquipOnce(UStaticMeshComponent* Weapon, const FWeaponInfo& Info);
-	void UnequipOnce(UStaticMeshComponent* Weapon);
-
-	template <class T>
-	void AsyncLoad(T*& Ptr, const TAssetPtr<T>& SoftPtr)
-	{
-		if (SoftPtr.IsNull())
-		{
-			CheckAndCallAsyncLoadDelegate();
-			return;
-		}
-
-		if (SoftPtr.IsPending())
-		{
-			UAssetManager::GetStreamableManager().RequestAsyncLoad(
-				SoftPtr.ToSoftObjectPath(),
-				FStreamableDelegate::CreateLambda([this, &Ptr = Ptr, &SoftPtr = SoftPtr]() mutable
-					{ OnAsyncLoaded(Ptr, SoftPtr); })
-			);
-		}
-		else OnAsyncLoaded(Ptr, SoftPtr);
-	}
-
-	template <class T>
-	void OnAsyncLoaded(T*& Ptr, const TAssetPtr<T>& SoftPtr)
-	{
-		Ptr = SoftPtr.Get();
-		CheckAndCallAsyncLoadDelegate();
-	}
-
-	UFUNCTION()
-	void OnLeftWeaponOverlapped(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
-
-	UFUNCTION()
-	void OnRightWeaponOverlapped(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+	void AsyncLoad(class UStaticMesh*& Ptr, const TAssetPtr<UStaticMesh>& SoftPtr);
 
 	FORCEINLINE void CheckAndCallAsyncLoadDelegate() { if (--AsyncLoadCount == 0) OnAsyncLoadEnded.Broadcast(); }
 
 public:
 	UPROPERTY(BlueprintAssignable)
-	FOnActive OnActive;
+	FOnEquipped OnEquipped;
 
 	UPROPERTY(BlueprintAssignable)
-	FOnInactive OnInactive;
+	FOnUnequipped OnUnequipped;
 
 	UPROPERTY(BlueprintAssignable)
 	FOnBeginSkill OnBeginSkill;
@@ -139,52 +78,30 @@ public:
 	FOnExecute OnExecute;
 
 	UPROPERTY(BlueprintAssignable)
-	FOnLeftWeaponHitted OnLeftWeaponHitted;
-
-	UPROPERTY(BlueprintAssignable)
-	FOnRightWeaponHitted OnRightWeaponHitted;
+	FOnWeaponHitted OnWeaponHitted;
 
 private:
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Weapon, meta = (AllowPrivateAccess = true))
-	UStaticMeshComponent* LeftWeapon;
+	UPROPERTY()
+	class AProjectRCharacter* User;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Weapon, meta = (AllowPrivateAccess = true))
-	UStaticMeshComponent* RightWeapon;
+	UPROPERTY()
+	TArray<class USkill*> Skills;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Weapon, meta = (AllowPrivateAccess = true))
-	FWeaponInfo LeftWeaponInfo;
+	UPROPERTY()
+	TSubclassOf<class UAnimInstance> UpperAnimInstance;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Weapon, meta = (AllowPrivateAccess = true))
-	FWeaponInfo RightWeaponInfo;
+	UPROPERTY()
+	class UStaticMesh* RightWeaponMesh;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Info, meta = (AllowPrivateAccess = true))
-	int32 Key;
+	UPROPERTY()
+	UStaticMesh* LeftWeaponMesh;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Info, meta = (AllowPrivateAccess = true))
-	FName Name;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Skill, meta = (AllowPrivateAccess = true))
-	TArray<class ASkill*> Skills;
-
-	UPROPERTY(VisibleAnywhere, Category = Animation, meta = (AllowPrivateAccess = true))
-	UBlendSpaceBase* LocomotionSpace;
-
-	UPROPERTY(VisibleAnywhere, Category = Animation, meta = (AllowPrivateAccess = true))
-	UAnimSequenceBase* JumpStart;
-
-	UPROPERTY(VisibleAnywhere, Category = Animation, meta = (AllowPrivateAccess = true))
-	UAnimSequenceBase* JumpLoop;
-
-	UPROPERTY(VisibleAnywhere, Category = Animation, meta = (AllowPrivateAccess = true))
-	UAnimSequenceBase* JumpEnd;
-
-	UPROPERTY(VisibleAnywhere, Category = Animation, meta = (AllowPrivateAccess = true))
-	UAnimMontage* DodgeMontage;
-
-	UPROPERTY(VisibleAnywhere, Category = Animation, meta = (AllowPrivateAccess = true))
-	UAnimMontage* EquipMontage;
+	FTransform RightWeaponTransform;
+	FTransform LeftWeaponTransform;
 
 	FOnAsyncLoadEnded OnAsyncLoadEnded;
 
+	FName Name;
+	uint8 Key;
 	uint8 AsyncLoadCount;
 };

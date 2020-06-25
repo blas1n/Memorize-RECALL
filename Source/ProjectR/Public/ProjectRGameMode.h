@@ -1,4 +1,4 @@
-// Copyright 1998-2019 Epic Games, Inc. All Rights Reserved.
+// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -6,18 +6,9 @@
 #include "GameFramework/GameModeBase.h"
 #include "ProjectRGameMode.generated.h"
 
-UCLASS(minimalapi)
-class AProjectRGameMode final : public AGameModeBase
+UCLASS(Abstract, Blueprintable)
+class PROJECTR_API AProjectRGameMode : public AGameModeBase
 {
 	GENERATED_BODY()
-
-public:
-	UFUNCTION(BlueprintCallable)
-	class ABuff* GetBuffByClass(TSubclassOf<ABuff> BuffClass);
-
-private:
-	void BeginPlay() override;
-
-private:
-	TMap<TSubclassOf<ABuff>, ABuff*> Buffs;
+	
 };
