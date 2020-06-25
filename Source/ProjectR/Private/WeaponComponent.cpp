@@ -18,6 +18,7 @@ UWeaponComponent::UWeaponComponent()
 	Weapons.Init(nullptr, 3);
 	User = nullptr;
 	CurWeapon = nullptr;
+	WeaponNum = 0;
 	CurIndex = 0;
 }
 
@@ -35,13 +36,18 @@ bool UWeaponComponent::CanUseSkill(uint8 Index)
 
 void UWeaponComponent::SwapWeapon(uint8 Index)
 {
-	if (!User->IsCasting() && CurIndex != Index)
-		EquipWeapon(Weapons[Index]);
+	if (User->IsCasting() || CurIndex == Index || Weapons[Index] == nullptr)
+		return;
+	
+	EquipWeapon(Weapons[Index]);
+	CurIndex = Index;
 }
 
 void UWeaponComponent::SetNewWeapon(FName Name, uint8 Index)
 {
 	check(Index < 3);
+
+	if (!Weapons[Index]) ++WeaponNum;
 
 	Weapons[Index] = NewObject<UWeapon>(GetOwner());
 	Weapons[Index]->Initialize(Name);
