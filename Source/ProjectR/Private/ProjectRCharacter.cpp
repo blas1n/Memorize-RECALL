@@ -96,6 +96,12 @@ void AProjectRCharacter::SetTurnRotate(float Yaw)
 	TurnedYaw = Yaw;
 }
 
+void AProjectRCharacter::Jumping()
+{
+	if (!bIsCasting)
+		Jump();
+}
+
 void AProjectRCharacter::Run()
 {
 	auto* Movement = GetCharacterMovement();
