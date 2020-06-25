@@ -11,9 +11,14 @@ void USkill::Use()
 	if (CanUse()) OnUse();
 }
 
-UWorld* USkill::GetWorld() const
+bool USkill::IsEnoughEnergy() const
 {
-	return User->GetWorld();
+	return User->GetPlayerState<AProjectRPlayerState>()->GetEnergy() >= UseEnergy;
+}
+
+void USkill::ApplyEnergy()
+{
+	User->GetPlayerState<AProjectRPlayerState>()->HealEnergy(-UseEnergy);
 }
 
 bool USkill::IsNotCoolTime() const
@@ -24,16 +29,6 @@ bool USkill::IsNotCoolTime() const
 void USkill::ApplyCooltime()
 {
 	NextUseTime = GetWorld()->GetTimeSeconds() + CoolTime;
-}
-
-bool USkill::IsEnoughEnergy() const
-{
-	return User->GetPlayerState<AProjectRPlayerState>()->GetEnergy() >= UseEnergy;
-}
-
-void USkill::ApplyEnergy()
-{
-	User->GetPlayerState<AProjectRPlayerState>()->HealEnergy(-UseEnergy);
 }
 
 void USkill::Initialize_Implementation()
