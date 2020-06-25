@@ -276,7 +276,7 @@ void AProjectRPlayerController::Turn(float DeltaSeconds)
 		return;
 	}
 
-	SetControlRotation(FMath::Lerp(CurRotation, TurnRotation, DeltaSeconds * 10.0f));
+	SetControlRotation(FMath::Lerp(CurRotation, TurnRotation, DeltaSeconds * 8.0f));
 }
 
 FVector AProjectRPlayerController::GetDirectionVectorByActor(EAxis::Type Axis) const noexcept
