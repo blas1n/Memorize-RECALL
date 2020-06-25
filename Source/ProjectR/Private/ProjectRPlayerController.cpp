@@ -97,7 +97,7 @@ void AProjectRPlayerController::PressDodge()
 {
 	if (User->IsLooking())
 		User->GetWeaponComponent()->UseSkill(5);
-	else User->Jump();
+	else User->Jumping();
 }
 
 void AProjectRPlayerController::ReleaseDodge()

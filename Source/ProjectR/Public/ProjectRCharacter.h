@@ -37,6 +37,9 @@ public:
 	void SetTurnRotate(float Yaw);
 
 	UFUNCTION(BlueprintCallable)
+	void Jumping();
+
+	UFUNCTION(BlueprintCallable)
 	void Run();
 
 	UFUNCTION(BlueprintCallable)
