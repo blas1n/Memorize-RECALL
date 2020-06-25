@@ -98,7 +98,7 @@ void AProjectRCharacter::SetTurnRotate(float Yaw)
 
 void AProjectRCharacter::Jumping()
 {
-	if (!bIsCasting)
+	if (!bCannotMoving)
 		Jump();
 }
 
