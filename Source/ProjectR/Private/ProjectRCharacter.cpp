@@ -31,8 +31,11 @@ AProjectRCharacter::AProjectRCharacter()
 
 	Parrying = nullptr;
 	LockedTarget = nullptr;
+
+	bCannotMoving = false;
 	bIsCasting = false;
-	bCanMoving = true;
+	bIsLocking = false;
+	bIsTurning = false;
 	bIsRunning = false;
 	bIsDeath = false;
 }
@@ -62,7 +65,7 @@ void AProjectRCharacter::EndParrying(UObject* InParrying)
 
 void AProjectRCharacter::SetLockTarget(AProjectRCharacter* Target)
 {
-	if (LockedTarget == Target) return;
+	if (LockedTarget != nullptr && LockedTarget == Target) return;
 
 	if (IsValid(LockedTarget))
 		LockedTarget->OnLockedOff(this);
@@ -70,25 +73,41 @@ void AProjectRCharacter::SetLockTarget(AProjectRCharacter* Target)
 	if (IsValid(Target))
 		Target->OnLockedOn(this);
 
+	bIsLocking = true;
 	LockedTarget = Target;
 	if (LockedTarget) Walk();
+}
+
+void AProjectRCharacter::ClearLockTarget()
+{
+	if (!bIsLocking) return;
+
+	if (IsValid(LockedTarget))
+		LockedTarget->OnLockedOff(this);
+
+	bIsLocking = false;
+	LockedTarget = nullptr;
+}
+
+void AProjectRCharacter::SetTurnRotate(float Yaw)
+{
+	if (bIsLocking) return;
+	bIsTurning = true;
+	TurnedYaw = Yaw;
 }
 
 void AProjectRCharacter::Run()
 {
 	auto* Movement = GetCharacterMovement();
 	Movement->MaxWalkSpeed = GetPlayerState<AProjectRPlayerState>()->GetRunSpeed();
-	Movement->bOrientRotationToMovement = true;
-	SetLockTarget(nullptr);
+	ClearLockTarget();
 	bIsRunning = true;
-	UnCrouch();
 }
 
 void AProjectRCharacter::Walk()
 {
 	auto* Movement = GetCharacterMovement();
 	Movement->MaxWalkSpeed = GetPlayerState<AProjectRPlayerState>()->GetWalkSpeed();
-	Movement->bOrientRotationToMovement = false;
 	bIsRunning = false;
 }
 
@@ -96,29 +115,24 @@ void AProjectRCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 
-	OnAttack.AddDynamic(this, &AProjectRCharacter::HealHealthAndEnergy);
-
-	GetPlayerState<AProjectRPlayerState>()->InitFromDataTable(StatDataRowName);
-	Walk();
-
 	TArray<FName> WeaponNames = GetWeaponNames();
 	uint8 WeaponNum = FMath::Min(WeaponNames.Num(), 3);
 
 	for (uint8 Idx = 0u; Idx < WeaponNum; ++Idx)
 		WeaponComponent->SetNewWeapon(WeaponNames[Idx], Idx);
+
+	GetPlayerState<AProjectRPlayerState>()->InitFromDataTable(StatDataRowName);
+	OnAttack.AddDynamic(this, &AProjectRCharacter::HealHealthAndEnergy);
+	BeginControlRotation = GetControlRotation();
+	Walk();
 }
 
 void AProjectRCharacter::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
 
-	SetControlRotationIfLocked(DeltaSeconds);
-
-	if (!LockedTarget && GetCharacterMovement()->Velocity.SizeSquared() <= 0.0f) return;
-
-	FRotator NewRotation = GetControlRotation();
-	NewRotation.Roll = NewRotation.Pitch = 0.0f;
-	SetActorRotation(FMath::Lerp(GetActorRotation(), NewRotation, DeltaSeconds * 10.0f));
+	if (bIsLocking)	Look(DeltaSeconds);
+	else Turn(DeltaSeconds);
 }
 
 float AProjectRCharacter::TakeDamage(float DamageAmount, const FDamageEvent& DamageEvent,
@@ -149,20 +163,38 @@ void AProjectRCharacter::HealHealthAndEnergy(AProjectRCharacter* Target, uint8 D
 	MyPlayerState->HealEnergyByDamage(Damage);
 }
 
-void AProjectRCharacter::SetControlRotationIfLocked(float DeltaSeconds)
+void AProjectRCharacter::Look(float DeltaSeconds)
 {
-	if (!LockedTarget) return;
+	FRotator LookRotation;
 
-	if (LockedTarget->IsDeath())
+	if (LockedTarget)
 	{
-		SetLockTarget(nullptr);
+		LookRotation = UKismetMathLibrary::FindLookAtRotation
+			(GetViewLocation(), LockedTarget->GetActorLocation());
+	}
+	else
+	{
+		LookRotation = { BeginControlRotation.Pitch,
+			GetActorRotation().Yaw, BeginControlRotation.Roll };
+	}
+
+	const FRotator NowRotation = FMath::Lerp(GetControlRotation(), LookRotation, DeltaSeconds * 5.0f);
+	GetController()->SetControlRotation(NowRotation);
+}
+
+void AProjectRCharacter::Turn(float DeltaSeconds)
+{
+	if (!bIsTurning) return;
+
+	const FRotator CurRotation = GetActorRotation();
+	if (FMath::IsNearlyEqual(CurRotation.Yaw, TurnedYaw, 5.0f))
+	{
+		bIsTurning = false;
 		return;
 	}
 
-	const FVector TargetLocation = LockedTarget->GetActorLocation();
-	const FRotator LookRotation = UKismetMathLibrary::FindLookAtRotation(GetViewLocation(), TargetLocation);
-	const FRotator NowRotation = FMath::Lerp(GetControlRotation(), LookRotation, DeltaSeconds * 5.0f);
-	GetController()->SetControlRotation(NowRotation);
+	const FRotator TurnRotation{ CurRotation.Pitch, TurnedYaw, CurRotation.Roll };
+	SetActorRotation(FMath::Lerp(GetActorRotation(), TurnRotation, DeltaSeconds * 10.0f));
 }
 
 void AProjectRCharacter::Death()
