@@ -6,6 +6,7 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/Controller.h"
 #include "Kismet/KismetMathLibrary.h"
+#include "TimerManager.h"
 #include "Parryable.h"
 #include "ProjectRPlayerState.h"
 #include "WeaponComponent.h"
@@ -22,10 +23,11 @@ AProjectRCharacter::AProjectRCharacter()
 	bUseControllerRotationYaw = false;
 	bUseControllerRotationRoll = false;
 
-	GetCharacterMovement()->bOrientRotationToMovement = false;
-	GetCharacterMovement()->RotationRate = FRotator(0.0f, 540.0f, 0.0f);
 	GetCharacterMovement()->JumpZVelocity = 600.f;
-	GetCharacterMovement()->AirControl = 0.2f;
+	GetCharacterMovement()->AirControl = 0.1f;
+	GetCharacterMovement()->RotationRate = FRotator(0.0f, 270.0f, 0.0f);
+	GetCharacterMovement()->bOrientRotationToMovement = false;
+	GetCharacterMovement()->bAllowPhysicsRotationDuringAnimRootMotion = true;
 
 	WeaponComponent = CreateDefaultSubobject<UWeaponComponent>(TEXT("Weapon"));
 
