@@ -60,6 +60,9 @@ private:
 	TArray<UWeapon*> Weapons;
 
 	UPROPERTY()
+	class AProjectRCharacter* User;
+
+	UPROPERTY()
 	UWeapon* CurWeapon;
 
 	uint8 CurIndex;
