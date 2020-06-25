@@ -125,7 +125,6 @@ void AProjectRCharacter::BeginPlay()
 
 	GetPlayerState<AProjectRPlayerState>()->InitFromDataTable(StatDataRowName);
 	OnAttack.AddDynamic(this, &AProjectRCharacter::HealHealthAndEnergy);
-	BeginControlRotation = GetControlRotation();
 	Walk();
 }
 
@@ -167,18 +166,10 @@ void AProjectRCharacter::HealHealthAndEnergy(AProjectRCharacter* Target, uint8 D
 
 void AProjectRCharacter::Look(float DeltaSeconds)
 {
-	FRotator LookRotation;
+	if (!LockedTarget) return;
 
-	if (LockedTarget)
-	{
-		LookRotation = UKismetMathLibrary::FindLookAtRotation
-			(GetViewLocation(), LockedTarget->GetActorLocation());
-	}
-	else
-	{
-		LookRotation = { BeginControlRotation.Pitch,
-			GetActorRotation().Yaw, BeginControlRotation.Roll };
-	}
+	FRotator LookRotation = UKismetMathLibrary::
+		FindLookAtRotation(GetViewLocation(), LockedTarget->GetActorLocation());
 
 	const FRotator NowRotation = FMath::Lerp(GetControlRotation(), LookRotation, DeltaSeconds * 5.0f);
 	GetController()->SetControlRotation(NowRotation);

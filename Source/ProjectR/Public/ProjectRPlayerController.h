@@ -39,6 +39,7 @@ private:
 
 	void SetUserTransformByInput();
 	void CheckLockTarget();
+	void Turn(float DeltaSeconds);
 
 	FVector GetDirectionVectorByActor(EAxis::Type Axis) const noexcept;
 	FVector GetDirectionVectorByController(EAxis::Type Axis) const noexcept;
@@ -62,5 +63,7 @@ private:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Data, meta = (AllowPrivateAccess = true))
 	float LockOnAngle;
 
+	FRotator TurnRotation;
 	FVector MoveInput;
+	uint8 bIsTurning : 1;
 };
