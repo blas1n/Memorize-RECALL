@@ -44,8 +44,6 @@ AProjectRCharacter::AProjectRCharacter()
 
 void AProjectRCharacter::Attack(AProjectRCharacter* Target, uint8 Damage)
 {
-	if (this == Target) return;
-
 	auto TakingDamage = static_cast<uint8>(Target->
 		TakeDamage(Damage, FDamageEvent{}, GetController(), this));
 
