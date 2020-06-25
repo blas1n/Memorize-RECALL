@@ -75,9 +75,9 @@ void AProjectRCharacter::SetLockTarget(AProjectRCharacter* Target)
 	if (IsValid(Target))
 		Target->OnLockedOn(this);
 
-	bIsLocking = true;
 	LockedTarget = Target;
-	if (LockedTarget) Walk();
+	bIsLocking = true;
+	Walk();
 }
 
 void AProjectRCharacter::ClearLockTarget()
@@ -87,8 +87,8 @@ void AProjectRCharacter::ClearLockTarget()
 	if (IsValid(LockedTarget))
 		LockedTarget->OnLockedOff(this);
 
-	bIsLocking = false;
 	LockedTarget = nullptr;
+	bIsLocking = false;
 }
 
 void AProjectRCharacter::SetTurnRotate(float Yaw)
