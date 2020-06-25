@@ -60,6 +60,8 @@ void AProjectRPlayerController::SetupInputComponent()
 
 void AProjectRPlayerController::MoveForward(float Value)
 {
+	if (!User->CanMoving()) return;
+
 	if (User->IsLooking())
 		User->AddMovementInput(GetDirectionVectorByActor(EAxis::X), Value);
 	else
@@ -68,6 +70,8 @@ void AProjectRPlayerController::MoveForward(float Value)
 
 void AProjectRPlayerController::MoveRight(float Value)
 {
+	if (!User->CanMoving()) return;
+
 	if (User->IsLooking())
 		User->AddMovementInput(GetDirectionVectorByActor(EAxis::Y), Value);
 	else
