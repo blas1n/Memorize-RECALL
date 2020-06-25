@@ -34,16 +34,21 @@ private:
 	void UseSkill(uint8 Index);
 
 	void LockOn();
+	void LockOff();
 	bool CheckLockOn(const AActor* Enemy, float& OutAngle, float& OutDistance) const;
 
 	void SetUserTransformByInput();
 	void CheckLockTarget();
 
-	FVector GetDirectionVector(EAxis::Type Axis) const noexcept;
+	FVector GetDirectionVectorByActor(EAxis::Type Axis) const noexcept;
+	FVector GetDirectionVectorByController(EAxis::Type Axis) const noexcept;
 
 private:
 	UPROPERTY()
 	class AProjectRCharacter* User;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Data, meta = (AllowPrivateAccess = true))
+	float TurnRate;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Data, meta = (AllowPrivateAccess = true))
 	float DodgeDelay;
