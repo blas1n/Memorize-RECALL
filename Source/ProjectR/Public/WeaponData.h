@@ -7,30 +7,6 @@
 #include "WeaponData.generated.h"
 
 USTRUCT(Atomic, BlueprintType)
-struct FWeaponAnimData
-{
-	GENERATED_BODY()
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	TAssetPtr<class UBlendSpaceBase> LocomotionSpace;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	TAssetPtr<class UAnimSequenceBase> JumpStart;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	TAssetPtr<UAnimSequenceBase> JumpLoop;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	TAssetPtr<UAnimSequenceBase> JumpEnd;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	TAssetPtr<class UAnimMontage> DodgeMontage;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	TAssetPtr<UAnimMontage> EquipMontage;
-};
-
-USTRUCT(Atomic, BlueprintType)
 struct FWeaponData : public FTableRowBase
 {
 	GENERATED_BODY()
@@ -39,7 +15,10 @@ struct FWeaponData : public FTableRowBase
 	int32 Key;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	FName Name;
+	TArray<TSubclassOf<class USkill>> Skills;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TSubclassOf<class UAnimInstance> UpperAnimInstance;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TAssetPtr<class UStaticMesh> RightMesh;
@@ -52,10 +31,4 @@ struct FWeaponData : public FTableRowBase
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FTransform LeftTransform;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	TArray<TSubclassOf<class ASkill>> Skills;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	FWeaponAnimData AnimData;
 };
