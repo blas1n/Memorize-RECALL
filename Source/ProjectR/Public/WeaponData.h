@@ -21,6 +21,9 @@ struct FWeaponData : public FTableRowBase
 	TSubclassOf<class UAnimInstance> UpperAnimInstance;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TAssetPtr<class UAnimMontage> EquipAnim;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TAssetPtr<class UStaticMesh> RightMesh;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)

@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "UObject/NoExportTypes.h"
+#include "Engine/AssetManager.h"
 #include "Weapon.generated.h"
 
 DECLARE_DYNAMIC_DELEGATE(FOnAsyncLoadEndedSingle);
@@ -48,7 +49,36 @@ public:
 	FORCEINLINE const FTransform& GetLeftWeaponTransform() const noexcept { return LeftWeaponTransform; }
 
 private:
-	void AsyncLoad(class UStaticMesh*& Ptr, const TAssetPtr<UStaticMesh>& SoftPtr);
+	UFUNCTION()
+	void PlayEquipAnim();
+
+	template <class T>
+	void AsyncLoad(T*& Ptr, const TAssetPtr<T>& SoftPtr)
+	{
+		if (SoftPtr.IsNull())
+		{
+			CheckAndCallAsyncLoadDelegate();
+			return;
+		}
+
+		auto OnAsyncLoaded = [this, &Ptr = Ptr, &SoftPtr = SoftPtr]() mutable
+		{
+			Ptr = SoftPtr.Get();
+			CheckAndCallAsyncLoadDelegate();
+		};
+
+		if (SoftPtr.IsPending())
+		{
+			FStreamableDelegate Callback;
+			Callback.BindLambda([this, OnAsyncLoaded = MoveTemp(OnAsyncLoaded)]() mutable
+			{
+				OnAsyncLoaded();
+			});
+
+			UAssetManager::GetStreamableManager().RequestAsyncLoad(SoftPtr.ToSoftObjectPath(), MoveTemp(Callback));
+		}
+		else OnAsyncLoaded();
+	}
 
 	FORCEINLINE void CheckAndCallAsyncLoadDelegate() { if (--AsyncLoadCount == 0) OnAsyncLoadEnded.Broadcast(); }
 
@@ -89,6 +119,9 @@ private:
 
 	UPROPERTY()
 	TSubclassOf<class UAnimInstance> UpperAnimInstance;
+
+	UPROPERTY()
+	class UAnimMontage* EquipAnim;
 
 	UPROPERTY()
 	class UStaticMesh* RightWeaponMesh;

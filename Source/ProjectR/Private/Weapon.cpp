@@ -3,7 +3,6 @@
 #include "Weapon.h"
 #include "Animation/AnimInstance.h"
 #include "Components/SkeletalMeshComponent.h"
-#include "Engine/AssetManager.h"
 #include "Engine/StaticMesh.h"
 #include "Kismet/GameplayStatics.h"
 #include "ProjectRCharacter.h"
@@ -26,9 +25,10 @@ void UWeapon::Initialize(const FName& InName)
 	RightWeaponTransform = WeaponData.RightTransform;
 	LeftWeaponTransform = WeaponData.LeftTransform;
 	
-	AsyncLoadCount = 2;
+	AsyncLoadCount = 3;
 	AsyncLoad(RightWeaponMesh, WeaponData.RightMesh);
 	AsyncLoad(LeftWeaponMesh, WeaponData.LeftMesh);
+	AsyncLoad(EquipAnim, WeaponData.EquipAnim);
 
 	Skills.SetNum(WeaponData.Skills.Num());
 
@@ -45,6 +45,10 @@ void UWeapon::Equip()
 	auto* AnimInstance = User->GetMesh()->GetAnimInstance();
 	AnimInstance->LinkAnimClassLayers(UpperAnimInstance);
 	OnEquipped.Broadcast();
+
+	FOnAsyncLoadEndedSingle Callback;
+	Callback.BindDynamic(this, &UWeapon::PlayEquipAnim);
+	RegisterOnAsyncLoadEnded(Callback);
 }
 
 void UWeapon::Unequip()
@@ -77,29 +81,8 @@ void UWeapon::RegisterOnAsyncLoadEnded(const FOnAsyncLoadEndedSingle& Callback)
 	else Callback.Execute();
 }
 
-void UWeapon::AsyncLoad(UStaticMesh*& Ptr, const TAssetPtr<UStaticMesh>& SoftPtr)
+void UWeapon::PlayEquipAnim()
 {
-	if (SoftPtr.IsNull())
-	{
-		CheckAndCallAsyncLoadDelegate();
-		return;
-	}
-
-	auto OnAsyncLoaded = [this, &Ptr = Ptr, &SoftPtr = SoftPtr]() mutable
-	{
-		Ptr = SoftPtr.Get();
-		CheckAndCallAsyncLoadDelegate();
-	};
-
-	if (SoftPtr.IsPending())
-	{
-		FStreamableDelegate Callback;
-		Callback.BindLambda([this, OnAsyncLoaded = MoveTemp(OnAsyncLoaded)]() mutable
-		{
-			OnAsyncLoaded();
-		});
-
-		UAssetManager::GetStreamableManager().RequestAsyncLoad(SoftPtr.ToSoftObjectPath(), MoveTemp(Callback));
-	}
-	else OnAsyncLoaded();
+	if (EquipAnim)
+		User->PlayAnimMontage(EquipAnim);
 }
