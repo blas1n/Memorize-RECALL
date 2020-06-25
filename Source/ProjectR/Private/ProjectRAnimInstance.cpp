@@ -97,7 +97,7 @@ void UProjectRAnimInstance::AnimNotify_EnableMove()
 
 void UProjectRAnimInstance::AnimNotify_DisableMove()
 {
-	User->SetMove(true);
+	User->SetMove(false);
 }
 
 UWeapon* UProjectRAnimInstance::GetWeapon() const
