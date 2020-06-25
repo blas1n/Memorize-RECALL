@@ -228,7 +228,7 @@ bool AProjectRPlayerController::CheckLockOn(const AActor* Enemy, float& OutAngle
 
 void AProjectRPlayerController::SetUserTransformByInput()
 {
-	if (User->IsLooking() || MoveInput.IsZero()) return;
+	if (User->IsLooking() || !User->CanMoving() || MoveInput.IsZero()) return;
 
 	const FVector Direction = MoveInput.GetUnsafeNormal();
 	float Angle = FMath::Acos(FVector::DotProduct(Direction, FVector::ForwardVector));
@@ -238,12 +238,9 @@ void AProjectRPlayerController::SetUserTransformByInput()
 	const float Yaw = FRotator::NormalizeAxis(GetControlRotation().Yaw + Angle);
 	User->SetTurnRotate(Yaw);
 
-	if (User->CanMoving())
-	{
-		const FVector Forward = GetDirectionVectorByActor(EAxis::X);
-		const float Value = FMath::Max(FMath::Abs(MoveInput.X), FMath::Abs(MoveInput.Y));
-		User->AddMovementInput(Forward, Value);
-	}
+	const FVector Forward = GetDirectionVectorByActor(EAxis::X);
+	const float Value = FMath::Max(FMath::Abs(MoveInput.X), FMath::Abs(MoveInput.Y));
+	User->AddMovementInput(Forward, Value);
 }
 
 void AProjectRPlayerController::CheckLockTarget()
