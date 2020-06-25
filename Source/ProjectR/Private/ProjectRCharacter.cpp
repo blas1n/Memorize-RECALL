@@ -196,7 +196,7 @@ void AProjectRCharacter::Turn(float DeltaSeconds)
 	}
 
 	const FRotator TurnRotation{ CurRotation.Pitch, TurnedYaw, CurRotation.Roll };
-	SetActorRotation(FMath::Lerp(GetActorRotation(), TurnRotation, DeltaSeconds * 10.0f));
+	SetActorRotation(FMath::Lerp(CurRotation, TurnRotation, DeltaSeconds * 10.0f));
 }
 
 void AProjectRCharacter::Death()
