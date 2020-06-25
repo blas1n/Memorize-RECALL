@@ -16,25 +16,26 @@ UWeaponComponent::UWeaponComponent()
 	RightWeapon = nullptr;
 	LeftWeapon = nullptr;
 	Weapons.Init(nullptr, 3);
+	User = nullptr;
 	CurWeapon = nullptr;
 	CurIndex = 0;
 }
 
 void UWeaponComponent::UseSkill(uint8 Index)
 {
-	if (CurWeapon)
+	if (!User->IsCasting() && CurWeapon)
 		CurWeapon->UseSkill(Index);
 }
 
 bool UWeaponComponent::CanUseSkill(uint8 Index)
 {
-	if (!CurWeapon) return false;
+	if (User->IsCasting() || !CurWeapon) return false;
 	return CurWeapon->CanUseSkill(Index);
 }
 
 void UWeaponComponent::SwapWeapon(uint8 Index)
 {
-	if (CurIndex != Index)
+	if (!User->IsCasting() && CurIndex != Index)
 		EquipWeapon(Weapons[Index]);
 }
 
@@ -59,7 +60,7 @@ void UWeaponComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
-	auto* User = Cast<AProjectRCharacter>(GetOwner());
+	User = Cast<AProjectRCharacter>(GetOwner());
 	User->OnDeath.AddDynamic(this, &UWeaponComponent::EnableRagdoll);
 
 	FActorSpawnParameters Param;
