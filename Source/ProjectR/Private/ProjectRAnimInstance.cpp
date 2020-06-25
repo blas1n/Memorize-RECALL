@@ -11,8 +11,8 @@ UProjectRAnimInstance::UProjectRAnimInstance()
 	: Super()
 {
 	User = nullptr;
-	WalkState = EWalkState::Idle;
-	bIsRunning = false;
+	Speed = 0.0f;
+	bIsLooking = false;
 	bIsInAir = false;
 }
 
@@ -28,24 +28,16 @@ void UProjectRAnimInstance::NativeBeginPlay()
 
 void UProjectRAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 {
-	constexpr static EWalkState WALK_STATE_MAPPER[3]{ EWalkState::Backward, EWalkState::Idle, EWalkState::Forward };
-
 	Super::NativeUpdateAnimation(DeltaSeconds);
 
 	if (!IsValid(User)) return;
 
 	const auto* Movement = User->GetCharacterMovement();
-
-	const FVector Velocity = User->GetActorRotation().UnrotateVector(Movement->Velocity);
-	const int32 Sign = FMath::Sign(static_cast<int32>(Velocity.X));
-	WalkState = WALK_STATE_MAPPER[Sign + 1];
-
-	if (WalkState == EWalkState::Idle && Velocity.Y != 0.0f)
-		WalkState = EWalkState::Forward;
+	Velocity = User->GetActorRotation().UnrotateVector(Movement->Velocity);
+	Speed = Velocity.Size();
 	
-	bIsRunning = User->IsRunning();
+	bIsLooking = User->IsLooking();
 	bIsInAir = Movement->IsFalling();
-	
 }
 
 void UProjectRAnimInstance::OnBeginMontage(UAnimMontage* Montage)
