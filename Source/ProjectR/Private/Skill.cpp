@@ -3,39 +3,36 @@
 #include "Skill.h"
 #include "Engine/World.h"
 #include "ProjectRCharacter.h"
+#include "ProjectRPlayerState.h"
+#include "Weapon.h"
 
-ASkill::ASkill()
-	: Super()
+void USkill::Use()
 {
- 	PrimaryActorTick.bCanEverTick = false;
-
-	User = nullptr;
-	Weapon = nullptr;
-	CoolTime = 0.0f;
-	NextUseTime = 0.0f;
+	if (CanUse()) OnUse();
 }
 
-bool ASkill::UseSkill()
+bool USkill::IsEnoughEnergy() const
 {
-	if (!CanUseSkill())
-		return false;
-
-	OnSkill();
-	return true;
+	return User->GetPlayerState<AProjectRPlayerState>()->GetEnergy() >= UseEnergy;
 }
 
-void ASkill::BeginPlay()
+void USkill::ApplyEnergy()
 {
-	User = Cast<AProjectRCharacter>(GetInstigator());
-	Super::BeginPlay();
+	User->GetPlayerState<AProjectRPlayerState>()->HealEnergy(-UseEnergy);
 }
 
-bool ASkill::IsNotCoolTime() const
+bool USkill::IsNotCoolTime() const
 {
 	return FMath::IsNearlyEqual(NextUseTime, 0.0f) || NextUseTime <= GetWorld()->GetTimeSeconds();
 }
 
-void ASkill::ApplyCooltime()
+void USkill::ApplyCooltime()
 {
 	NextUseTime = GetWorld()->GetTimeSeconds() + CoolTime;
+}
+
+void USkill::Initialize_Implementation()
+{
+	Weapon = Cast<UWeapon>(GetOuter());
+	User = Cast<AProjectRCharacter>(Weapon->GetOuter());
 }

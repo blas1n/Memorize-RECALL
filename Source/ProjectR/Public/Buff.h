@@ -3,22 +3,20 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameFramework/Actor.h"
+#include "UObject/NoExportTypes.h"
 #include "Buff.generated.h"
 
 UCLASS(Abstract, Blueprintable)
-class PROJECTR_API ABuff : public AActor
+class PROJECTR_API UBuff final : public UObject
 {
 	GENERATED_BODY()
-	
-public:
-	ABuff();
 
+public:
 	UFUNCTION(BlueprintCallable)
 	void ApplyBuff(class AProjectRCharacter* Target, float Duration);
 
-	UFUNCTION(BlueprintImplementableEvent)
-	class UBuffStorage* CreateStorage() const;
+	FORCEINLINE const TSubclassOf<class UBuffStorage>&
+	GetBuffStorageClass() const { return BuffStorageClass; }
 
 protected:
 	UFUNCTION(BlueprintImplementableEvent)
@@ -26,4 +24,8 @@ protected:
 
 	UFUNCTION(BlueprintImplementableEvent)
 	void OnEndBuff(AProjectRCharacter* Target, UBuffStorage* BuffStorage);
+
+private:
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = BuffStorage, meta = (AllowPrivateAccess = true))
+	TSubclassOf<UBuffStorage> BuffStorageClass;
 };
