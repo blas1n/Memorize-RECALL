@@ -16,25 +16,14 @@ void AProjectRPlayerController::BeginPlay()
 
 	User = GetPawn<AProjectRCharacter>();
 	check(IsValid(User));
-
-	auto OnShort = FOnKeyHolderUsed::CreateLambda([WeaponComponent = User->GetWeaponComponent()]
-		{ WeaponComponent->UseSkill(5); });
-
-	auto OnLong = FOnKeyHolderUsed::CreateLambda([User = User] { User->Jump(); });
-
-	RegisterKeyHolder(TEXT("Dodge"), MoveTemp(OnShort), MoveTemp(OnLong), DodgeDelay);
 }
 
 void AProjectRPlayerController::Tick(float DeltaSeconds)
 {
-	if (!IsValid(User->GetLockedTarget())) return;
-
-	const FVector UserLocation = User->GetActorLocation();
-	const FVector TargetLocation = User->GetLockedTarget()->GetActorLocation();
-	const float LengthSquare = (TargetLocation - UserLocation).SizeSquared();
-
-	if (LengthSquare > FMath::Square(LoseLockOnDistance))
-		User->SetLockTarget(nullptr);
+	Super::Tick(DeltaSeconds);
+	
+	SetUserTransformByInput();
+	CheckLockTarget();
 }
 
 void AProjectRPlayerController::SetupInputComponent()
@@ -94,12 +83,15 @@ void AProjectRPlayerController::InputPitch(float Value)
 
 void AProjectRPlayerController::PressDodge()
 {
-	PressKeyHolder(TEXT("Dodge"));
+	if (User->IsLooking())
+		User->GetWeaponComponent()->UseSkill(5);
+	else User->Jump();
 }
 
 void AProjectRPlayerController::ReleaseDodge()
 {
-	ReleaseKeyHolder(TEXT("Dodge"));
+	if (User->GetCharacterMovement()->IsFalling())
+		User->StopJumping();
 }
 
 void AProjectRPlayerController::Run()
