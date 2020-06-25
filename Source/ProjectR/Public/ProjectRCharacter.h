@@ -107,7 +107,6 @@ private:
 	UPROPERTY()
 	UObject* Parrying;
 
-	FRotator BeginControlRotation;
 	float TurnedYaw;
 
 	uint8 bCannotMoving : 1;

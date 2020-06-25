@@ -16,6 +16,8 @@ void AProjectRPlayerController::BeginPlay()
 
 	User = GetPawn<AProjectRCharacter>();
 	check(IsValid(User));
+
+	TurnRotation = GetControlRotation();
 }
 
 void AProjectRPlayerController::Tick(float DeltaSeconds)
@@ -24,6 +26,7 @@ void AProjectRPlayerController::Tick(float DeltaSeconds)
 	
 	SetUserTransformByInput();
 	CheckLockTarget();
+	Turn(DeltaSeconds);
 }
 
 void AProjectRPlayerController::SetupInputComponent()
@@ -80,13 +83,13 @@ void AProjectRPlayerController::MoveRight(float Value)
 
 void AProjectRPlayerController::InputYaw(float Value)
 {
-	if (!User->IsLooking())
+	if (!bIsTurning)
 		AddYawInput(Value);
 }
 
 void AProjectRPlayerController::InputPitch(float Value)
 {
-	if (!User->IsLooking())
+	if (!bIsTurning)
 		AddPitchInput(Value);
 }
 
@@ -143,6 +146,12 @@ void AProjectRPlayerController::LockOn()
 			LockTarget = Cast<AProjectRCharacter>(Enemy);
 
 	User->SetLockTarget(LockTarget);
+
+	if (!LockTarget)
+	{
+		TurnRotation.Yaw = User->GetActorRotation().Yaw;
+		bIsTurning = true;
+	}
 }
 
 void AProjectRPlayerController::LockOff()
@@ -250,6 +259,20 @@ void AProjectRPlayerController::CheckLockTarget()
 
 	if (LengthSquare > FMath::Square(LoseLockOnDistance))
 		LockOn();
+}
+
+void AProjectRPlayerController::Turn(float DeltaSeconds)
+{
+	if (!bIsTurning) return;
+
+	const FRotator CurRotation = GetControlRotation();
+	if (CurRotation.Equals(TurnRotation, 5.0f))
+	{
+		bIsTurning = false;
+		return;
+	}
+
+	SetControlRotation(FMath::Lerp(CurRotation, TurnRotation, DeltaSeconds * 10.0f));
 }
 
 FVector AProjectRPlayerController::GetDirectionVectorByActor(EAxis::Type Axis) const noexcept
