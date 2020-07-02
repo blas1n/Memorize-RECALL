@@ -1,11 +1,11 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-#include "ProjectRPlayerController.h"
+#include "Character/ProjectRPlayerController.h"
 #include "Engine/World.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "TimerManager.h"
-#include "ProjectRCharacter.h"
+#include "Character/ProjectRCharacter.h"
 #include "WeaponComponent.h"
 
 DECLARE_DELEGATE_OneParam(FIndexer, uint8);

@@ -1,9 +1,9 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-#include "ProjectRAnimInstance.h"
+#include "Character/ProjectRAnimInstance.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/KismetMathLibrary.h"
-#include "ProjectRCharacter.h"
+#include "Character/ProjectRCharacter.h"
 #include "Weapon.h"
 #include "WeaponComponent.h"
 

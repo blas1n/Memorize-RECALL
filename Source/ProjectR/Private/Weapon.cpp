@@ -5,11 +5,11 @@
 #include "Components/SkeletalMeshComponent.h"
 #include "Engine/StaticMesh.h"
 #include "Kismet/GameplayStatics.h"
-#include "ProjectRCharacter.h"
-#include "ProjectRGameInstance.h"
+#include "Character/ProjectRCharacter.h"
+#include "Data/WeaponData.h"
+#include "Framework/ProjectRGameInstance.h"
 #include "Skill.h"
 #include "WeaponComponent.h"
-#include "WeaponData.h"
 
 void UWeapon::Initialize(const FName& InName)
 {

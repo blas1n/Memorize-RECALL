@@ -1,14 +1,14 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-#include "ProjectRCharacter.h"
+#include "Character/ProjectRCharacter.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/Controller.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "TimerManager.h"
+#include "Character/ProjectRPlayerState.h"
 #include "Parryable.h"
-#include "ProjectRPlayerState.h"
 #include "WeaponComponent.h"
 
 AProjectRCharacter::AProjectRCharacter()
