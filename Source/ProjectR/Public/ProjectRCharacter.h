@@ -7,8 +7,8 @@
 #include "ProjectRCharacter.generated.h"
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnDeath, AController*, Instigator);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnAttack, AProjectRCharacter*, Target, uint8, Damage);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnDamaged, AController*, Instigator, uint8 , Damage);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnAttack, AProjectRCharacter*, Target, int32, Damage);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnDamaged, AController*, Instigator, int32, Damage);
 
 UCLASS(Abstract, Blueprintable)
 class PROJECTR_API AProjectRCharacter final : public ACharacter
@@ -19,7 +19,7 @@ public:
 	AProjectRCharacter();
 
 	UFUNCTION(BlueprintCallable)
-	void Attack(AProjectRCharacter* Target, uint8 Damage);
+	void Attack(AProjectRCharacter* Target, int32 Damage);
 
 	UFUNCTION(BlueprintCallable)
 	void BeginParrying(UObject* InParrying);
@@ -80,7 +80,7 @@ private:
 		AController* EventInstigator, AActor* DamageCauser) override;
 
 	UFUNCTION()
-	void HealHealthAndEnergy(AProjectRCharacter* Target, uint8 Damage);
+	void HealHealthAndEnergy(AProjectRCharacter* Target, int32 Damage);
 
 	void Look(float DeltaSeconds);
 	void Turn(float DeltaSeconds);
