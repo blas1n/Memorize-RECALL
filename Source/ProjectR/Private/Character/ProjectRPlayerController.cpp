@@ -230,6 +230,12 @@ void AProjectRPlayerController::SetUserTransformByInput()
 {
 	if (User->IsLooking() || !User->CanMoving() || MoveInput.IsZero()) return;
 
+	const FVector Forward = GetDirectionVectorByActor(EAxis::X);
+	const float Value = FMath::Max(FMath::Abs(MoveInput.X), FMath::Abs(MoveInput.Y));
+	User->AddMovementInput(Forward, Value);
+
+	if (User->GetCharacterMovement()->IsFalling()) return;
+
 	const FVector Direction = MoveInput.GetUnsafeNormal();
 	float Angle = FMath::Acos(FVector::DotProduct(Direction, FVector::ForwardVector));
 	const bool IsClockwise = FVector::CrossProduct(Direction, FVector::ForwardVector).Z <= 0.0f;
@@ -237,10 +243,6 @@ void AProjectRPlayerController::SetUserTransformByInput()
 
 	const float Yaw = FRotator::NormalizeAxis(GetControlRotation().Yaw + Angle);
 	User->SetTurnRotate(Yaw);
-
-	const FVector Forward = GetDirectionVectorByActor(EAxis::X);
-	const float Value = FMath::Max(FMath::Abs(MoveInput.X), FMath::Abs(MoveInput.Y));
-	User->AddMovementInput(Forward, Value);
 }
 
 void AProjectRPlayerController::CheckLockTarget()
