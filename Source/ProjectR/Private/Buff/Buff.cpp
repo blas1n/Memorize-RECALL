@@ -9,6 +9,7 @@
 void UBuff::Initialize()
 {
 	Target = GetTypedOuter<AProjectRCharacter>();
+	RecieveInitialize();
 }
 
 void UBuff::ApplyBuff(float Duration)
