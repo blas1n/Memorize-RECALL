@@ -23,6 +23,8 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
 	bool CanUse();
 
+	UWorld* GetWorld() const override;
+
 protected:
 	UFUNCTION(BlueprintImplementableEvent, meta = (DisplayName = "Initialize"))
 	void OnInitialize();
