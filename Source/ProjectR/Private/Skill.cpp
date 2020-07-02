@@ -6,9 +6,23 @@
 #include "ProjectRPlayerState.h"
 #include "Weapon.h"
 
+void USkill::Initialize()
+{
+	Weapon = Cast<UWeapon>(GetOuter());
+	User = Cast<AProjectRCharacter>(Weapon->GetOuter());
+	OnInitialize();
+}
+
 void USkill::Use()
 {
 	if (CanUse()) OnUse();
+}
+
+UActorComponent* USkill::NewComponent(TSubclassOf<UActorComponent> Class)
+{
+	auto* Component = NewObject<UActorComponent>(User, Class);
+	Component->RegisterComponent();
+	return Component;
 }
 
 bool USkill::IsEnoughEnergy() const
@@ -29,10 +43,4 @@ bool USkill::IsNotCoolTime() const
 void USkill::ApplyCooltime()
 {
 	NextUseTime = GetWorld()->GetTimeSeconds() + CoolTime;
-}
-
-void USkill::Initialize_Implementation()
-{
-	Weapon = Cast<UWeapon>(GetOuter());
-	User = Cast<AProjectRCharacter>(Weapon->GetOuter());
 }

@@ -26,6 +26,7 @@ class PROJECTR_API UWeapon final : public UObject
 	
 public:
 	void Initialize(const FName& InName);
+	void Release();
 
 	void Equip();
 	void Unequip();
