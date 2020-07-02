@@ -16,7 +16,7 @@ public:
 	void ApplyBuff(class AProjectRCharacter* Target, float Duration);
 
 	FORCEINLINE const TSubclassOf<class UBuffStorage>&
-	GetBuffStorageClass() const { return BuffStorageClass; }
+		GetBuffStorageClass() const { return BuffStorageClass; }
 
 protected:
 	UFUNCTION(BlueprintImplementableEvent)
