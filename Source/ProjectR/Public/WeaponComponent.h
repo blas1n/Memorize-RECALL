@@ -42,20 +42,21 @@ private:
 	void SetWeaponMesh();
 
 	UFUNCTION()
-	void OnWeaponOverlapped(AActor* OverlappedActor, AActor* OtherActor);
+	void OnWeaponOverlapped(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
+		UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
 	UFUNCTION()
 	void EnableRagdoll(AController* Instigator);
 
-	void DetachWeapon(class AStaticMeshActor* Weapon);
-	AStaticMeshActor* CreateWeaponActor(FName Socket);
+	void DetachWeapon(class UStaticMeshComponent* Weapon);
+	UStaticMeshComponent* CreateWeaponMesh(FName Socket);
 
 private:
 	UPROPERTY()
-	AStaticMeshActor* RightWeapon;
+	UStaticMeshComponent* RightWeapon;
 
 	UPROPERTY()
-	AStaticMeshActor* LeftWeapon;
+	UStaticMeshComponent* LeftWeapon;
 
 	UPROPERTY()
 	TArray<UWeapon*> Weapons;

@@ -58,8 +58,8 @@ void UWeaponComponent::SetNewWeapon(FName Name, uint8 Index)
 
 void UWeaponComponent::SetWeaponCollision(bool bEnableRight, bool bEnableLeft)
 {
-	RightWeapon->GetStaticMeshComponent()->SetGenerateOverlapEvents(bEnableRight);
-	LeftWeapon->GetStaticMeshComponent()->SetGenerateOverlapEvents(bEnableLeft);
+	RightWeapon->SetGenerateOverlapEvents(bEnableRight);
+	LeftWeapon->SetGenerateOverlapEvents(bEnableLeft);
 }
 
 void UWeaponComponent::BeginPlay()
@@ -72,8 +72,8 @@ void UWeaponComponent::BeginPlay()
 	FActorSpawnParameters Param;
 	Param.Owner = Param.Instigator = Cast<APawn>(GetOwner());
 
-	RightWeapon = CreateWeaponActor(TEXT("weapon_r"));
-	LeftWeapon = CreateWeaponActor(TEXT("weapon_l"));
+	RightWeapon = CreateWeaponMesh(TEXT("weapon_r"));
+	LeftWeapon = CreateWeaponMesh(TEXT("weapon_l"));
 }
 
 void UWeaponComponent::EndPlay(EEndPlayReason::Type EndPlayReason)
@@ -99,14 +99,15 @@ void UWeaponComponent::EquipWeapon(UWeapon* NewWeapon)
 
 void UWeaponComponent::SetWeaponMesh()
 {
-	RightWeapon->GetStaticMeshComponent()->SetStaticMesh(CurWeapon->GetRightWeaponMesh());
-	RightWeapon->SetActorRelativeTransform(CurWeapon->GetRightWeaponTransform());
+	RightWeapon->SetStaticMesh(CurWeapon->GetRightWeaponMesh());
+	RightWeapon->SetRelativeTransform(CurWeapon->GetRightWeaponTransform());
 
-	LeftWeapon->GetStaticMeshComponent()->SetStaticMesh(CurWeapon->GetLeftWeaponMesh());
-	LeftWeapon->SetActorRelativeTransform(CurWeapon->GetLeftWeaponTransform());
+	LeftWeapon->SetStaticMesh(CurWeapon->GetLeftWeaponMesh());
+	LeftWeapon->SetRelativeTransform(CurWeapon->GetLeftWeaponTransform());
 }
 
-void UWeaponComponent::OnWeaponOverlapped(AActor* OverlappedActor, AActor* OtherActor)
+void UWeaponComponent::OnWeaponOverlapped(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
+	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 	CurWeapon->OnWeaponHitted.Broadcast(Cast<AProjectRCharacter>(OtherActor));
 }
@@ -117,32 +118,29 @@ void UWeaponComponent::EnableRagdoll(AController* Instigator)
 	DetachWeapon(LeftWeapon);
 }
 
-void UWeaponComponent::DetachWeapon(AStaticMeshActor* Weapon)
+void UWeaponComponent::DetachWeapon(UStaticMeshComponent* Weapon)
 {
-	auto Component = Weapon->GetStaticMeshComponent();
-	Component->SetCollisionProfileName(TEXT("Ragdoll"));
-	Component->SetSimulatePhysics(true);
+	Weapon->SetCollisionProfileName(TEXT("Ragdoll"));
+	Weapon->SetSimulatePhysics(true);
 
 	auto Rules = FDetachmentTransformRules::KeepWorldTransform;
-	Weapon->DetachFromActor(Rules);
+	Weapon->DetachFromComponent(Rules);
 }
 
-AStaticMeshActor* UWeaponComponent::CreateWeaponActor(FName Socket)
+UStaticMeshComponent* UWeaponComponent::CreateWeaponMesh(FName Socket)
 {
-	FActorSpawnParameters Param;
-	Param.Owner = Param.Instigator = Cast<APawn>(GetOwner());
-	auto* WeaponActor = GetWorld()->SpawnActor<AStaticMeshActor>(Param);
-	WeaponActor->SetMobility(EComponentMobility::Movable);
-	WeaponActor->OnActorBeginOverlap.AddDynamic(this, &UWeaponComponent::OnWeaponOverlapped);
+	auto* Component = NewObject<UStaticMeshComponent>(this);
+	Component->RegisterComponent();
+	Component->SetMobility(EComponentMobility::Movable);
+	Component->OnComponentBeginOverlap.AddDynamic(this, &UWeaponComponent::OnWeaponOverlapped);
 
 	auto* MeshComponent = Cast<ACharacter>(GetOwner())->GetMesh();
-	auto Rules = FAttachmentTransformRules::SnapToTargetNotIncludingScale;
-	WeaponActor->AttachToComponent(MeshComponent, Rules, Socket);
+	const auto Rules = FAttachmentTransformRules::SnapToTargetNotIncludingScale;
+	Component->AttachToComponent(MeshComponent, Rules, Socket);
 	
-	auto* WeaponComponent = WeaponActor->GetStaticMeshComponent();
-	WeaponComponent->CanCharacterStepUpOn = ECanBeCharacterBase::ECB_No;
-	WeaponComponent->SetCollisionProfileName(TEXT("Weapon"));
-	WeaponComponent->SetGenerateOverlapEvents(false);
+	Component->CanCharacterStepUpOn = ECanBeCharacterBase::ECB_No;
+	Component->SetCollisionProfileName(TEXT("Weapon"));
+	Component->SetGenerateOverlapEvents(false);
 
-	return WeaponActor;
+	return Component;
 }
