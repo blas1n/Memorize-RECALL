@@ -2,8 +2,8 @@
 
 #include "Skill.h"
 #include "Engine/World.h"
-#include "ProjectRCharacter.h"
-#include "ProjectRPlayerState.h"
+#include "Character/ProjectRCharacter.h"
+#include "Character/ProjectRPlayerState.h"
 #include "Weapon.h"
 
 void USkill::Initialize()

@@ -5,7 +5,7 @@
 #include "Components/StaticMeshComponent.h"
 #include "Engine/StaticMeshActor.h"
 #include "Kismet/GameplayStatics.h"
-#include "ProjectRCharacter.h"
+#include "Character/ProjectRCharacter.h"
 #include "Weapon.h"
 
 UWeaponComponent::UWeaponComponent()

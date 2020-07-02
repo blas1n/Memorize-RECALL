@@ -18,11 +18,14 @@ public:
 	void ApplyBuff(float Duration);
 
 protected:
-	UFUNCTION(BlueprintImplementableEvent)
-	void OnBeginBuff();
+	virtual void BeginBuff() {}
+	virtual void EndBuff() {}
 
-	UFUNCTION(BlueprintImplementableEvent)
-	void OnEndBuff();
+	UFUNCTION(BlueprintImplementableEvent, meta = (DisplayName = "BeginBuff"))
+	void RecieveBeginBuff();
+
+	UFUNCTION(BlueprintImplementableEvent, meta = (DisplayName = "EndBuff"))
+	void RecieveEndBuff();
 
 private:
 	UPROPERTY(BlueprintReadOnly, meta = (AllowPrivateAccess = true))

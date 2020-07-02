@@ -1,13 +1,13 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-#include "ProjectRPlayerState.h"
+#include "Character/ProjectRPlayerState.h"
 #include "Engine/World.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
-#include "Buff.h"
-#include "ProjectRCharacter.h"
-#include "ProjectRGameInstance.h"
-#include "StatData.h"
+#include "Buff/Buff.h"
+#include "Character/ProjectRCharacter.h"
+#include "Framework/ProjectRGameInstance.h"
+#include "Data/StatData.h"
 
 void AProjectRPlayerState::InitFromDataTable(const FName& Name)
 {
