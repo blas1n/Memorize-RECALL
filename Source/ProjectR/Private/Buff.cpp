@@ -2,19 +2,22 @@
 
 #include "Buff.h"
 #include "Engine/World.h"
+#include "GameFramework/Controller.h"
 #include "TimerManager.h"
-#include "BuffStorage.h"
 #include "ProjectRCharacter.h"
-#include "ProjectRPlayerState.h"
 
-void UBuff::ApplyBuff(AProjectRCharacter* Target, float Duration)
+void UBuff::Initialize()
 {
-	auto* BuffStorage = *Target->GetPlayerState<AProjectRPlayerState>()->GetBuffStorages().Find(GetClass());
-	OnBeginBuff(Target, BuffStorage);
+	Target = GetTypedOuter<AProjectRCharacter>();
+}
+
+void UBuff::ApplyBuff(float Duration)
+{
+	OnBeginBuff();
 
 	FTimerHandle Handle;
-	Target->GetWorld()->GetTimerManager().SetTimer(Handle, [this, Target, BuffStorage]
+	Target->GetWorld()->GetTimerManager().SetTimer(Handle, [this]
 		{
-			OnEndBuff(Target, BuffStorage);
+			OnEndBuff();
 		}, Duration, false);
 }
