@@ -40,6 +40,12 @@ void UWeapon::Initialize(const FName& InName)
 	}
 }
 
+void UWeapon::Release()
+{
+	for (USkill* Skill : Skills)
+		Skill->Release();
+}
+
 void UWeapon::Equip()
 {
 	auto* AnimInstance = User->GetMesh()->GetAnimInstance();

@@ -78,8 +78,10 @@ void UWeaponComponent::BeginPlay()
 
 void UWeaponComponent::EndPlay(EEndPlayReason::Type EndPlayReason)
 {
-	RightWeapon->Destroy();
-	LeftWeapon->Destroy();
+	for (UWeapon* Weapon : Weapons)
+		if (Weapon)	Weapon->Release();
+
+	Super::EndPlay(EndPlayReason);
 }
 
 void UWeaponComponent::EquipWeapon(UWeapon* NewWeapon)

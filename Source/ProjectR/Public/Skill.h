@@ -12,8 +12,10 @@ class PROJECTR_API USkill final : public UObject
 	GENERATED_BODY()
 	
 public:
-	UFUNCTION(BlueprintNativeEvent)
 	void Initialize();
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void Release();
 
 	UFUNCTION(BlueprintCallable)
 	void Use();
@@ -22,8 +24,14 @@ public:
 	bool CanUse();
 
 protected:
+	UFUNCTION(BlueprintImplementableEvent, meta = (DisplayName = "Initialize"))
+	void OnInitialize();
+
 	UFUNCTION(BlueprintImplementableEvent)
 	void OnUse();
+
+	UFUNCTION(BlueprintCallable, meta = (BlueprintProtected))
+	class UActorComponent* NewComponent(TSubclassOf<UActorComponent> Class);
 
 	UFUNCTION(BlueprintCallable, meta = (BlueprintProtected))
 	bool IsEnoughEnergy() const;
@@ -44,8 +52,6 @@ protected:
 	FORCEINLINE const UWeapon* GetWeapon() const noexcept { return Weapon; }
 
 private:
-	void Initialize_Implementation();
-
 	FORCEINLINE bool CanUse_Implementation() { return true; }
 
 private:
