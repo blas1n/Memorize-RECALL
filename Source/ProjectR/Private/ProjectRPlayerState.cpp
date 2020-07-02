@@ -38,8 +38,13 @@ void AProjectRPlayerState::HealHealthByDamage(int32 Damage) noexcept
 
 void AProjectRPlayerState::SetMaxHealth(int32 Value, bool bWithCur) noexcept
 {
-	MaxHealth += Value;
-	if (bWithCur) Health += Value;
+	if (bWithCur)
+	{
+		const int32 Delta = Value - Health;
+		Health += Delta;
+	}
+
+	MaxHealth = Value;
 }
 
 void AProjectRPlayerState::SetHealthHeal(float Value) noexcept
@@ -60,8 +65,13 @@ void AProjectRPlayerState::HealEnergyByDamage(int32 Damage) noexcept
 
 void AProjectRPlayerState::SetMaxEnergy(int32 Value, bool bWithCur) noexcept
 {
-	MaxEnergy += Value;
-	if (bWithCur) Energy += Value;
+	if (bWithCur)
+	{
+		const int32 Delta = Value - Energy;
+		Energy += Delta;
+	}
+
+	MaxEnergy = Value;
 }
 
 void AProjectRPlayerState::SetEnergyHeal(float Value) noexcept
