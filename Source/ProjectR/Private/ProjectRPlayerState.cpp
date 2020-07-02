@@ -16,7 +16,7 @@ void AProjectRPlayerState::InitFromDataTable(const FName& Name)
 	const auto& StatData = *DataTable->FindRow<FStatData>(Name, "", false);
 
 	SetMaxHealth(StatData.MaxHealth);
-	SetMaxHealth(StatData.HealthHeal);
+	SetHealthHeal(StatData.HealthHeal);
 
 	SetMaxEnergy(StatData.MaxEnergy);
 	SetEnergyHeal(StatData.EnergyHeal);
