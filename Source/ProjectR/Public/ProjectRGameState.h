@@ -10,16 +10,4 @@ UCLASS(BlueprintType)
 class PROJECTR_API AProjectRGameState final : public AGameStateBase
 {
 	GENERATED_BODY()
-	
-public:
-	UFUNCTION(BlueprintCallable)
-	class UBuff* GetBuffByClass(TSubclassOf<UBuff> BuffClass);
-
-	void InitBuffStorages(TMap<TSubclassOf<UBuff>, class UBuffStorage*>& BuffStorages);
-
-private:
-	void BeginPlay() override;
-
-private:
-	TMap<TSubclassOf<UBuff>, UBuff*> Buffs;
 };

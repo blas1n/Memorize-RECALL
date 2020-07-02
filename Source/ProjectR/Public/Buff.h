@@ -7,25 +7,24 @@
 #include "Buff.generated.h"
 
 UCLASS(Abstract, Blueprintable)
-class PROJECTR_API UBuff final : public UObject
+class PROJECTR_API UBuff : public UObject
 {
 	GENERATED_BODY()
 
 public:
+	void Initialize();
+	
 	UFUNCTION(BlueprintCallable)
-	void ApplyBuff(class AProjectRCharacter* Target, float Duration);
-
-	FORCEINLINE const TSubclassOf<class UBuffStorage>&
-		GetBuffStorageClass() const { return BuffStorageClass; }
+	void ApplyBuff(float Duration);
 
 protected:
 	UFUNCTION(BlueprintImplementableEvent)
-	void OnBeginBuff(AProjectRCharacter* Target, UBuffStorage* BuffStorage);
+	void OnBeginBuff();
 
 	UFUNCTION(BlueprintImplementableEvent)
-	void OnEndBuff(AProjectRCharacter* Target, UBuffStorage* BuffStorage);
+	void OnEndBuff();
 
 private:
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = BuffStorage, meta = (AllowPrivateAccess = true))
-	TSubclassOf<UBuffStorage> BuffStorageClass;
+	UPROPERTY(BlueprintReadOnly, meta = (AllowPrivateAccess = true))
+	class AProjectRCharacter* Target;
 };

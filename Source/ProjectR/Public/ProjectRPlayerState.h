@@ -58,12 +58,6 @@ public:
 	FORCEINLINE float GetRunSpeed() const noexcept { return RunSpeed; }
 	FORCEINLINE float GetWalkSpeed() const noexcept { return WalkSpeed; }
 
-	FORCEINLINE TMap<TSubclassOf<class UBuff>, class UBuffStorage*>& GetBuffStorages() noexcept { return BuffStorages; }
-	FORCEINLINE const TMap<TSubclassOf<UBuff>, UBuffStorage*>& GetBuffStorages() const noexcept { return BuffStorages; }
-
-private:
-	void BeginPlay() override;
-
 private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Stat, meta = (AllowPrivateAccess = true))
 	int32 Health;
@@ -91,7 +85,4 @@ private:
 
 	UPROPERTY()
 	TMap<TSubclassOf<UBuff>, UBuff*> Buffs;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Buff, meta = (AllowPrivateAccess = true))
-	TMap<TSubclassOf<UBuff>, UBuffStorage*> BuffStorages;
 };

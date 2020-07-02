@@ -4,9 +4,9 @@
 #include "Engine/World.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
+#include "Buff.h"
 #include "ProjectRCharacter.h"
 #include "ProjectRGameInstance.h"
-#include "ProjectRGameState.h"
 #include "StatData.h"
 
 void AProjectRPlayerState::InitFromDataTable(const FName& Name)
@@ -89,14 +89,10 @@ void AProjectRPlayerState::SetWalkSpeed(float Value) noexcept
 
 UBuff* AProjectRPlayerState::GetBuff(TSubclassOf<UBuff> BuffClass)
 {
-	GetPawn<ACharacter>()->GetCharacterMovement()
-		->MaxWalkSpeedCrouched = CrouchSpeed = Value;
-}
+	UBuff** Buff = Buffs.Find(BuffClass);
 
-void AProjectRPlayerState::BeginPlay()
-{
-	auto* GameState = Cast<AProjectRGameState>
-		(UGameplayStatics::GetGameState(GetWorld()));
-
-	GameState->InitBuffStorages(BuffStorages);
+	if (!Buff)
+		Buff = &Buffs.Add(BuffClass, NewObject<UBuff>(GetPawn()));
+	
+	return *Buff;
 }
