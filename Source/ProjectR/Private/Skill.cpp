@@ -18,6 +18,11 @@ void USkill::Use()
 	if (CanUse()) OnUse();
 }
 
+UWorld* USkill::GetWorld() const
+{
+	return User ? User->GetWorld() : nullptr;
+}
+
 UActorComponent* USkill::NewComponent(TSubclassOf<UActorComponent> Class)
 {
 	auto* Component = NewObject<UActorComponent>(User, Class);
