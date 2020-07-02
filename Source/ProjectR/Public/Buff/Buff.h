@@ -12,12 +12,15 @@ class PROJECTR_API UBuff : public UObject
 	GENERATED_BODY()
 
 public:
-	void Initialize();
+	virtual void Initialize();
 	
 	UFUNCTION(BlueprintCallable)
 	void ApplyBuff(float Duration);
 
 protected:
+	UFUNCTION(BlueprintImplementableEvent, meta = (DisplayName = "Initialize"))
+	void RecieveInitialize();
+
 	virtual void BeginBuff() {}
 	virtual void EndBuff() {}
 
@@ -27,7 +30,9 @@ protected:
 	UFUNCTION(BlueprintImplementableEvent, meta = (DisplayName = "EndBuff"))
 	void RecieveEndBuff();
 
+	FORCEINLINE class AProjectRCharacter* GetTarget() const noexcept { return Target; }
+
 private:
 	UPROPERTY(BlueprintReadOnly, meta = (AllowPrivateAccess = true))
-	class AProjectRCharacter* Target;
+	AProjectRCharacter* Target;
 };
