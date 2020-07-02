@@ -26,19 +26,18 @@ void AProjectRPlayerState::InitFromDataTable(const FName& Name)
 	SetCrouchSpeed(StatData.CrouchSpeed);
 }
 
-void AProjectRPlayerState::HealHealth(uint8 Value) noexcept
+void AProjectRPlayerState::HealHealth(int32 Value) noexcept
 {
-	Health += Value;
-	Health = FMath::Clamp(Health, static_cast<uint8>(0u), MaxHealth);
+	Health = FMath::Clamp(Health + Value, 0, MaxHealth);
 }
 
-void AProjectRPlayerState::HealHealthByDamage(uint8 Damage) noexcept
+void AProjectRPlayerState::HealHealthByDamage(int32 Damage) noexcept
 {
 	if (Damage > 0.0f && HealthHeal != 0.0f)
 		HealHealth(static_cast<float>(Damage) * HealthHeal);
 }
 
-void AProjectRPlayerState::SetMaxHealth(uint8 Value, bool bWithCur) noexcept
+void AProjectRPlayerState::SetMaxHealth(int32 Value, bool bWithCur) noexcept
 {
 	MaxHealth += Value;
 	if (bWithCur) Health += Value;
@@ -49,19 +48,18 @@ void AProjectRPlayerState::SetHealthHeal(float Value) noexcept
 	HealthHeal = Value;
 }
 
-void AProjectRPlayerState::HealEnergy(uint8 Value) noexcept
+void AProjectRPlayerState::HealEnergy(int32 Value) noexcept
 {
-	Energy += Value;
-	Energy = FMath::Clamp(Energy, static_cast<uint8>(0u), MaxEnergy);
+	Energy = FMath::Clamp(Energy + Value, 0, MaxEnergy);
 }
 
-void AProjectRPlayerState::HealEnergyByDamage(uint8 Damage) noexcept
+void AProjectRPlayerState::HealEnergyByDamage(int32 Damage) noexcept
 {
 	if (Damage > 0.0f && EnergyHeal != 0.0f)
 		HealEnergy(static_cast<float>(Damage) * EnergyHeal);
 }
 
-void AProjectRPlayerState::SetMaxEnergy(uint8 Value, bool bWithCur) noexcept
+void AProjectRPlayerState::SetMaxEnergy(int32 Value, bool bWithCur) noexcept
 {
 	MaxEnergy += Value;
 	if (bWithCur) Energy += Value;

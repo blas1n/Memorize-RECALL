@@ -42,9 +42,9 @@ AProjectRCharacter::AProjectRCharacter()
 	bIsDeath = false;
 }
 
-void AProjectRCharacter::Attack(AProjectRCharacter* Target, uint8 Damage)
+void AProjectRCharacter::Attack(AProjectRCharacter* Target, int32 Damage)
 {
-	auto TakingDamage = static_cast<uint8>(Target->
+	auto TakingDamage = static_cast<int32>(Target->
 		TakeDamage(Damage, FDamageEvent{}, GetController(), this));
 
 	if (TakingDamage > 0u)
@@ -143,7 +143,7 @@ void AProjectRCharacter::Tick(float DeltaSeconds)
 float AProjectRCharacter::TakeDamage(float DamageAmount, const FDamageEvent& DamageEvent,
 	AController* EventInstigator, AActor* DamageCauser)
 {
-	auto Damage = static_cast<uint8>(Super::TakeDamage
+	auto Damage = static_cast<int32>(Super::TakeDamage
 		(DamageAmount, DamageEvent, EventInstigator, DamageCauser));
 
 	if (Parrying && IParryable::Execute_IsParryable(Parrying, Damage, EventInstigator, DamageCauser))
@@ -161,7 +161,7 @@ float AProjectRCharacter::TakeDamage(float DamageAmount, const FDamageEvent& Dam
 	return Damage;
 }
 
-void AProjectRCharacter::HealHealthAndEnergy(AProjectRCharacter* Target, uint8 Damage)
+void AProjectRCharacter::HealHealthAndEnergy(AProjectRCharacter* Target, int32 Damage)
 {
 	auto* MyPlayerState = GetPlayerState<AProjectRPlayerState>();
 	MyPlayerState->HealHealthByDamage(Damage);

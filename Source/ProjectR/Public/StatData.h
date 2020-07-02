@@ -12,13 +12,13 @@ struct FStatData : public FTableRowBase
 	GENERATED_BODY()
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	uint8 MaxHealth;
+	int32 MaxHealth;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float HealthHeal;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	uint8 MaxEnergy;
+	int32 MaxEnergy;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float EnergyHeal;

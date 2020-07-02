@@ -15,25 +15,25 @@ public:
 	void InitFromDataTable(const FName& Name);
 
 	UFUNCTION(BlueprintCallable) 
-	void HealHealth(uint8 Value) noexcept;
+	void HealHealth(int32 Value) noexcept;
 
 	UFUNCTION(BlueprintCallable)
-	void HealHealthByDamage(uint8 Damage) noexcept;
+	void HealHealthByDamage(int32 Damage) noexcept;
 
 	UFUNCTION(BlueprintCallable)
-	void SetMaxHealth(uint8 Value, bool bWithCur = true) noexcept;
+	void SetMaxHealth(int32 Value, bool bWithCur = true) noexcept;
 
 	UFUNCTION(BlueprintCallable)
 	void SetHealthHeal(float Value) noexcept;
 
 	UFUNCTION(BlueprintCallable)
-	void HealEnergy(uint8 Value) noexcept;
+	void HealEnergy(int32 Value) noexcept;
 
 	UFUNCTION(BlueprintCallable)
-	void HealEnergyByDamage(uint8 Damage) noexcept;
+	void HealEnergyByDamage(int32 Damage) noexcept;
 
 	UFUNCTION(BlueprintCallable)
-	void SetMaxEnergy(uint8 Value, bool bWithCur = true) noexcept;
+	void SetMaxEnergy(int32 Value, bool bWithCur = true) noexcept;
 
 	UFUNCTION(BlueprintCallable)
 	void SetEnergyHeal(float Value) noexcept;
@@ -47,12 +47,12 @@ public:
 	UFUNCTION(BlueprintSetter)
 	void SetCrouchSpeed(float Value) noexcept;
 
-	FORCEINLINE uint8 GetHealth() const noexcept { return Health; }
-	FORCEINLINE uint8 GetMaxHealth() const noexcept { return MaxHealth; }
+	FORCEINLINE int32 GetHealth() const noexcept { return Health; }
+	FORCEINLINE int32 GetMaxHealth() const noexcept { return MaxHealth; }
 	FORCEINLINE float GetHealthHeal() const noexcept { return HealthHeal; }
 
-	FORCEINLINE uint8 GetEnergy() const noexcept { return Energy; }
-	FORCEINLINE uint8 GetMaxEnergy() const noexcept { return MaxEnergy; }
+	FORCEINLINE int32 GetEnergy() const noexcept { return Energy; }
+	FORCEINLINE int32 GetMaxEnergy() const noexcept { return MaxEnergy; }
 	FORCEINLINE float GetEnergyHeal() const noexcept { return EnergyHeal; }
 
 	FORCEINLINE float GetRunSpeed() const noexcept { return RunSpeed; }
@@ -67,19 +67,19 @@ private:
 
 private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Stat, meta = (AllowPrivateAccess = true))
-	uint8 Health;
+	int32 Health;
 		
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Stat, meta = (AllowPrivateAccess = true))
-	uint8 MaxHealth;
+	int32 MaxHealth;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Stat, meta = (AllowPrivateAccess = true))
 	float HealthHeal;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Stat, meta = (AllowPrivateAccess = true))
-	uint8 Energy;
+	int32 Energy;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Stat, meta = (AllowPrivateAccess = true))
-	uint8 MaxEnergy;
+	int32 MaxEnergy;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Stat, meta = (AllowPrivateAccess = true))
 	float EnergyHeal;
