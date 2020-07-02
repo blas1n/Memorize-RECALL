@@ -44,8 +44,8 @@ public:
 	UFUNCTION(BlueprintSetter)
 	void SetWalkSpeed(float Value) noexcept;
 
-	UFUNCTION(BlueprintSetter)
-	void SetCrouchSpeed(float Value) noexcept;
+	UFUNCTION(BlueprintCallable)
+	class UBuff* GetBuff(TSubclassOf<UBuff> BuffClass);
 
 	FORCEINLINE int32 GetHealth() const noexcept { return Health; }
 	FORCEINLINE int32 GetMaxHealth() const noexcept { return MaxHealth; }
@@ -57,7 +57,6 @@ public:
 
 	FORCEINLINE float GetRunSpeed() const noexcept { return RunSpeed; }
 	FORCEINLINE float GetWalkSpeed() const noexcept { return WalkSpeed; }
-	FORCEINLINE float GetCrouchSpeed() const noexcept { return CrouchSpeed; }
 
 	FORCEINLINE TMap<TSubclassOf<class UBuff>, class UBuffStorage*>& GetBuffStorages() noexcept { return BuffStorages; }
 	FORCEINLINE const TMap<TSubclassOf<UBuff>, UBuffStorage*>& GetBuffStorages() const noexcept { return BuffStorages; }
@@ -90,8 +89,8 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintSetter = SetWalkSpeed, Category = Speed, meta = (AllowPrivateAccess = true))
 	float WalkSpeed;
 
-	UPROPERTY(EditAnywhere, BlueprintSetter = SetCrouchSpeed, Category = Speed, meta = (AllowPrivateAccess = true))
-	float CrouchSpeed;
+	UPROPERTY()
+	TMap<TSubclassOf<UBuff>, UBuff*> Buffs;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Buff, meta = (AllowPrivateAccess = true))
 	TMap<TSubclassOf<UBuff>, UBuffStorage*> BuffStorages;
