@@ -23,7 +23,6 @@ void AProjectRPlayerState::InitFromDataTable(const FName& Name)
 
 	SetRunSpeed(StatData.RunSpeed);
 	SetWalkSpeed(StatData.WalkSpeed);
-	SetCrouchSpeed(StatData.CrouchSpeed);
 }
 
 void AProjectRPlayerState::HealHealth(int32 Value) noexcept
@@ -88,7 +87,7 @@ void AProjectRPlayerState::SetWalkSpeed(float Value) noexcept
 		User->GetCharacterMovement()->MaxWalkSpeed = WalkSpeed;
 }
 
-void AProjectRPlayerState::SetCrouchSpeed(float Value) noexcept
+UBuff* AProjectRPlayerState::GetBuff(TSubclassOf<UBuff> BuffClass)
 {
 	GetPawn<ACharacter>()->GetCharacterMovement()
 		->MaxWalkSpeedCrouched = CrouchSpeed = Value;

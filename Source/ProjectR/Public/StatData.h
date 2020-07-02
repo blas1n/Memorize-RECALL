@@ -28,7 +28,4 @@ struct FStatData : public FTableRowBase
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float WalkSpeed;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	float CrouchSpeed;
 };
