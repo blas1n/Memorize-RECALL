@@ -45,7 +45,7 @@ public:
 	void SetWalkSpeed(float Value) noexcept;
 
 	UFUNCTION(BlueprintCallable)
-	class UBuff* GetBuff(TSubclassOf<UBuff> BuffClass);
+	class UBuff* GetBuff(TSubclassOf<UBuff> BuffClass) const;
 
 	FORCEINLINE int32 GetHealth() const noexcept { return Health; }
 	FORCEINLINE int32 GetMaxHealth() const noexcept { return MaxHealth; }
@@ -84,5 +84,5 @@ private:
 	float WalkSpeed;
 
 	UPROPERTY()
-	TMap<TSubclassOf<UBuff>, UBuff*> Buffs;
+	mutable TMap<TSubclassOf<UBuff>, UBuff*> Buffs;
 };

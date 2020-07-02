@@ -97,12 +97,17 @@ void AProjectRPlayerState::SetWalkSpeed(float Value) noexcept
 		User->GetCharacterMovement()->MaxWalkSpeed = WalkSpeed;
 }
 
-UBuff* AProjectRPlayerState::GetBuff(TSubclassOf<UBuff> BuffClass)
+UBuff* AProjectRPlayerState::GetBuff(TSubclassOf<UBuff> BuffClass) const
 {
 	UBuff** Buff = Buffs.Find(BuffClass);
 
 	if (!Buff)
-		Buff = &Buffs.Add(BuffClass, NewObject<UBuff>(GetPawn()));
+	{
+		UBuff* NewBuff = NewObject<UBuff>(GetPawn(), BuffClass);
+		NewBuff->Initialize();
+		Buffs.Add(BuffClass, NewBuff);
+		Buff = &NewBuff;
+	}
 	
 	return *Buff;
 }
