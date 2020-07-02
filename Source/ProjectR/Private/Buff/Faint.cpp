@@ -1,12 +1,12 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-#include "Buff/Stun.h"
+#include "Buff/Faint.h"
 #include "AIController.h"
 #include "BrainComponent.h"
 #include "GameFramework/PlayerController.h"
 #include "Character/ProjectRCharacter.h"
 
-void UStun::Initialize()
+void UFaint::Initialize()
 {
 	Super::Initialize();
 
@@ -14,7 +14,7 @@ void UStun::Initialize()
 	bIsPlayer = Controller->IsPlayerController();
 }
 
-void UStun::BeginBuff()
+void UFaint::BeginBuff()
 {
 	if (++Count > 1)
 		return;
@@ -22,10 +22,10 @@ void UStun::BeginBuff()
 	if (bIsPlayer)
 		Cast<APlayerController>(Controller)->DisableInput(nullptr);
 	else
-		Cast<AAIController>(Controller)->GetBrainComponent()->StopLogic(TEXT("Stun"));
+		Cast<AAIController>(Controller)->GetBrainComponent()->StopLogic(TEXT("Faint"));
 }
 
-void UStun::EndBuff()
+void UFaint::EndBuff()
 {
 	if (--Count > 0)
 		return;
