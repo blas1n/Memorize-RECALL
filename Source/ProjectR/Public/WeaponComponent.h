@@ -18,7 +18,7 @@ public:
 	void UseSkill(uint8 Index);
 
 	UFUNCTION(BlueprintCallable)
-	bool CanUseSkill(uint8 Index);
+	bool CanUseSkill(uint8 Index) const;
 
 	UFUNCTION(BlueprintCallable)
 	void SwapWeapon(uint8 Index);

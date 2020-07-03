@@ -21,7 +21,7 @@ public:
 	void Use();
 
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
-	bool CanUse();
+	bool CanUse() const;
 
 	UWorld* GetWorld() const override;
 
@@ -54,7 +54,7 @@ protected:
 	FORCEINLINE const UWeapon* GetWeapon() const noexcept { return Weapon; }
 
 private:
-	FORCEINLINE bool CanUse_Implementation() { return true; }
+	FORCEINLINE bool CanUse_Implementation() const { return true; }
 
 private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Owner, meta = (AllowPrivateAccess = true))

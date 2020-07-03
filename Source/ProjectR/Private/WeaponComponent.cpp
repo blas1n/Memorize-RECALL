@@ -27,7 +27,7 @@ void UWeaponComponent::UseSkill(uint8 Index)
 		CurWeapon->UseSkill(Index);
 }
 
-bool UWeaponComponent::CanUseSkill(uint8 Index)
+bool UWeaponComponent::CanUseSkill(uint8 Index) const
 {
 	if (User->IsCasting() || !CurWeapon) return false;
 	return CurWeapon->CanUseSkill(Index);
