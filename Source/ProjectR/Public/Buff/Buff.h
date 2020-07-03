@@ -13,22 +13,37 @@ class PROJECTR_API UBuff : public UObject
 
 public:
 	virtual void Initialize();
+	virtual void Tick(float DeltaSeconds);
 	
 	UFUNCTION(BlueprintCallable)
-	void ApplyBuff(float Duration);
+	void ApplyBuff();
+
+	UFUNCTION(BlueprintCallable)
+	void ReleaseBuff();
+
+	UFUNCTION(BlueprintCallable)
+	void ApplyBuffWithDuration(float Duration);
+
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
+	bool IsActivate() const;
 
 protected:
 	UFUNCTION(BlueprintImplementableEvent, meta = (DisplayName = "Initialize"))
 	void RecieveInitialize();
 
-	virtual void BeginBuff() {}
-	virtual void EndBuff() {}
+	UFUNCTION(BlueprintImplementableEvent, meta = (DisplayName = "Tick"))
+	void RecieveTick(float DeltaSeconds);
 
 	UFUNCTION(BlueprintImplementableEvent, meta = (DisplayName = "BeginBuff"))
 	void RecieveBeginBuff();
 
 	UFUNCTION(BlueprintImplementableEvent, meta = (DisplayName = "EndBuff"))
 	void RecieveEndBuff();
+
+	virtual void BeginBuff() {}
+	virtual void EndBuff() {}
+
+	virtual bool IsActivate_Implementation() const { return false; }
 
 	FORCEINLINE class AProjectRCharacter* GetTarget() const noexcept { return Target; }
 

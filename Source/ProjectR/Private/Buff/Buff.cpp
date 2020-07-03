@@ -12,15 +12,30 @@ void UBuff::Initialize()
 	RecieveInitialize();
 }
 
-void UBuff::ApplyBuff(float Duration)
+void UBuff::ApplyBuff()
 {
 	BeginBuff();
 	RecieveBeginBuff();
+}
+
+void UBuff::ReleaseBuff()
+{
+	EndBuff();
+	RecieveEndBuff();
+}
+
+void UBuff::ApplyBuffWithDuration(float Duration)
+{
+	ApplyBuff();
 
 	FTimerHandle Handle;
 	Target->GetWorld()->GetTimerManager().SetTimer(Handle, [this]
 		{
-			EndBuff();
-			RecieveEndBuff();
+			ReleaseBuff();
 		}, Duration, false);
+}
+
+void UBuff::Tick(float DeltaSeconds)
+{
+	RecieveTick(DeltaSeconds);
 }
