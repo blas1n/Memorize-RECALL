@@ -32,7 +32,7 @@ public:
 	void Unequip();
 
 	void UseSkill(uint8 Index);
-	bool CanUseSkill(uint8 Index);
+	bool CanUseSkill(uint8 Index) const;
 
 	UFUNCTION(BlueprintCallable)
 	void SetWeaponCollision(bool bRightWeaponEnable, bool bLeftWeaponEnable);

@@ -70,7 +70,7 @@ void UWeapon::UseSkill(uint8 Index)
 		Skills[Index]->Use();
 }
 
-bool UWeapon::CanUseSkill(uint8 Index)
+bool UWeapon::CanUseSkill(uint8 Index) const
 {
 	return Skills.Num() > Index ? Skills[Index]->CanUse() : false;
 }
