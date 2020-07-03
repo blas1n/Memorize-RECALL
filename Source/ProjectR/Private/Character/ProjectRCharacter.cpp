@@ -99,10 +99,11 @@ void AProjectRCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 
-	TArray<FName> WeaponNames = GetWeaponNames();
-	uint8 WeaponNum = FMath::Min(WeaponNames.Num(), 3);
+	const TArray<FName> WeaponNames = GetWeaponNames();
+	const int32 WeaponNum = WeaponNames.Num();
 
-	for (uint8 Idx = 0u; Idx < WeaponNum; ++Idx)
+	// Some optimize trick
+	for (int32 Idx = WeaponNum - 1; Idx >= 0; --Idx)
 		WeaponComponent->SetNewWeapon(WeaponNames[Idx], Idx);
 
 	GetPlayerState<AProjectRPlayerState>()->InitFromDataTable(StatDataRowName);
