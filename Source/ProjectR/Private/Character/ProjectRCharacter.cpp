@@ -149,6 +149,11 @@ float AProjectRCharacter::TakeDamage(float DamageAmount, const FDamageEvent& Dam
 	return Damage;
 }
 
+void AProjectRCharacter::Landed(const FHitResult& Hit)
+{
+	OnLand.Broadcast(Hit);
+}
+
 void AProjectRCharacter::HealHealthAndEnergy(AProjectRCharacter* Target, int32 Damage)
 {
 	auto* MyPlayerState = GetPlayerState<AProjectRPlayerState>();
