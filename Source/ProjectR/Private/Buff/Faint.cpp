@@ -35,3 +35,8 @@ void UFaint::EndBuff()
 	else
 		Cast<AAIController>(Controller)->GetBrainComponent()->RestartLogic();
 }
+
+bool UFaint::IsActivate_Implementation() const
+{
+	return Count > 0;
+}
