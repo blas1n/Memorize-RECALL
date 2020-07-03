@@ -13,11 +13,6 @@ void USkill::Initialize()
 	OnInitialize();
 }
 
-void USkill::Use()
-{
-	if (CanUse()) OnUse();
-}
-
 UWorld* USkill::GetWorld() const
 {
 	return User ? User->GetWorld() : nullptr;
@@ -30,16 +25,6 @@ UActorComponent* USkill::NewComponent(TSubclassOf<UActorComponent> Class)
 	return Component;
 }
 
-bool USkill::IsEnoughEnergy() const
-{
-	return User->GetPlayerState<AProjectRPlayerState>()->GetEnergy() >= UseEnergy;
-}
-
-void USkill::ApplyEnergy()
-{
-	User->GetPlayerState<AProjectRPlayerState>()->HealEnergy(-UseEnergy);
-}
-
 bool USkill::IsNotCoolTime() const
 {
 	return FMath::IsNearlyEqual(NextUseTime, 0.0f) || NextUseTime <= GetWorld()->GetTimeSeconds();
@@ -48,4 +33,14 @@ bool USkill::IsNotCoolTime() const
 void USkill::ApplyCooltime()
 {
 	NextUseTime = GetWorld()->GetTimeSeconds() + CoolTime;
+}
+
+bool USkill::IsEnoughEnergy() const
+{
+	return User->GetPlayerState<AProjectRPlayerState>()->GetEnergy() >= UseEnergy;
+}
+
+void USkill::ApplyEnergy()
+{
+	User->GetPlayerState<AProjectRPlayerState>()->HealEnergy(-UseEnergy);
 }

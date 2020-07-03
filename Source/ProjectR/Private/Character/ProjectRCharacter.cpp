@@ -35,7 +35,6 @@ AProjectRCharacter::AProjectRCharacter()
 	WeaponComponent = CreateDefaultSubobject<UWeaponComponent>(TEXT("Weapon"));
 
 	Parrying = nullptr;
-	bIsCasting = false;
 	bIsTurning = false;
 	bIsRunning = false;
 	bIsDeath = false;

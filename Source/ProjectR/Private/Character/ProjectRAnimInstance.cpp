@@ -21,12 +21,8 @@ UProjectRAnimInstance::UProjectRAnimInstance()
 
 void UProjectRAnimInstance::NativeBeginPlay()
 {
-	Super::NativeBeginPlay();
-
-	OnMontageStarted.AddDynamic(this, &UProjectRAnimInstance::OnBeginMontage);
-	OnMontageEnded.AddDynamic(this, &UProjectRAnimInstance::OnEndMontage);
-
 	User = Cast<AProjectRCharacter>(TryGetPawnOwner());
+	Super::NativeBeginPlay();	
 }
 
 void UProjectRAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
@@ -43,28 +39,6 @@ void UProjectRAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 		->GetBuff(ULock::StaticClass())->IsActivate();
 
 	bIsInAir = Movement->IsFalling();
-}
-
-void UProjectRAnimInstance::OnBeginMontage(UAnimMontage* Montage)
-{
-	AnimNotify_BeginSkill();
-}
-
-void UProjectRAnimInstance::OnEndMontage(UAnimMontage* Montage, bool bInterrupted)
-{
-	AnimNotify_EndSkill();
-}
-
-void UProjectRAnimInstance::AnimNotify_BeginSkill()
-{
-	User->SetCast(true);
-	GetWeapon()->OnBeginSkill.Broadcast();
-}
-
-void UProjectRAnimInstance::AnimNotify_EndSkill()
-{
-	User->SetCast(false);
-	GetWeapon()->OnEndSkill.Broadcast();
 }
 
 void UProjectRAnimInstance::AnimNotify_BeginAttack()

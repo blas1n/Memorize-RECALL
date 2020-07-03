@@ -11,12 +11,12 @@ DECLARE_DYNAMIC_DELEGATE(FOnAsyncLoadEndedSingle);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnAsyncLoadEnded);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnEquipped);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnUnequipped);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnBeginSkill);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnEndSkill);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnBeginAttack);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnEndAttack);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnShoot);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnExecute);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnBeginSkill, class USkill*, Skill);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnEndSkill, USkill*, Skill);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnWeaponHitted, class AProjectRCharacter*, Target);
 
 UCLASS(BlueprintType)
@@ -33,6 +33,12 @@ public:
 
 	void UseSkill(uint8 Index);
 	bool CanUseSkill(uint8 Index) const;
+
+	UFUNCTION(BlueprintCallable)
+	void BeginSkill(USkill* Skill);
+
+	UFUNCTION(BlueprintCallable)
+	void EndSkill(USkill* Skill);
 
 	UFUNCTION(BlueprintCallable)
 	void SetWeaponCollision(bool bRightWeaponEnable, bool bLeftWeaponEnable);
@@ -91,12 +97,6 @@ public:
 	FOnUnequipped OnUnequipped;
 
 	UPROPERTY(BlueprintAssignable)
-	FOnBeginSkill OnBeginSkill;
-
-	UPROPERTY(BlueprintAssignable)
-	FOnEndSkill OnEndSkill;
-
-	UPROPERTY(BlueprintAssignable)
 	FOnBeginAttack OnBeginAttack;
 
 	UPROPERTY(BlueprintAssignable)
@@ -107,6 +107,12 @@ public:
 
 	UPROPERTY(BlueprintAssignable)
 	FOnExecute OnExecute;
+
+	UPROPERTY(BlueprintAssignable)
+	FOnBeginSkill OnBeginSkill;
+
+	UPROPERTY(BlueprintAssignable)
+	FOnEndSkill OnEndSkill;
 
 	UPROPERTY(BlueprintAssignable)
 	FOnWeaponHitted OnWeaponHitted;
@@ -137,5 +143,6 @@ private:
 
 	FName Name;
 	uint8 Key;
+	uint8 UseSkillCount;
 	uint8 AsyncLoadCount;
 };
