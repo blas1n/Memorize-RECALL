@@ -14,8 +14,11 @@ class PROJECTR_API UFaint final : public UBuff
 	
 private:
 	void Initialize() override;
+
 	void BeginBuff() override;
 	void EndBuff() override;
+
+	bool IsActivate_Implementation() const override;
 
 private:
 	UPROPERTY()
