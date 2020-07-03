@@ -41,8 +41,10 @@ private:
 	void CheckLockTarget();
 	void Turn(float DeltaSeconds);
 
-	FVector GetDirectionVectorByActor(EAxis::Type Axis) const noexcept;
-	FVector GetDirectionVectorByController(EAxis::Type Axis) const noexcept;
+	FVector GetDirectionVectorByActor(EAxis::Type Axis) const;
+	FVector GetDirectionVectorByController(EAxis::Type Axis) const;
+
+	bool IsLocked() const;
 
 private:
 	UPROPERTY()
