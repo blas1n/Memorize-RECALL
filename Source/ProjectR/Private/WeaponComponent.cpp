@@ -5,7 +5,7 @@
 #include "Components/StaticMeshComponent.h"
 #include "Engine/StaticMeshActor.h"
 #include "Kismet/GameplayStatics.h"
-#include "ProjectRCharacter.h"
+#include "Character/ProjectRCharacter.h"
 #include "Weapon.h"
 
 UWeaponComponent::UWeaponComponent()
@@ -15,33 +15,37 @@ UWeaponComponent::UWeaponComponent()
 
 	RightWeapon = nullptr;
 	LeftWeapon = nullptr;
-	Weapons.Init(nullptr, 3);
 	User = nullptr;
 	CurWeapon = nullptr;
+	WeaponNum = 0;
 	CurIndex = 0;
 }
 
 void UWeaponComponent::UseSkill(uint8 Index)
 {
-	if (!User->IsCasting() && CurWeapon)
+	if (CurWeapon)
 		CurWeapon->UseSkill(Index);
 }
 
-bool UWeaponComponent::CanUseSkill(uint8 Index)
+bool UWeaponComponent::CanUseSkill(uint8 Index) const
 {
-	if (User->IsCasting() || !CurWeapon) return false;
+	if (!CurWeapon) return false;
 	return CurWeapon->CanUseSkill(Index);
 }
 
 void UWeaponComponent::SwapWeapon(uint8 Index)
 {
-	if (!User->IsCasting() && CurIndex != Index)
-		EquipWeapon(Weapons[Index]);
+	if (CurIndex == Index || Weapons[Index] == nullptr)
+		return;
+	
+	EquipWeapon(Weapons[Index]);
+	CurIndex = Index;
 }
 
 void UWeaponComponent::SetNewWeapon(FName Name, uint8 Index)
 {
-	check(Index < 3);
+	if (Weapons.Num() <= Index) Weapons.SetNum(Index + 1);
+	if (!Weapons[Index]) ++WeaponNum;
 
 	Weapons[Index] = NewObject<UWeapon>(GetOwner());
 	Weapons[Index]->Initialize(Name);
@@ -52,8 +56,8 @@ void UWeaponComponent::SetNewWeapon(FName Name, uint8 Index)
 
 void UWeaponComponent::SetWeaponCollision(bool bEnableRight, bool bEnableLeft)
 {
-	RightWeapon->GetStaticMeshComponent()->SetGenerateOverlapEvents(bEnableRight);
-	LeftWeapon->GetStaticMeshComponent()->SetGenerateOverlapEvents(bEnableLeft);
+	RightWeapon->SetGenerateOverlapEvents(bEnableRight);
+	LeftWeapon->SetGenerateOverlapEvents(bEnableLeft);
 }
 
 void UWeaponComponent::BeginPlay()
@@ -66,14 +70,16 @@ void UWeaponComponent::BeginPlay()
 	FActorSpawnParameters Param;
 	Param.Owner = Param.Instigator = Cast<APawn>(GetOwner());
 
-	RightWeapon = CreateWeaponActor(TEXT("weapon_r"));
-	LeftWeapon = CreateWeaponActor(TEXT("weapon_l"));
+	RightWeapon = CreateWeaponMesh(TEXT("weapon_r"));
+	LeftWeapon = CreateWeaponMesh(TEXT("weapon_l"));
 }
 
 void UWeaponComponent::EndPlay(EEndPlayReason::Type EndPlayReason)
 {
-	RightWeapon->Destroy();
-	LeftWeapon->Destroy();
+	for (UWeapon* Weapon : Weapons)
+		if (Weapon)	Weapon->Release();
+
+	Super::EndPlay(EndPlayReason);
 }
 
 void UWeaponComponent::EquipWeapon(UWeapon* NewWeapon)
@@ -93,14 +99,15 @@ void UWeaponComponent::EquipWeapon(UWeapon* NewWeapon)
 
 void UWeaponComponent::SetWeaponMesh()
 {
-	RightWeapon->GetStaticMeshComponent()->SetStaticMesh(CurWeapon->GetRightWeaponMesh());
-	RightWeapon->SetActorRelativeTransform(CurWeapon->GetRightWeaponTransform());
+	RightWeapon->SetStaticMesh(CurWeapon->GetRightWeaponMesh());
+	RightWeapon->SetRelativeTransform(CurWeapon->GetRightWeaponTransform());
 
-	LeftWeapon->GetStaticMeshComponent()->SetStaticMesh(CurWeapon->GetLeftWeaponMesh());
-	LeftWeapon->SetActorRelativeTransform(CurWeapon->GetLeftWeaponTransform());
+	LeftWeapon->SetStaticMesh(CurWeapon->GetLeftWeaponMesh());
+	LeftWeapon->SetRelativeTransform(CurWeapon->GetLeftWeaponTransform());
 }
 
-void UWeaponComponent::OnWeaponOverlapped(AActor* OverlappedActor, AActor* OtherActor)
+void UWeaponComponent::OnWeaponOverlapped(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
+	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 	CurWeapon->OnWeaponHitted.Broadcast(Cast<AProjectRCharacter>(OtherActor));
 }
@@ -111,32 +118,29 @@ void UWeaponComponent::EnableRagdoll(AController* Instigator)
 	DetachWeapon(LeftWeapon);
 }
 
-void UWeaponComponent::DetachWeapon(AStaticMeshActor* Weapon)
+void UWeaponComponent::DetachWeapon(UStaticMeshComponent* Weapon)
 {
-	auto Component = Weapon->GetStaticMeshComponent();
-	Component->SetCollisionProfileName(TEXT("Ragdoll"));
-	Component->SetSimulatePhysics(true);
+	Weapon->SetCollisionProfileName(TEXT("Ragdoll"));
+	Weapon->SetSimulatePhysics(true);
 
 	auto Rules = FDetachmentTransformRules::KeepWorldTransform;
-	Weapon->DetachFromActor(Rules);
+	Weapon->DetachFromComponent(Rules);
 }
 
-AStaticMeshActor* UWeaponComponent::CreateWeaponActor(FName Socket)
+UStaticMeshComponent* UWeaponComponent::CreateWeaponMesh(FName Socket)
 {
-	FActorSpawnParameters Param;
-	Param.Owner = Param.Instigator = Cast<APawn>(GetOwner());
-	auto* WeaponActor = GetWorld()->SpawnActor<AStaticMeshActor>(Param);
-	WeaponActor->SetMobility(EComponentMobility::Movable);
-	WeaponActor->OnActorBeginOverlap.AddDynamic(this, &UWeaponComponent::OnWeaponOverlapped);
+	auto* Component = NewObject<UStaticMeshComponent>(this);
+	Component->RegisterComponent();
+	Component->SetMobility(EComponentMobility::Movable);
+	Component->OnComponentBeginOverlap.AddDynamic(this, &UWeaponComponent::OnWeaponOverlapped);
 
 	auto* MeshComponent = Cast<ACharacter>(GetOwner())->GetMesh();
-	auto Rules = FAttachmentTransformRules::SnapToTargetNotIncludingScale;
-	WeaponActor->AttachToComponent(MeshComponent, Rules, Socket);
+	const auto Rules = FAttachmentTransformRules::SnapToTargetNotIncludingScale;
+	Component->AttachToComponent(MeshComponent, Rules, Socket);
 	
-	auto* WeaponComponent = WeaponActor->GetStaticMeshComponent();
-	WeaponComponent->CanCharacterStepUpOn = ECanBeCharacterBase::ECB_No;
-	WeaponComponent->SetCollisionProfileName(TEXT("Weapon"));
-	WeaponComponent->SetGenerateOverlapEvents(false);
+	Component->CanCharacterStepUpOn = ECanBeCharacterBase::ECB_No;
+	Component->SetCollisionProfileName(TEXT("Weapon"));
+	Component->SetGenerateOverlapEvents(false);
 
-	return WeaponActor;
+	return Component;
 }

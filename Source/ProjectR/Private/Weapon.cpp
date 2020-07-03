@@ -3,14 +3,13 @@
 #include "Weapon.h"
 #include "Animation/AnimInstance.h"
 #include "Components/SkeletalMeshComponent.h"
-#include "Engine/AssetManager.h"
 #include "Engine/StaticMesh.h"
 #include "Kismet/GameplayStatics.h"
-#include "ProjectRCharacter.h"
-#include "ProjectRGameInstance.h"
+#include "Character/ProjectRCharacter.h"
+#include "Data/WeaponData.h"
+#include "Framework/ProjectRGameInstance.h"
 #include "Skill.h"
 #include "WeaponComponent.h"
-#include "WeaponData.h"
 
 void UWeapon::Initialize(const FName& InName)
 {
@@ -26,9 +25,10 @@ void UWeapon::Initialize(const FName& InName)
 	RightWeaponTransform = WeaponData.RightTransform;
 	LeftWeaponTransform = WeaponData.LeftTransform;
 	
-	AsyncLoadCount = 2;
+	AsyncLoadCount = 3;
 	AsyncLoad(RightWeaponMesh, WeaponData.RightMesh);
 	AsyncLoad(LeftWeaponMesh, WeaponData.LeftMesh);
+	AsyncLoad(EquipAnim, WeaponData.EquipAnim);
 
 	Skills.SetNum(WeaponData.Skills.Num());
 
@@ -40,11 +40,21 @@ void UWeapon::Initialize(const FName& InName)
 	}
 }
 
+void UWeapon::Release()
+{
+	for (USkill* Skill : Skills)
+		Skill->Release();
+}
+
 void UWeapon::Equip()
 {
 	auto* AnimInstance = User->GetMesh()->GetAnimInstance();
 	AnimInstance->LinkAnimClassLayers(UpperAnimInstance);
 	OnEquipped.Broadcast();
+
+	FOnAsyncLoadEndedSingle Callback;
+	Callback.BindDynamic(this, &UWeapon::PlayEquipAnim);
+	RegisterOnAsyncLoadEnded(Callback);
 }
 
 void UWeapon::Unequip()
@@ -56,13 +66,31 @@ void UWeapon::Unequip()
 
 void UWeapon::UseSkill(uint8 Index)
 {
-	if (Skills.Num() > Index)
+	if (CanUseSkill(Index))
 		Skills[Index]->Use();
 }
 
-bool UWeapon::CanUseSkill(uint8 Index)
+bool UWeapon::CanUseSkill(uint8 Index) const
 {
-	return Skills.Num() > Index ? Skills[Index]->CanUse() : false;
+	if (Skills.Num() <= Index) return false;
+	
+	const USkill* Skill = Skills[Index];
+	if (UseSkillCount > 0 && Skill->IsCastSkill())
+		return false;
+
+	return Skill->CanUse();
+}
+
+void UWeapon::BeginSkill(USkill* Skill)
+{
+	++UseSkillCount;
+	OnBeginSkill.Broadcast(Skill);
+}
+
+void UWeapon::EndSkill(USkill* Skill)
+{
+	--UseSkillCount;
+	OnEndSkill.Broadcast(Skill);
 }
 
 void UWeapon::SetWeaponCollision(bool bRightWeaponEnable, bool bLeftWeaponEnable)
@@ -77,29 +105,8 @@ void UWeapon::RegisterOnAsyncLoadEnded(const FOnAsyncLoadEndedSingle& Callback)
 	else Callback.Execute();
 }
 
-void UWeapon::AsyncLoad(UStaticMesh*& Ptr, const TAssetPtr<UStaticMesh>& SoftPtr)
+void UWeapon::PlayEquipAnim()
 {
-	if (SoftPtr.IsNull())
-	{
-		CheckAndCallAsyncLoadDelegate();
-		return;
-	}
-
-	auto OnAsyncLoaded = [this, &Ptr = Ptr, &SoftPtr = SoftPtr]() mutable
-	{
-		Ptr = SoftPtr.Get();
-		CheckAndCallAsyncLoadDelegate();
-	};
-
-	if (SoftPtr.IsPending())
-	{
-		FStreamableDelegate Callback;
-		Callback.BindLambda([this, OnAsyncLoaded = MoveTemp(OnAsyncLoaded)]() mutable
-		{
-			OnAsyncLoaded();
-		});
-
-		UAssetManager::GetStreamableManager().RequestAsyncLoad(SoftPtr.ToSoftObjectPath(), MoveTemp(Callback));
-	}
-	else OnAsyncLoaded();
+	if (EquipAnim)
+		User->PlayAnimMontage(EquipAnim);
 }
