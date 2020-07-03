@@ -57,6 +57,9 @@ public:
 
 	FORCEINLINE float GetRunSpeed() const noexcept { return RunSpeed; }
 	FORCEINLINE float GetWalkSpeed() const noexcept { return WalkSpeed; }
+	
+private:
+	void Tick(float DeltaSeconds) override;
 
 private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Stat, meta = (AllowPrivateAccess = true))
