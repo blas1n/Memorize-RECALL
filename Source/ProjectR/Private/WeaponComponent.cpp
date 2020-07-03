@@ -15,7 +15,6 @@ UWeaponComponent::UWeaponComponent()
 
 	RightWeapon = nullptr;
 	LeftWeapon = nullptr;
-	Weapons.Init(nullptr, 3);
 	User = nullptr;
 	CurWeapon = nullptr;
 	WeaponNum = 0;
@@ -45,8 +44,7 @@ void UWeaponComponent::SwapWeapon(uint8 Index)
 
 void UWeaponComponent::SetNewWeapon(FName Name, uint8 Index)
 {
-	check(Index < 3);
-
+	if (Weapons.Num() <= Index) Weapons.SetNum(Index + 1);
 	if (!Weapons[Index]) ++WeaponNum;
 
 	Weapons[Index] = NewObject<UWeapon>(GetOwner());
