@@ -99,15 +99,26 @@ void AProjectRPlayerState::SetWalkSpeed(float Value) noexcept
 
 UBuff* AProjectRPlayerState::GetBuff(TSubclassOf<UBuff> BuffClass) const
 {
-	UBuff** Buff = Buffs.Find(BuffClass);
+	UBuff* Ret = nullptr;;
 
-	if (!Buff)
+	for (UBuff* Buff : Buffs)
 	{
-		UBuff* NewBuff = NewObject<UBuff>(GetPawn(), BuffClass);
-		NewBuff->Initialize();
-		Buffs.Add(BuffClass, NewBuff);
-		Buff = &NewBuff;
+		if (Buff->GetClass()->IsChildOf(BuffClass))
+		{
+			Ret = Buff;
+			break;
+		}
+	}
+
+	if (!Ret)
+	{
+		Ret = NewObject<UBuff>(GetPawn(), BuffClass);
+		Ret->Initialize();
+		Buffs.Add(Ret);
 	}
 	
-	return *Buff;
+	return Ret;
+}
+
+void AProjectRPlayerState::Tick(float DeltaSeconds)
 }

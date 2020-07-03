@@ -84,5 +84,5 @@ private:
 	float WalkSpeed;
 
 	UPROPERTY()
-	mutable TMap<TSubclassOf<UBuff>, UBuff*> Buffs;
+	mutable TArray<UBuff*> Buffs;
 };
