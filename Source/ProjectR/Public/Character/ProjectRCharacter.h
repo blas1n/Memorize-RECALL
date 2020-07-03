@@ -7,8 +7,9 @@
 #include "ProjectRCharacter.generated.h"
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnDeath, AController*, Instigator);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnAttack, AProjectRCharacter*, Target, uint8, Damage);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnDamaged, AController*, Instigator, uint8 , Damage);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnLand, const FHitResult&, Hit);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnAttack, AProjectRCharacter*, Target, int32, Damage);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnDamaged, AController*, Instigator, int32, Damage);
 
 UCLASS(Abstract, Blueprintable)
 class PROJECTR_API AProjectRCharacter final : public ACharacter
@@ -19,7 +20,7 @@ public:
 	AProjectRCharacter();
 
 	UFUNCTION(BlueprintCallable)
-	void Attack(AProjectRCharacter* Target, uint8 Damage, AActor* Causer);
+	void Attack(AProjectRCharacter* Target, int32 Damage);
 
 	UFUNCTION(BlueprintCallable)
 	void BeginParrying(UObject* InParrying);
@@ -28,45 +29,28 @@ public:
 	void EndParrying(UObject* InParrying);
 
 	UFUNCTION(BlueprintCallable)
-	void SetLockTarget(AProjectRCharacter* Target);
-
-	UFUNCTION(BlueprintCallable)
-	void ClearLockTarget();
-
-	UFUNCTION(BlueprintCallable)
 	void SetTurnRotate(float Yaw);
+
+	UFUNCTION(BlueprintCallable)
+	void Jumping();
 
 	UFUNCTION(BlueprintCallable)
 	void Run();
 
 	UFUNCTION(BlueprintCallable)
 	void Walk();
+
+	UFUNCTION(BlueprintImplementableEvent)
+	FVector GetViewLocation() const;
 	
 	FORCEINLINE class UWeaponComponent* GetWeaponComponent() const noexcept { return WeaponComponent; }
-	FORCEINLINE AProjectRCharacter* GetLockedTarget() const noexcept { return LockedTarget; }
 
-	FORCEINLINE bool CanMoving() const noexcept { return !bCannotMoving; }
-	FORCEINLINE void SetMove(bool bCanMove) noexcept { bCannotMoving = !bCanMove; }
-
-	FORCEINLINE bool IsCasting() const noexcept { return bIsCasting; }
-	FORCEINLINE void SetCast(bool bIsCast) noexcept { bIsCasting = bIsCast; }
-
-	FORCEINLINE bool IsLooking() const noexcept { return bIsLocking; }
 	FORCEINLINE bool IsRunning() const noexcept { return bIsRunning; }
 	FORCEINLINE bool IsDeath() const noexcept { return bIsDeath; }
 
 protected:
 	UFUNCTION(BlueprintImplementableEvent)
 	TArray<FName> GetWeaponNames();
-
-	UFUNCTION(BlueprintImplementableEvent)
-	void OnLockedOn(AProjectRCharacter* Locker);
-
-	UFUNCTION(BlueprintImplementableEvent)
-	void OnLockedOff(AProjectRCharacter* Locker);
-
-	UFUNCTION(BlueprintImplementableEvent)
-	FVector GetViewLocation() const;
 
 private:
 	void BeginPlay() override;
@@ -76,17 +60,21 @@ private:
 	float TakeDamage(float DamageAmount, const FDamageEvent& DamageEvent,
 		AController* EventInstigator, AActor* DamageCauser) override;
 
-	UFUNCTION()
-	void HealHealthAndEnergy(AProjectRCharacter* Target, uint8 Damage);
+	void Landed(const FHitResult& Hit) override;
 
-	void Look(float DeltaSeconds);
-	void Turn(float DeltaSeconds);
+	UFUNCTION()
+	void HealHealthAndEnergy(AProjectRCharacter* Target, int32 Damage);
+
+	bool IsBuffActivate(TSubclassOf<class UBuff> BuffClass) const;
 
 	void Death();
 
 public:
 	UPROPERTY(BlueprintAssignable)
 	FOnDeath OnDeath;
+
+	UPROPERTY(BlueprintAssignable)
+	FOnLand OnLand;
 
 	UPROPERTY(BlueprintAssignable)
 	FOnAttack OnAttack;
@@ -102,16 +90,10 @@ private:
 	FName StatDataRowName;
 
 	UPROPERTY()
-	AProjectRCharacter* LockedTarget;
-
-	UPROPERTY()
 	UObject* Parrying;
 
 	float TurnedYaw;
 
-	uint8 bCannotMoving : 1;
-	uint8 bIsCasting : 1;
-	uint8 bIsLocking : 1;
 	uint8 bIsTurning : 1;
 	uint8 bIsRunning : 1;
 	uint8 bIsDeath : 1;

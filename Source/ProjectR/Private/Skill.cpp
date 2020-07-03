@@ -2,23 +2,27 @@
 
 #include "Skill.h"
 #include "Engine/World.h"
-#include "ProjectRCharacter.h"
-#include "ProjectRPlayerState.h"
+#include "Character/ProjectRCharacter.h"
+#include "Character/ProjectRPlayerState.h"
 #include "Weapon.h"
 
-void USkill::Use()
+void USkill::Initialize()
 {
-	if (CanUse()) OnUse();
+	Weapon = Cast<UWeapon>(GetOuter());
+	User = Cast<AProjectRCharacter>(Weapon->GetOuter());
+	OnInitialize();
 }
 
-bool USkill::IsEnoughEnergy() const
+UWorld* USkill::GetWorld() const
 {
-	return User->GetPlayerState<AProjectRPlayerState>()->GetEnergy() >= UseEnergy;
+	return User ? User->GetWorld() : nullptr;
 }
 
-void USkill::ApplyEnergy()
+UActorComponent* USkill::NewComponent(TSubclassOf<UActorComponent> Class)
 {
-	User->GetPlayerState<AProjectRPlayerState>()->HealEnergy(-UseEnergy);
+	auto* Component = NewObject<UActorComponent>(User, Class);
+	Component->RegisterComponent();
+	return Component;
 }
 
 bool USkill::IsNotCoolTime() const
@@ -31,8 +35,12 @@ void USkill::ApplyCooltime()
 	NextUseTime = GetWorld()->GetTimeSeconds() + CoolTime;
 }
 
-void USkill::Initialize_Implementation()
+bool USkill::IsEnoughEnergy() const
 {
-	Weapon = Cast<UWeapon>(GetOuter());
-	User = Cast<AProjectRCharacter>(Weapon->GetOuter());
+	return User->GetPlayerState<AProjectRPlayerState>()->GetEnergy() >= UseEnergy;
+}
+
+void USkill::ApplyEnergy()
+{
+	User->GetPlayerState<AProjectRPlayerState>()->HealEnergy(-UseEnergy);
 }

@@ -1,14 +1,17 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-#include "ProjectRCharacter.h"
+#include "Character/ProjectRCharacter.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/Controller.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "TimerManager.h"
+#include "Buff/Lock.h"
+#include "Buff/Root.h"
+#include "Buff/Run.h"
+#include "Character/ProjectRPlayerState.h"
 #include "Parryable.h"
-#include "ProjectRPlayerState.h"
 #include "WeaponComponent.h"
 
 AProjectRCharacter::AProjectRCharacter()
@@ -32,22 +35,15 @@ AProjectRCharacter::AProjectRCharacter()
 	WeaponComponent = CreateDefaultSubobject<UWeaponComponent>(TEXT("Weapon"));
 
 	Parrying = nullptr;
-	LockedTarget = nullptr;
-
-	bCannotMoving = false;
-	bIsCasting = false;
-	bIsLocking = false;
 	bIsTurning = false;
 	bIsRunning = false;
 	bIsDeath = false;
 }
 
-void AProjectRCharacter::Attack(AProjectRCharacter* Target, uint8 Damage, AActor* Causer)
+void AProjectRCharacter::Attack(AProjectRCharacter* Target, int32 Damage)
 {
-	if (this == Target) return;
-
-	auto TakingDamage = static_cast<uint8>(Target->
-		TakeDamage(Damage, FDamageEvent{}, GetController(), Causer));
+	auto TakingDamage = static_cast<int32>(Target->
+		TakeDamage(Damage, FDamageEvent{}, GetController(), this));
 
 	if (TakingDamage > 0u)
 		OnAttack.Broadcast(Target, TakingDamage);
@@ -65,45 +61,30 @@ void AProjectRCharacter::EndParrying(UObject* InParrying)
 		Parrying = nullptr;
 }
 
-void AProjectRCharacter::SetLockTarget(AProjectRCharacter* Target)
-{
-	if (LockedTarget != nullptr && LockedTarget == Target) return;
-
-	if (IsValid(LockedTarget))
-		LockedTarget->OnLockedOff(this);
-
-	if (IsValid(Target))
-		Target->OnLockedOn(this);
-
-	LockedTarget = Target;
-	bIsLocking = true;
-	Walk();
-}
-
-void AProjectRCharacter::ClearLockTarget()
-{
-	if (!bIsLocking) return;
-
-	if (IsValid(LockedTarget))
-		LockedTarget->OnLockedOff(this);
-
-	LockedTarget = nullptr;
-	bIsLocking = false;
-}
-
 void AProjectRCharacter::SetTurnRotate(float Yaw)
 {
-	if (bIsLocking) return;
+	if (IsBuffActivate(ULock::StaticClass()))
+		return;
+
 	bIsTurning = true;
 	TurnedYaw = Yaw;
 }
 
+void AProjectRCharacter::Jumping()
+{
+	if (!IsBuffActivate(URoot::StaticClass()))
+		Jump();
+}
+
 void AProjectRCharacter::Run()
 {
+	bIsRunning = true;
+
+	if (IsBuffActivate(URun::StaticClass())) return;
+
 	auto* Movement = GetCharacterMovement();
 	Movement->MaxWalkSpeed = GetPlayerState<AProjectRPlayerState>()->GetRunSpeed();
-	ClearLockTarget();
-	bIsRunning = true;
+	GetPlayerState<AProjectRPlayerState>()->GetBuff(ULock::StaticClass())->ReleaseBuff();
 }
 
 void AProjectRCharacter::Walk()
@@ -117,10 +98,11 @@ void AProjectRCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 
-	TArray<FName> WeaponNames = GetWeaponNames();
-	uint8 WeaponNum = FMath::Min(WeaponNames.Num(), 3);
+	const TArray<FName> WeaponNames = GetWeaponNames();
+	const int32 WeaponNum = WeaponNames.Num();
 
-	for (uint8 Idx = 0u; Idx < WeaponNum; ++Idx)
+	// Some optimize trick
+	for (int32 Idx = WeaponNum - 1; Idx >= 0; --Idx)
 		WeaponComponent->SetNewWeapon(WeaponNames[Idx], Idx);
 
 	GetPlayerState<AProjectRPlayerState>()->InitFromDataTable(StatDataRowName);
@@ -132,52 +114,8 @@ void AProjectRCharacter::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
 
-	if (bIsLocking)	Look(DeltaSeconds);
-	else Turn(DeltaSeconds);
-}
-
-float AProjectRCharacter::TakeDamage(float DamageAmount, const FDamageEvent& DamageEvent,
-	AController* EventInstigator, AActor* DamageCauser)
-{
-	auto Damage = static_cast<uint8>(Super::TakeDamage
-		(DamageAmount, DamageEvent, EventInstigator, DamageCauser));
-
-	if (Parrying && IParryable::Execute_IsParryable(Parrying, Damage, EventInstigator, DamageCauser))
-	{
-		IParryable::Execute_Parry(Parrying, Damage, EventInstigator, DamageCauser);
-		return 0.0f;
-	}
-
-	auto* MyPlayerState = GetPlayerState<AProjectRPlayerState>();
-	MyPlayerState->HealHealth(-Damage);
-
-	if (MyPlayerState->GetHealth() == 0u) Death();
-	else OnDamaged.Broadcast(EventInstigator, Damage);
-
-	return Damage;
-}
-
-void AProjectRCharacter::HealHealthAndEnergy(AProjectRCharacter* Target, uint8 Damage)
-{
-	auto* MyPlayerState = GetPlayerState<AProjectRPlayerState>();
-	MyPlayerState->HealHealthByDamage(Damage);
-	MyPlayerState->HealEnergyByDamage(Damage);
-}
-
-void AProjectRCharacter::Look(float DeltaSeconds)
-{
-	if (!LockedTarget) return;
-
-	FRotator LookRotation = UKismetMathLibrary::
-		FindLookAtRotation(GetViewLocation(), LockedTarget->GetActorLocation());
-
-	const FRotator NowRotation = FMath::Lerp(GetControlRotation(), LookRotation, DeltaSeconds * 5.0f);
-	GetController()->SetControlRotation(NowRotation);
-}
-
-void AProjectRCharacter::Turn(float DeltaSeconds)
-{
-	if (!bIsTurning) return;
+	if (!bIsTurning || IsBuffActivate(ULock::StaticClass()))
+		return;
 
 	const FRotator CurRotation = GetActorRotation();
 	if (FMath::IsNearlyEqual(CurRotation.Yaw, TurnedYaw, 5.0f))
@@ -188,6 +126,45 @@ void AProjectRCharacter::Turn(float DeltaSeconds)
 
 	const FRotator TurnRotation{ CurRotation.Pitch, TurnedYaw, CurRotation.Roll };
 	SetActorRotation(FMath::Lerp(CurRotation, TurnRotation, DeltaSeconds * 10.0f));
+}
+
+float AProjectRCharacter::TakeDamage(float DamageAmount, const FDamageEvent& DamageEvent,
+	AController* EventInstigator, AActor* DamageCauser)
+{
+	auto Damage = static_cast<int32>(DamageAmount);
+	auto* Character = Cast<AProjectRCharacter>(DamageCauser);
+	if (Parrying && IParryable::Execute_IsParryable(Parrying, Damage, EventInstigator, Character))
+	{
+		IParryable::Execute_Parry(Parrying, Damage, EventInstigator, Character);
+		return 0.0f;
+	}
+
+	Damage = Super::TakeDamage(Damage, DamageEvent, EventInstigator, DamageCauser);
+
+	auto* MyPlayerState = GetPlayerState<AProjectRPlayerState>();
+	MyPlayerState->HealHealth(-Damage);
+
+	if (MyPlayerState->GetHealth() == 0u) Death();
+	else OnDamaged.Broadcast(EventInstigator, Damage);
+
+	return Damage;
+}
+
+void AProjectRCharacter::Landed(const FHitResult& Hit)
+{
+	OnLand.Broadcast(Hit);
+}
+
+void AProjectRCharacter::HealHealthAndEnergy(AProjectRCharacter* Target, int32 Damage)
+{
+	auto* MyPlayerState = GetPlayerState<AProjectRPlayerState>();
+	MyPlayerState->HealHealthByDamage(Damage);
+	MyPlayerState->HealEnergyByDamage(Damage);
+}
+
+bool AProjectRCharacter::IsBuffActivate(TSubclassOf<UBuff> BuffClass) const
+{
+	return GetPlayerState<AProjectRPlayerState>()->GetBuff(BuffClass)->IsActivate();
 }
 
 void AProjectRCharacter::Death()

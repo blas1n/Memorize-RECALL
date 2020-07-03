@@ -1,9 +1,13 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-#include "ProjectRAnimInstance.h"
+#include "Character/ProjectRAnimInstance.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/KismetMathLibrary.h"
-#include "ProjectRCharacter.h"
+#include "Buff/Faint.h"
+#include "Buff/Lock.h"
+#include "Buff/Root.h"
+#include "Character/ProjectRCharacter.h"
+#include "Character/ProjectRPlayerState.h"
 #include "Weapon.h"
 #include "WeaponComponent.h"
 
@@ -13,17 +17,14 @@ UProjectRAnimInstance::UProjectRAnimInstance()
 	User = nullptr;
 	Speed = 0.0f;
 	bIsLooking = false;
+	bIsStuned = false;
 	bIsInAir = false;
 }
 
 void UProjectRAnimInstance::NativeBeginPlay()
 {
-	Super::NativeBeginPlay();
-
-	OnMontageStarted.AddDynamic(this, &UProjectRAnimInstance::OnBeginMontage);
-	OnMontageEnded.AddDynamic(this, &UProjectRAnimInstance::OnEndMontage);
-
 	User = Cast<AProjectRCharacter>(TryGetPawnOwner());
+	Super::NativeBeginPlay();	
 }
 
 void UProjectRAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
@@ -36,30 +37,10 @@ void UProjectRAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 	Velocity = User->GetActorRotation().UnrotateVector(Movement->Velocity);
 	Speed = Velocity.Size();
 	
-	bIsLooking = User->IsLooking();
+	auto* PlayerState = User->GetPlayerState<AProjectRPlayerState>();
+	bIsLooking = PlayerState->GetBuff(ULock::StaticClass())->IsActivate();
+	bIsStuned = PlayerState->GetBuff(UFaint::StaticClass())->IsActivate();
 	bIsInAir = Movement->IsFalling();
-}
-
-void UProjectRAnimInstance::OnBeginMontage(UAnimMontage* Montage)
-{
-	AnimNotify_BeginSkill();
-}
-
-void UProjectRAnimInstance::OnEndMontage(UAnimMontage* Montage, bool bInterrupted)
-{
-	AnimNotify_EndSkill();
-}
-
-void UProjectRAnimInstance::AnimNotify_BeginSkill()
-{
-	User->SetCast(true);
-	GetWeapon()->OnBeginSkill.Broadcast();
-}
-
-void UProjectRAnimInstance::AnimNotify_EndSkill()
-{
-	User->SetCast(false);
-	GetWeapon()->OnEndSkill.Broadcast();
 }
 
 void UProjectRAnimInstance::AnimNotify_BeginAttack()
@@ -84,12 +65,12 @@ void UProjectRAnimInstance::AnimNotify_Execute()
 
 void UProjectRAnimInstance::AnimNotify_EnableMove()
 {
-	User->SetMove(true);
+	User->GetPlayerState<AProjectRPlayerState>()->GetBuff(URoot::StaticClass())->ReleaseBuff();
 }
 
 void UProjectRAnimInstance::AnimNotify_DisableMove()
 {
-	User->SetMove(false);
+	User->GetPlayerState<AProjectRPlayerState>()->GetBuff(URoot::StaticClass())->ApplyBuff();
 }
 
 UWeapon* UProjectRAnimInstance::GetWeapon() const

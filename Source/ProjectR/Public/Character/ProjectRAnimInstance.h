@@ -19,18 +19,6 @@ private:
 	void NativeUpdateAnimation(float DeltaSeconds) override;
 
 	UFUNCTION()
-	void OnBeginMontage(UAnimMontage* Montage);
-
-	UFUNCTION()
-	void OnEndMontage(UAnimMontage* Montage, bool bInterrupted);
-
-	UFUNCTION()
-	void AnimNotify_BeginSkill();
-
-	UFUNCTION()
-	void AnimNotify_EndSkill();
-
-	UFUNCTION()
 	void AnimNotify_BeginAttack();
 
 	UFUNCTION()
@@ -62,6 +50,9 @@ private:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Pawn, meta = (AllowPrivateAccess = true))
 	uint8 bIsLooking : 1;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Pawn, meta = (AllowPrivateAccess = true))
+	uint8 bIsStuned : 1;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Pawn, meta = (AllowPrivateAccess = true))
 	uint8 bIsInAir : 1;

@@ -1,13 +1,13 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-#include "ProjectRPlayerState.h"
+#include "Character/ProjectRPlayerState.h"
 #include "Engine/World.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
-#include "ProjectRCharacter.h"
-#include "ProjectRGameInstance.h"
-#include "ProjectRGameState.h"
-#include "StatData.h"
+#include "Buff/Buff.h"
+#include "Character/ProjectRCharacter.h"
+#include "Framework/ProjectRGameInstance.h"
+#include "Data/StatData.h"
 
 void AProjectRPlayerState::InitFromDataTable(const FName& Name)
 {
@@ -16,32 +16,35 @@ void AProjectRPlayerState::InitFromDataTable(const FName& Name)
 	const auto& StatData = *DataTable->FindRow<FStatData>(Name, "", false);
 
 	SetMaxHealth(StatData.MaxHealth);
-	SetMaxHealth(StatData.HealthHeal);
+	SetHealthHeal(StatData.HealthHeal);
 
 	SetMaxEnergy(StatData.MaxEnergy);
 	SetEnergyHeal(StatData.EnergyHeal);
 
 	SetRunSpeed(StatData.RunSpeed);
 	SetWalkSpeed(StatData.WalkSpeed);
-	SetCrouchSpeed(StatData.CrouchSpeed);
 }
 
-void AProjectRPlayerState::HealHealth(uint8 Value) noexcept
+void AProjectRPlayerState::HealHealth(int32 Value) noexcept
 {
-	Health += Value;
-	Health = FMath::Clamp(Health, static_cast<uint8>(0u), MaxHealth);
+	Health = FMath::Clamp(Health + Value, 0, MaxHealth);
 }
 
-void AProjectRPlayerState::HealHealthByDamage(uint8 Damage) noexcept
+void AProjectRPlayerState::HealHealthByDamage(int32 Damage) noexcept
 {
 	if (Damage > 0.0f && HealthHeal != 0.0f)
 		HealHealth(static_cast<float>(Damage) * HealthHeal);
 }
 
-void AProjectRPlayerState::SetMaxHealth(uint8 Value, bool bWithCur) noexcept
+void AProjectRPlayerState::SetMaxHealth(int32 Value, bool bWithCur) noexcept
 {
-	MaxHealth += Value;
-	if (bWithCur) Health += Value;
+	if (bWithCur)
+	{
+		const int32 Delta = Value - Health;
+		Health += Delta;
+	}
+
+	MaxHealth = Value;
 }
 
 void AProjectRPlayerState::SetHealthHeal(float Value) noexcept
@@ -49,22 +52,26 @@ void AProjectRPlayerState::SetHealthHeal(float Value) noexcept
 	HealthHeal = Value;
 }
 
-void AProjectRPlayerState::HealEnergy(uint8 Value) noexcept
+void AProjectRPlayerState::HealEnergy(int32 Value) noexcept
 {
-	Energy += Value;
-	Energy = FMath::Clamp(Energy, static_cast<uint8>(0u), MaxEnergy);
+	Energy = FMath::Clamp(Energy + Value, 0, MaxEnergy);
 }
 
-void AProjectRPlayerState::HealEnergyByDamage(uint8 Damage) noexcept
+void AProjectRPlayerState::HealEnergyByDamage(int32 Damage) noexcept
 {
 	if (Damage > 0.0f && EnergyHeal != 0.0f)
 		HealEnergy(static_cast<float>(Damage) * EnergyHeal);
 }
 
-void AProjectRPlayerState::SetMaxEnergy(uint8 Value, bool bWithCur) noexcept
+void AProjectRPlayerState::SetMaxEnergy(int32 Value, bool bWithCur) noexcept
 {
-	MaxEnergy += Value;
-	if (bWithCur) Energy += Value;
+	if (bWithCur)
+	{
+		const int32 Delta = Value - Energy;
+		Energy += Delta;
+	}
+
+	MaxEnergy = Value;
 }
 
 void AProjectRPlayerState::SetEnergyHeal(float Value) noexcept
@@ -90,16 +97,34 @@ void AProjectRPlayerState::SetWalkSpeed(float Value) noexcept
 		User->GetCharacterMovement()->MaxWalkSpeed = WalkSpeed;
 }
 
-void AProjectRPlayerState::SetCrouchSpeed(float Value) noexcept
+UBuff* AProjectRPlayerState::GetBuff(TSubclassOf<UBuff> BuffClass) const
 {
-	GetPawn<ACharacter>()->GetCharacterMovement()
-		->MaxWalkSpeedCrouched = CrouchSpeed = Value;
+	UBuff* Ret = nullptr;;
+
+	for (UBuff* Buff : Buffs)
+	{
+		if (Buff->GetClass()->IsChildOf(BuffClass))
+		{
+			Ret = Buff;
+			break;
+		}
+	}
+
+	if (!Ret)
+	{
+		Ret = NewObject<UBuff>(GetPawn(), BuffClass);
+		Ret->Initialize();
+		Buffs.Add(Ret);
+	}
+	
+	return Ret;
 }
 
-void AProjectRPlayerState::BeginPlay()
+void AProjectRPlayerState::Tick(float DeltaSeconds)
 {
-	auto* GameState = Cast<AProjectRGameState>
-		(UGameplayStatics::GetGameState(GetWorld()));
+	Super::Tick(DeltaSeconds);
 
-	GameState->InitBuffStorages(BuffStorages);
+	for (UBuff* Buff : Buffs)
+		if (Buff->IsActivate())
+			Buff->Tick(DeltaSeconds);
 }

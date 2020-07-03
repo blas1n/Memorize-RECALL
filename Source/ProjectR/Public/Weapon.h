@@ -4,18 +4,19 @@
 
 #include "CoreMinimal.h"
 #include "UObject/NoExportTypes.h"
+#include "Engine/AssetManager.h"
 #include "Weapon.generated.h"
 
 DECLARE_DYNAMIC_DELEGATE(FOnAsyncLoadEndedSingle);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnAsyncLoadEnded);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnEquipped);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnUnequipped);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnBeginSkill);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnEndSkill);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnBeginAttack);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnEndAttack);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnShoot);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnExecute);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnBeginSkill, class USkill*, Skill);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnEndSkill, USkill*, Skill);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnWeaponHitted, class AProjectRCharacter*, Target);
 
 UCLASS(BlueprintType)
@@ -25,12 +26,19 @@ class PROJECTR_API UWeapon final : public UObject
 	
 public:
 	void Initialize(const FName& InName);
+	void Release();
 
 	void Equip();
 	void Unequip();
 
 	void UseSkill(uint8 Index);
-	bool CanUseSkill(uint8 Index);
+	bool CanUseSkill(uint8 Index) const;
+
+	UFUNCTION(BlueprintCallable)
+	void BeginSkill(USkill* Skill);
+
+	UFUNCTION(BlueprintCallable)
+	void EndSkill(USkill* Skill);
 
 	UFUNCTION(BlueprintCallable)
 	void SetWeaponCollision(bool bRightWeaponEnable, bool bLeftWeaponEnable);
@@ -48,7 +56,36 @@ public:
 	FORCEINLINE const FTransform& GetLeftWeaponTransform() const noexcept { return LeftWeaponTransform; }
 
 private:
-	void AsyncLoad(class UStaticMesh*& Ptr, const TAssetPtr<UStaticMesh>& SoftPtr);
+	UFUNCTION()
+	void PlayEquipAnim();
+
+	template <class T>
+	void AsyncLoad(T*& Ptr, const TAssetPtr<T>& SoftPtr)
+	{
+		if (SoftPtr.IsNull())
+		{
+			CheckAndCallAsyncLoadDelegate();
+			return;
+		}
+
+		auto OnAsyncLoaded = [this, &Ptr = Ptr, &SoftPtr = SoftPtr]() mutable
+		{
+			Ptr = SoftPtr.Get();
+			CheckAndCallAsyncLoadDelegate();
+		};
+
+		if (SoftPtr.IsPending())
+		{
+			FStreamableDelegate Callback;
+			Callback.BindLambda([this, OnAsyncLoaded = MoveTemp(OnAsyncLoaded)]() mutable
+			{
+				OnAsyncLoaded();
+			});
+
+			UAssetManager::GetStreamableManager().RequestAsyncLoad(SoftPtr.ToSoftObjectPath(), MoveTemp(Callback));
+		}
+		else OnAsyncLoaded();
+	}
 
 	FORCEINLINE void CheckAndCallAsyncLoadDelegate() { if (--AsyncLoadCount == 0) OnAsyncLoadEnded.Broadcast(); }
 
@@ -58,12 +95,6 @@ public:
 
 	UPROPERTY(BlueprintAssignable)
 	FOnUnequipped OnUnequipped;
-
-	UPROPERTY(BlueprintAssignable)
-	FOnBeginSkill OnBeginSkill;
-
-	UPROPERTY(BlueprintAssignable)
-	FOnEndSkill OnEndSkill;
 
 	UPROPERTY(BlueprintAssignable)
 	FOnBeginAttack OnBeginAttack;
@@ -76,6 +107,12 @@ public:
 
 	UPROPERTY(BlueprintAssignable)
 	FOnExecute OnExecute;
+
+	UPROPERTY(BlueprintAssignable)
+	FOnBeginSkill OnBeginSkill;
+
+	UPROPERTY(BlueprintAssignable)
+	FOnEndSkill OnEndSkill;
 
 	UPROPERTY(BlueprintAssignable)
 	FOnWeaponHitted OnWeaponHitted;
@@ -91,6 +128,9 @@ private:
 	TSubclassOf<class UAnimInstance> UpperAnimInstance;
 
 	UPROPERTY()
+	class UAnimMontage* EquipAnim;
+
+	UPROPERTY()
 	class UStaticMesh* RightWeaponMesh;
 
 	UPROPERTY()
@@ -103,5 +143,6 @@ private:
 
 	FName Name;
 	uint8 Key;
+	uint8 UseSkillCount;
 	uint8 AsyncLoadCount;
 };
