@@ -52,5 +52,8 @@ private:
 	uint8 bIsLooking : 1;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Pawn, meta = (AllowPrivateAccess = true))
+	uint8 bIsStuned : 1;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Pawn, meta = (AllowPrivateAccess = true))
 	uint8 bIsInAir : 1;
 };
