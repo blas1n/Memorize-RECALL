@@ -7,7 +7,7 @@
 #include "ProjectRPlayerState.generated.h"
 
 UCLASS(BlueprintType)
-class PROJECTR_API AProjectRPlayerState : public APlayerState
+class PROJECTR_API AProjectRPlayerState final : public APlayerState
 {
 	GENERATED_BODY()
 
