@@ -44,7 +44,7 @@ private:
 	FVector GetDirectionVectorByActor(EAxis::Type Axis) const;
 	FVector GetDirectionVectorByController(EAxis::Type Axis) const;
 
-	bool IsLocked() const;
+	bool IsBuffActivate(TSubclassOf<class UBuff> BuffClass) const;
 
 private:
 	UPROPERTY()
