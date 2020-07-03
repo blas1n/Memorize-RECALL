@@ -131,14 +131,15 @@ void AProjectRCharacter::Tick(float DeltaSeconds)
 float AProjectRCharacter::TakeDamage(float DamageAmount, const FDamageEvent& DamageEvent,
 	AController* EventInstigator, AActor* DamageCauser)
 {
-	auto Damage = static_cast<int32>(Super::TakeDamage
-		(DamageAmount, DamageEvent, EventInstigator, DamageCauser));
-
-	if (Parrying && IParryable::Execute_IsParryable(Parrying, Damage, EventInstigator, DamageCauser))
+	auto Damage = static_cast<int32>(DamageAmount);
+	auto* Character = Cast<AProjectRCharacter>(DamageCauser);
+	if (Parrying && IParryable::Execute_IsParryable(Parrying, Damage, EventInstigator, Character))
 	{
-		IParryable::Execute_Parry(Parrying, Damage, EventInstigator, DamageCauser);
+		IParryable::Execute_Parry(Parrying, Damage, EventInstigator, Character);
 		return 0.0f;
 	}
+
+	Damage = Super::TakeDamage(Damage, DamageEvent, EventInstigator, DamageCauser);
 
 	auto* MyPlayerState = GetPlayerState<AProjectRPlayerState>();
 	MyPlayerState->HealHealth(-Damage);
