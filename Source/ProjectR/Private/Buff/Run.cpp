@@ -5,10 +5,8 @@
 
 void URun::BeginBuff()
 {
-	if (++Count > 1)
-		return;
-
-	GetTarget()->Walk();
+	if (++Count == 1)
+		GetTarget()->Walk();
 }
 
 void URun::EndBuff()
