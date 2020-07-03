@@ -301,7 +301,7 @@ FVector AProjectRPlayerController::GetDirectionVectorByController(EAxis::Type Ax
 	return FRotationMatrix(YawRotation).GetUnitAxis(Axis);
 }
 
-bool AProjectRPlayerController::IsLocked() const
+bool AProjectRPlayerController::IsBuffActivate(TSubclassOf<class UBuff> BuffClass) const
 {
-	return GetPlayerState<AProjectRPlayerState>()->GetBuff(ULock::StaticClass())->IsActivate();
+	return GetPlayerState<AProjectRPlayerState>()->GetBuff(BuffClass)->IsActivate();
 }
