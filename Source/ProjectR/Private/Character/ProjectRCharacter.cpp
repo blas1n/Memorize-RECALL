@@ -8,6 +8,7 @@
 #include "Kismet/KismetMathLibrary.h"
 #include "TimerManager.h"
 #include "Buff/Lock.h"
+#include "Buff/Root.h"
 #include "Buff/Run.h"
 #include "Character/ProjectRPlayerState.h"
 #include "Parryable.h"
@@ -34,7 +35,6 @@ AProjectRCharacter::AProjectRCharacter()
 	WeaponComponent = CreateDefaultSubobject<UWeaponComponent>(TEXT("Weapon"));
 
 	Parrying = nullptr;
-	bCannotMoving = false;
 	bIsCasting = false;
 	bIsTurning = false;
 	bIsRunning = false;
@@ -73,21 +73,19 @@ void AProjectRCharacter::SetTurnRotate(float Yaw)
 
 void AProjectRCharacter::Jumping()
 {
-	if (!bCannotMoving)
+	if (!IsBuffActivate(URoot::StaticClass()))
 		Jump();
 }
 
 void AProjectRCharacter::Run()
 {
-	const auto* RunBuff = GetPlayerState<AProjectRPlayerState>()
-		->GetBuff(URun::StaticClass());
+	bIsRunning = true;
 
-	if (RunBuff->IsActivate()) return;
+	if (IsBuffActivate(URun::StaticClass())) return;
 
 	auto* Movement = GetCharacterMovement();
 	Movement->MaxWalkSpeed = GetPlayerState<AProjectRPlayerState>()->GetRunSpeed();
 	GetPlayerState<AProjectRPlayerState>()->GetBuff(ULock::StaticClass())->ReleaseBuff();
-	bIsRunning = true;
 }
 
 void AProjectRCharacter::Walk()

@@ -4,6 +4,7 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Buff/Lock.h"
+#include "Buff/Root.h"
 #include "Character/ProjectRCharacter.h"
 #include "Character/ProjectRPlayerState.h"
 #include "Weapon.h"
@@ -88,12 +89,12 @@ void UProjectRAnimInstance::AnimNotify_Execute()
 
 void UProjectRAnimInstance::AnimNotify_EnableMove()
 {
-	User->SetMove(true);
+	User->GetPlayerState<AProjectRPlayerState>()->GetBuff(URoot::StaticClass())->ReleaseBuff();
 }
 
 void UProjectRAnimInstance::AnimNotify_DisableMove()
 {
-	User->SetMove(false);
+	User->GetPlayerState<AProjectRPlayerState>()->GetBuff(URoot::StaticClass())->ApplyBuff();
 }
 
 UWeapon* UProjectRAnimInstance::GetWeapon() const
