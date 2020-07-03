@@ -23,19 +23,19 @@ UWeaponComponent::UWeaponComponent()
 
 void UWeaponComponent::UseSkill(uint8 Index)
 {
-	if (!User->IsCasting() && CurWeapon)
+	if (CurWeapon)
 		CurWeapon->UseSkill(Index);
 }
 
 bool UWeaponComponent::CanUseSkill(uint8 Index) const
 {
-	if (User->IsCasting() || !CurWeapon) return false;
+	if (!CurWeapon) return false;
 	return CurWeapon->CanUseSkill(Index);
 }
 
 void UWeaponComponent::SwapWeapon(uint8 Index)
 {
-	if (User->IsCasting() || CurIndex == Index || Weapons[Index] == nullptr)
+	if (CurIndex == Index || Weapons[Index] == nullptr)
 		return;
 	
 	EquipWeapon(Weapons[Index]);

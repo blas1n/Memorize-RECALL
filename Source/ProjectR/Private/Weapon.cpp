@@ -66,13 +66,31 @@ void UWeapon::Unequip()
 
 void UWeapon::UseSkill(uint8 Index)
 {
-	if (Skills.Num() > Index)
+	if (CanUseSkill(Index))
 		Skills[Index]->Use();
 }
 
 bool UWeapon::CanUseSkill(uint8 Index) const
 {
-	return Skills.Num() > Index ? Skills[Index]->CanUse() : false;
+	if (Skills.Num() <= Index) return false;
+	
+	const USkill* Skill = Skills[Index];
+	if (UseSkillCount > 0 && Skill->IsCastSkill())
+		return false;
+
+	return Skill->CanUse();
+}
+
+void UWeapon::BeginSkill(USkill* Skill)
+{
+	++UseSkillCount;
+	OnBeginSkill.Broadcast(Skill);
+}
+
+void UWeapon::EndSkill(USkill* Skill)
+{
+	--UseSkillCount;
+	OnEndSkill.Broadcast(Skill);
 }
 
 void UWeapon::SetWeaponCollision(bool bRightWeaponEnable, bool bLeftWeaponEnable)

@@ -17,7 +17,7 @@ public:
 	UFUNCTION(BlueprintImplementableEvent)
 	void Release();
 
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent)
 	void Use();
 
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
@@ -25,27 +25,26 @@ public:
 
 	UWorld* GetWorld() const override;
 
+	FORCEINLINE bool IsCastSkill() const noexcept { return bIsCastSkill; }
+
 protected:
 	UFUNCTION(BlueprintImplementableEvent, meta = (DisplayName = "Initialize"))
 	void OnInitialize();
 
-	UFUNCTION(BlueprintImplementableEvent)
-	void OnUse();
-
 	UFUNCTION(BlueprintCallable, meta = (BlueprintProtected))
 	class UActorComponent* NewComponent(TSubclassOf<UActorComponent> Class);
-
-	UFUNCTION(BlueprintCallable, meta = (BlueprintProtected))
-	bool IsEnoughEnergy() const;
-
-	UFUNCTION(BlueprintCallable, meta = (BlueprintProtected))
-	void ApplyEnergy();
 
 	UFUNCTION(BlueprintCallable, meta = (BlueprintProtected))
 	bool IsNotCoolTime() const;
 
 	UFUNCTION(BlueprintCallable, meta = (BlueprintProtected))
 	void ApplyCooltime();
+
+	UFUNCTION(BlueprintCallable, meta = (BlueprintProtected))
+	bool IsEnoughEnergy() const;
+
+	UFUNCTION(BlueprintCallable, meta = (BlueprintProtected))
+	void ApplyEnergy();
 
 	FORCEINLINE class AProjectRCharacter* GetUser() noexcept { return User; }
 	FORCEINLINE const AProjectRCharacter* GetUser() const noexcept { return User; }
@@ -63,11 +62,14 @@ private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Owner, meta = (AllowPrivateAccess = true))
 	UWeapon* Weapon;
 
-	UPROPERTY(EditDefaultsOnly, Category = Limit, meta = (AllowPrivateAccess = true))
+	UPROPERTY(EditDefaultsOnly, Category = Data, meta = (AllowPrivateAccess = true))
+	float CoolTime;
+
+	UPROPERTY(EditDefaultsOnly, Category = Data, meta = (AllowPrivateAccess = true))
 	uint8 UseEnergy;
 
-	UPROPERTY(EditDefaultsOnly, Category = Limit, meta = (AllowPrivateAccess = true))
-	float CoolTime;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Data, meta = (AllowPrivateAccess = true))
+	uint8 bIsCastSkill : 1;
 
 	float NextUseTime;
 };
