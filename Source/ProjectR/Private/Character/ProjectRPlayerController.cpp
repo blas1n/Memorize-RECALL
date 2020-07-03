@@ -6,6 +6,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "TimerManager.h"
 #include "Buff/Lock.h"
+#include "Buff/Root.h"
 #include "Character/ProjectRCharacter.h"
 #include "Character/ProjectRPlayerState.h"
 #include "WeaponComponent.h"
@@ -65,9 +66,9 @@ void AProjectRPlayerController::SetupInputComponent()
 
 void AProjectRPlayerController::MoveForward(float Value)
 {
-	if (!User->CanMoving()) return;
+	if (IsBuffActivate(URoot::StaticClass())) return;
 
-	if (IsLocked())
+	if (IsBuffActivate(ULock::StaticClass()))
 		User->AddMovementInput(GetDirectionVectorByActor(EAxis::X), Value);
 	else
 		MoveInput.X = Value;
@@ -75,9 +76,9 @@ void AProjectRPlayerController::MoveForward(float Value)
 
 void AProjectRPlayerController::MoveRight(float Value)
 {
-	if (!User->CanMoving()) return;
+	if (IsBuffActivate(URoot::StaticClass())) return;
 
-	if (IsLocked())
+	if (IsBuffActivate(ULock::StaticClass()))
 		User->AddMovementInput(GetDirectionVectorByActor(EAxis::Y), Value);
 	else
 		MoveInput.Y = Value;
@@ -97,7 +98,7 @@ void AProjectRPlayerController::InputPitch(float Value)
 
 void AProjectRPlayerController::PressDodge()
 {
-	if (IsLocked())
+	if (IsBuffActivate(ULock::StaticClass()))
 		User->GetWeaponComponent()->UseSkill(5);
 	else User->Jumping();
 }
@@ -235,7 +236,7 @@ bool AProjectRPlayerController::CheckLockOn(const AActor* Enemy, float& OutAngle
 
 void AProjectRPlayerController::SetUserTransformByInput()
 {
-	if (IsLocked() || !User->CanMoving() || MoveInput.IsZero()) return;
+	if (IsBuffActivate(ULock::StaticClass()) || IsBuffActivate(URoot::StaticClass()) || MoveInput.IsZero()) return;
 
 	const FVector Forward = GetDirectionVectorByActor(EAxis::X);
 	const float Value = FMath::Max(FMath::Abs(MoveInput.X), FMath::Abs(MoveInput.Y));

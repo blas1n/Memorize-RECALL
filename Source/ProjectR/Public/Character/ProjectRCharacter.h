@@ -44,9 +44,6 @@ public:
 	
 	FORCEINLINE class UWeaponComponent* GetWeaponComponent() const noexcept { return WeaponComponent; }
 
-	FORCEINLINE bool CanMoving() const noexcept { return !bCannotMoving; }
-	FORCEINLINE void SetMove(bool bCanMove) noexcept { bCannotMoving = !bCanMove; }
-
 	FORCEINLINE bool IsCasting() const noexcept { return bIsCasting; }
 	FORCEINLINE void SetCast(bool bIsCast) noexcept { bIsCasting = bIsCast; }
 
@@ -94,7 +91,6 @@ private:
 
 	float TurnedYaw;
 
-	uint8 bCannotMoving : 1;
 	uint8 bIsCasting : 1;
 	uint8 bIsTurning : 1;
 	uint8 bIsRunning : 1;
