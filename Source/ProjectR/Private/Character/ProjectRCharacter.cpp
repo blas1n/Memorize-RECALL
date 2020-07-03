@@ -7,6 +7,8 @@
 #include "GameFramework/Controller.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "TimerManager.h"
+#include "Buff/Lock.h"
+#include "Buff/Run.h"
 #include "Character/ProjectRPlayerState.h"
 #include "Parryable.h"
 #include "WeaponComponent.h"
@@ -32,11 +34,8 @@ AProjectRCharacter::AProjectRCharacter()
 	WeaponComponent = CreateDefaultSubobject<UWeaponComponent>(TEXT("Weapon"));
 
 	Parrying = nullptr;
-	LockedTarget = nullptr;
-
 	bCannotMoving = false;
 	bIsCasting = false;
-	bIsLocking = false;
 	bIsTurning = false;
 	bIsRunning = false;
 	bIsDeath = false;
@@ -63,35 +62,11 @@ void AProjectRCharacter::EndParrying(UObject* InParrying)
 		Parrying = nullptr;
 }
 
-void AProjectRCharacter::SetLockTarget(AProjectRCharacter* Target)
-{
-	if (LockedTarget != nullptr && LockedTarget == Target) return;
-
-	if (IsValid(LockedTarget))
-		LockedTarget->OnLockedOff(this);
-
-	if (IsValid(Target))
-		Target->OnLockedOn(this);
-
-	LockedTarget = Target;
-	bIsLocking = true;
-	Walk();
-}
-
-void AProjectRCharacter::ClearLockTarget()
-{
-	if (!bIsLocking) return;
-
-	if (IsValid(LockedTarget))
-		LockedTarget->OnLockedOff(this);
-
-	LockedTarget = nullptr;
-	bIsLocking = false;
-}
-
 void AProjectRCharacter::SetTurnRotate(float Yaw)
 {
-	if (bIsLocking) return;
+	if (IsBuffActivate(ULock::StaticClass()))
+		return;
+
 	bIsTurning = true;
 	TurnedYaw = Yaw;
 }
@@ -104,9 +79,14 @@ void AProjectRCharacter::Jumping()
 
 void AProjectRCharacter::Run()
 {
+	const auto* RunBuff = GetPlayerState<AProjectRPlayerState>()
+		->GetBuff(URun::StaticClass());
+
+	if (RunBuff->IsActivate()) return;
+
 	auto* Movement = GetCharacterMovement();
 	Movement->MaxWalkSpeed = GetPlayerState<AProjectRPlayerState>()->GetRunSpeed();
-	ClearLockTarget();
+	GetPlayerState<AProjectRPlayerState>()->GetBuff(ULock::StaticClass())->ReleaseBuff();
 	bIsRunning = true;
 }
 
@@ -136,8 +116,18 @@ void AProjectRCharacter::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
 
-	if (bIsLocking)	Look(DeltaSeconds);
-	else Turn(DeltaSeconds);
+	if (!bIsTurning || IsBuffActivate(ULock::StaticClass()))
+		return;
+
+	const FRotator CurRotation = GetActorRotation();
+	if (FMath::IsNearlyEqual(CurRotation.Yaw, TurnedYaw, 5.0f))
+	{
+		bIsTurning = false;
+		return;
+	}
+
+	const FRotator TurnRotation{ CurRotation.Pitch, TurnedYaw, CurRotation.Roll };
+	SetActorRotation(FMath::Lerp(CurRotation, TurnRotation, DeltaSeconds * 10.0f));
 }
 
 float AProjectRCharacter::TakeDamage(float DamageAmount, const FDamageEvent& DamageEvent,
@@ -168,30 +158,9 @@ void AProjectRCharacter::HealHealthAndEnergy(AProjectRCharacter* Target, int32 D
 	MyPlayerState->HealEnergyByDamage(Damage);
 }
 
-void AProjectRCharacter::Look(float DeltaSeconds)
+bool AProjectRCharacter::IsBuffActivate(TSubclassOf<UBuff> BuffClass) const
 {
-	if (!LockedTarget) return;
-
-	FRotator LookRotation = UKismetMathLibrary::
-		FindLookAtRotation(GetViewLocation(), LockedTarget->GetActorLocation());
-
-	const FRotator NowRotation = FMath::Lerp(GetControlRotation(), LookRotation, DeltaSeconds * 5.0f);
-	GetController()->SetControlRotation(NowRotation);
-}
-
-void AProjectRCharacter::Turn(float DeltaSeconds)
-{
-	if (!bIsTurning) return;
-
-	const FRotator CurRotation = GetActorRotation();
-	if (FMath::IsNearlyEqual(CurRotation.Yaw, TurnedYaw, 5.0f))
-	{
-		bIsTurning = false;
-		return;
-	}
-
-	const FRotator TurnRotation{ CurRotation.Pitch, TurnedYaw, CurRotation.Roll };
-	SetActorRotation(FMath::Lerp(CurRotation, TurnRotation, DeltaSeconds * 10.0f));
+	return GetPlayerState<AProjectRPlayerState>()->GetBuff(BuffClass)->IsActivate();
 }
 
 void AProjectRCharacter::Death()

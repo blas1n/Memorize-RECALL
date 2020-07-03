@@ -3,7 +3,9 @@
 #include "Character/ProjectRAnimInstance.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/KismetMathLibrary.h"
+#include "Buff/Lock.h"
 #include "Character/ProjectRCharacter.h"
+#include "Character/ProjectRPlayerState.h"
 #include "Weapon.h"
 #include "WeaponComponent.h"
 
@@ -36,7 +38,9 @@ void UProjectRAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 	Velocity = User->GetActorRotation().UnrotateVector(Movement->Velocity);
 	Speed = Velocity.Size();
 	
-	bIsLooking = User->IsLooking();
+	bIsLooking = User->GetPlayerState<AProjectRPlayerState>()
+		->GetBuff(ULock::StaticClass())->IsActivate();
+
 	bIsInAir = Movement->IsFalling();
 }
 

@@ -28,12 +28,6 @@ public:
 	void EndParrying(UObject* InParrying);
 
 	UFUNCTION(BlueprintCallable)
-	void SetLockTarget(AProjectRCharacter* Target);
-
-	UFUNCTION(BlueprintCallable)
-	void ClearLockTarget();
-
-	UFUNCTION(BlueprintCallable)
 	void SetTurnRotate(float Yaw);
 
 	UFUNCTION(BlueprintCallable)
@@ -44,9 +38,11 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void Walk();
+
+	UFUNCTION(BlueprintImplementableEvent)
+	FVector GetViewLocation() const;
 	
 	FORCEINLINE class UWeaponComponent* GetWeaponComponent() const noexcept { return WeaponComponent; }
-	FORCEINLINE AProjectRCharacter* GetLockedTarget() const noexcept { return LockedTarget; }
 
 	FORCEINLINE bool CanMoving() const noexcept { return !bCannotMoving; }
 	FORCEINLINE void SetMove(bool bCanMove) noexcept { bCannotMoving = !bCanMove; }
@@ -54,22 +50,12 @@ public:
 	FORCEINLINE bool IsCasting() const noexcept { return bIsCasting; }
 	FORCEINLINE void SetCast(bool bIsCast) noexcept { bIsCasting = bIsCast; }
 
-	FORCEINLINE bool IsLooking() const noexcept { return bIsLocking; }
 	FORCEINLINE bool IsRunning() const noexcept { return bIsRunning; }
 	FORCEINLINE bool IsDeath() const noexcept { return bIsDeath; }
 
 protected:
 	UFUNCTION(BlueprintImplementableEvent)
 	TArray<FName> GetWeaponNames();
-
-	UFUNCTION(BlueprintImplementableEvent)
-	void OnLockedOn(AProjectRCharacter* Locker);
-
-	UFUNCTION(BlueprintImplementableEvent)
-	void OnLockedOff(AProjectRCharacter* Locker);
-
-	UFUNCTION(BlueprintImplementableEvent)
-	FVector GetViewLocation() const;
 
 private:
 	void BeginPlay() override;
@@ -82,8 +68,7 @@ private:
 	UFUNCTION()
 	void HealHealthAndEnergy(AProjectRCharacter* Target, int32 Damage);
 
-	void Look(float DeltaSeconds);
-	void Turn(float DeltaSeconds);
+	bool IsBuffActivate(TSubclassOf<class UBuff> BuffClass) const;
 
 	void Death();
 
@@ -105,16 +90,12 @@ private:
 	FName StatDataRowName;
 
 	UPROPERTY()
-	AProjectRCharacter* LockedTarget;
-
-	UPROPERTY()
 	UObject* Parrying;
 
 	float TurnedYaw;
 
 	uint8 bCannotMoving : 1;
 	uint8 bIsCasting : 1;
-	uint8 bIsLocking : 1;
 	uint8 bIsTurning : 1;
 	uint8 bIsRunning : 1;
 	uint8 bIsDeath : 1;
