@@ -121,4 +121,10 @@ UBuff* AProjectRPlayerState::GetBuff(TSubclassOf<UBuff> BuffClass) const
 }
 
 void AProjectRPlayerState::Tick(float DeltaSeconds)
+{
+	Super::Tick(DeltaSeconds);
+
+	for (UBuff* Buff : Buffs)
+		if (Buff->IsActivate())
+			Buff->Tick(DeltaSeconds);
 }
