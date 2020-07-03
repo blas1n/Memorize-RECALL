@@ -99,7 +99,7 @@ void AProjectRPlayerController::InputPitch(float Value)
 void AProjectRPlayerController::PressDodge()
 {
 	if (IsBuffActivate(ULock::StaticClass()))
-		User->GetWeaponComponent()->UseSkill(5);
+		User->GetWeaponComponent()->UseSkill(4);
 	else User->Jumping();
 }
 
