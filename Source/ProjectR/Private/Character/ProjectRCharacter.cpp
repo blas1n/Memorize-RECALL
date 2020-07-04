@@ -165,6 +165,14 @@ bool AProjectRCharacter::IsBuffActivate(TSubclassOf<UBuff> BuffClass) const
 	return GetPlayerState<AProjectRPlayerState>()->GetBuff(BuffClass)->IsActivate();
 }
 
+FVector AProjectRCharacter::GetViewLocation_Implementation() const
+{
+	FVector Vec;
+	FRotator Rot;
+	GetActorEyesViewPoint(Vec, Rot);
+	return Vec;
+}
+
 void AProjectRCharacter::Death()
 {
 	bIsDeath = true;
