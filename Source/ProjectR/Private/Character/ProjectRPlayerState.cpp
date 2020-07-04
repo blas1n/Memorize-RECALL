@@ -9,22 +9,6 @@
 #include "Framework/ProjectRGameInstance.h"
 #include "Data/StatData.h"
 
-void AProjectRPlayerState::InitFromDataTable(const FName& Name)
-{
-	const auto* GameInstance = Cast<UProjectRGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
-	const auto* DataTable = GameInstance->GetDataTable(TEXT("StatData"));
-	const auto& StatData = *DataTable->FindRow<FStatData>(Name, "", false);
-
-	SetMaxHealth(StatData.MaxHealth);
-	SetHealthHeal(StatData.HealthHeal);
-
-	SetMaxEnergy(StatData.MaxEnergy);
-	SetEnergyHeal(StatData.EnergyHeal);
-
-	SetRunSpeed(StatData.RunSpeed);
-	SetWalkSpeed(StatData.WalkSpeed);
-}
-
 void AProjectRPlayerState::HealHealth(int32 Value) noexcept
 {
 	Health = FMath::Clamp(Health + Value, 0, MaxHealth);
@@ -118,6 +102,28 @@ UBuff* AProjectRPlayerState::GetBuff(TSubclassOf<UBuff> BuffClass) const
 	}
 	
 	return Ret;
+}
+
+void AProjectRPlayerState::BeginPlay()
+{
+	Super::BeginPlay();
+
+	auto* MyPawn = GetPawn<AProjectRCharacter>();
+
+	const auto* GameInstance = Cast<UProjectRGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
+	const auto* DataTable = GameInstance->GetDataTable(TEXT("StatData"));
+	const auto& StatData = *DataTable->FindRow<FStatData>(MyPawn->GetName(), "", false);
+
+	SetMaxHealth(StatData.MaxHealth);
+	SetHealthHeal(StatData.HealthHeal);
+
+	SetMaxEnergy(StatData.MaxEnergy);
+	SetEnergyHeal(StatData.EnergyHeal);
+
+	SetRunSpeed(StatData.RunSpeed);
+	SetWalkSpeed(StatData.WalkSpeed);
+
+	MyPawn->Walk();
 }
 
 void AProjectRPlayerState::Tick(float DeltaSeconds)
