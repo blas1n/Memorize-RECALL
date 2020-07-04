@@ -87,8 +87,8 @@ private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = true))
 	UWeaponComponent* WeaponComponent;
 
-	UPROPERTY(EditAnywhere, Category = Data, meta = (AllowPrivateAccess = true))
-	FName StatDataRowName;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = true))
+	FName Name;
 
 	UPROPERTY()
 	UObject* Parrying;
