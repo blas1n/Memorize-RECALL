@@ -105,9 +105,7 @@ void AProjectRCharacter::BeginPlay()
 	for (int32 Idx = WeaponNum - 1; Idx >= 0; --Idx)
 		WeaponComponent->SetNewWeapon(WeaponNames[Idx], Idx);
 
-	GetPlayerState<AProjectRPlayerState>()->InitFromDataTable(StatDataRowName);
 	OnAttack.AddDynamic(this, &AProjectRCharacter::HealHealthAndEnergy);
-	Walk();
 }
 
 void AProjectRCharacter::Tick(float DeltaSeconds)
