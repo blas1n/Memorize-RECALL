@@ -15,7 +15,6 @@ public:
 	UProjectRAnimInstance();
 
 private:
-	void NativeBeginPlay() override;
 	void NativeUpdateAnimation(float DeltaSeconds) override;
 
 	UFUNCTION()
@@ -39,9 +38,6 @@ private:
 	class UWeapon* GetWeapon() const;
 
 private:
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Pawn, meta = (AllowPrivateAccess = true))
-	class AProjectRCharacter* User;
-
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Pawn, meta = (AllowPrivateAccess = true))
 	FVector Velocity;
 
