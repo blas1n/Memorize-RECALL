@@ -13,14 +13,15 @@
 
 DECLARE_DELEGATE_OneParam(FIndexer, uint8);
 
-void AProjectRPlayerController::BeginPlay()
+void AProjectRPlayerController::OnPossess(APawn* InPawn)
 {
-	Super::BeginPlay();
+	Super::OnPossess(InPawn);
+	User = Cast<AProjectRCharacter>(InPawn);
 
-	User = GetPawn<AProjectRCharacter>();
-	check(IsValid(User));
-
-	TurnRotation = GetControlRotation();
+void AProjectRPlayerController::OnUnPossess()
+{
+	User = nullptr;
+	Super::OnUnPossess();
 }
 
 void AProjectRPlayerController::Tick(float DeltaSeconds)
