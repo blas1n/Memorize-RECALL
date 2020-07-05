@@ -7,6 +7,7 @@
 #include "GameFramework/Controller.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "TimerManager.h"
+#include "Buff/Cast.h"
 #include "Buff/Lock.h"
 #include "Buff/Root.h"
 #include "Buff/Run.h"
@@ -109,7 +110,7 @@ void AProjectRCharacter::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
 
-	if (!bIsTurning || IsBuffActivate(ULock::StaticClass()))
+	if (!bIsTurning || IsBuffActivate(ULock::StaticClass()) || IsBuffActivate(UCast::StaticClass()))
 		return;
 
 	const FRotator CurRotation = GetActorRotation();
