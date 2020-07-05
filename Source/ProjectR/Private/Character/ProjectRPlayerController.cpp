@@ -17,6 +17,7 @@ void AProjectRPlayerController::OnPossess(APawn* InPawn)
 {
 	Super::OnPossess(InPawn);
 	User = Cast<AProjectRCharacter>(InPawn);
+}
 
 void AProjectRPlayerController::OnUnPossess()
 {
@@ -28,6 +29,8 @@ void AProjectRPlayerController::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
 	
+	if (!User) return;
+
 	SetUserTransformByInput();
 	CheckLockTarget();
 	Turn(DeltaSeconds);
@@ -67,7 +70,7 @@ void AProjectRPlayerController::SetupInputComponent()
 
 void AProjectRPlayerController::MoveForward(float Value)
 {
-	if (IsBuffActivate(URoot::StaticClass())) return;
+	if (!User || IsBuffActivate(URoot::StaticClass())) return;
 
 	if (IsBuffActivate(ULock::StaticClass()))
 		User->AddMovementInput(GetDirectionVectorByActor(EAxis::X), Value);
@@ -77,7 +80,7 @@ void AProjectRPlayerController::MoveForward(float Value)
 
 void AProjectRPlayerController::MoveRight(float Value)
 {
-	if (IsBuffActivate(URoot::StaticClass())) return;
+	if (!User || IsBuffActivate(URoot::StaticClass())) return;
 
 	if (IsBuffActivate(ULock::StaticClass()))
 		User->AddMovementInput(GetDirectionVectorByActor(EAxis::Y), Value);
@@ -99,6 +102,8 @@ void AProjectRPlayerController::InputPitch(float Value)
 
 void AProjectRPlayerController::PressDodge()
 {
+	if (!User) return;
+
 	if (IsBuffActivate(ULock::StaticClass()))
 		User->GetWeaponComponent()->UseSkill(4);
 	else User->Jumping();
@@ -106,27 +111,30 @@ void AProjectRPlayerController::PressDodge()
 
 void AProjectRPlayerController::ReleaseDodge()
 {
-	if (User->GetCharacterMovement()->IsFalling())
+	if (User || User->GetCharacterMovement()->IsFalling())
 		User->StopJumping();
 }
 
 void AProjectRPlayerController::Run()
 {
-	User->Run();
+	if (User) User->Run();
 }
 
 void AProjectRPlayerController::Walk()
 {
-	User->Walk();
+	if (User) User->Walk();
 }
 
 void AProjectRPlayerController::SwapWeapon(uint8 Index)
 {
-	User->GetWeaponComponent()->SwapWeapon(Index);
+	if (User)
+		User->GetWeaponComponent()->SwapWeapon(Index);
 }
 
 void AProjectRPlayerController::SwapWeapon(float Value)
 {
+	if (!User) return;
+
 	const auto* WeaponComponent = User->GetWeaponComponent();
 	const uint8 WeaponNum = WeaponComponent->GetWeaponNum();
 
@@ -138,11 +146,14 @@ void AProjectRPlayerController::SwapWeapon(float Value)
 
 void AProjectRPlayerController::UseSkill(uint8 Index)
 {
-	User->GetWeaponComponent()->UseSkill(Index);
+	if (User)
+		User->GetWeaponComponent()->UseSkill(Index);
 }
 
 void AProjectRPlayerController::LockOn()
 {
+	if (!User) return;
+
 	TArray<AActor*> Enemys;
 	UGameplayStatics::GetAllActorsOfClass(GetWorld(), AProjectRCharacter::StaticClass(), Enemys);
 
@@ -243,15 +254,13 @@ void AProjectRPlayerController::SetUserTransformByInput()
 	const float Value = FMath::Max(FMath::Abs(MoveInput.X), FMath::Abs(MoveInput.Y));
 	User->AddMovementInput(Forward, Value);
 
-	if (User->GetCharacterMovement()->IsFalling()) return;
-
 	const FVector Direction = MoveInput.GetUnsafeNormal();
 	float Angle = FMath::Acos(FVector::DotProduct(Direction, FVector::ForwardVector));
 	const bool IsClockwise = FVector::CrossProduct(Direction, FVector::ForwardVector).Z <= 0.0f;
 	Angle = FMath::RadiansToDegrees(IsClockwise ? Angle : -Angle);
 
 	const float Yaw = FRotator::NormalizeAxis(GetControlRotation().Yaw + Angle);
-	User->SetTurnRotate(Yaw);
+	User->SetTurn(Yaw);
 }
 
 void AProjectRPlayerController::CheckLockTarget()
