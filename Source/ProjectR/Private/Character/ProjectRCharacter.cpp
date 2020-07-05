@@ -123,7 +123,8 @@ void AProjectRCharacter::Tick(float DeltaSeconds)
 	}
 
 	const FRotator TurnRotation{ CurRotation.Pitch, TurnedYaw, CurRotation.Roll };
-	SetActorRotation(FMath::Lerp(CurRotation, TurnRotation, DeltaSeconds * 10.0f));
+	const float Speed = GetCharacterMovement()->IsFalling() ? 2.0f : 10.0f;
+	SetActorRotation(FMath::Lerp(CurRotation, TurnRotation, DeltaSeconds * Speed));
 }
 
 float AProjectRCharacter::TakeDamage(float DamageAmount, const FDamageEvent& DamageEvent,
