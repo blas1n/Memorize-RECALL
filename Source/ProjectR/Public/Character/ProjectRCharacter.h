@@ -29,7 +29,7 @@ public:
 	void EndParrying(UObject* InParrying);
 
 	UFUNCTION(BlueprintCallable)
-	void SetTurnRotate(float Yaw);
+	void SetTurn(float Yaw);
 
 	UFUNCTION(BlueprintCallable)
 	void Jumping();
