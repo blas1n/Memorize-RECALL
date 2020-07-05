@@ -48,6 +48,12 @@ private:
 	UFUNCTION()
 	void EnableRagdoll(AController* Instigator);
 
+	UFUNCTION()
+	void OnBeginSkill(class USkill* Skill);
+	
+	UFUNCTION()
+	void OnEndSkill(class USkill* Skill);
+
 	void DetachWeapon(class UStaticMeshComponent* Weapon);
 	UStaticMeshComponent* CreateWeaponMesh(FName Socket);
 

@@ -5,7 +5,9 @@
 #include "Components/StaticMeshComponent.h"
 #include "Engine/StaticMeshActor.h"
 #include "Kismet/GameplayStatics.h"
+#include "Buff/Cast.h"
 #include "Character/ProjectRCharacter.h"
+#include "Character/ProjectRPlayerState.h"
 #include "Weapon.h"
 
 UWeaponComponent::UWeaponComponent()
@@ -85,7 +87,11 @@ void UWeaponComponent::EndPlay(EEndPlayReason::Type EndPlayReason)
 void UWeaponComponent::EquipWeapon(UWeapon* NewWeapon)
 {
 	if (CurWeapon)
+	{
 		CurWeapon->Unequip();
+		CurWeapon->OnBeginSkill.RemoveDynamic(this, &UWeaponComponent::OnBeginSkill);
+		CurWeapon->OnBeginSkill.RemoveDynamic(this, &UWeaponComponent::OnEndSkill);
+	}
 
 	CurWeapon = NewWeapon;
 	if (!CurWeapon) return;
@@ -95,6 +101,9 @@ void UWeaponComponent::EquipWeapon(UWeapon* NewWeapon)
 	FOnAsyncLoadEndedSingle Callback;
 	Callback.BindDynamic(this, &UWeaponComponent::SetWeaponMesh);
 	CurWeapon->RegisterOnAsyncLoadEnded(Callback);
+
+	CurWeapon->OnBeginSkill.AddDynamic(this, &UWeaponComponent::OnBeginSkill);
+	CurWeapon->OnEndSkill.AddDynamic(this, &UWeaponComponent::OnEndSkill);
 }
 
 void UWeaponComponent::SetWeaponMesh()
@@ -116,6 +125,16 @@ void UWeaponComponent::EnableRagdoll(AController* Instigator)
 {
 	DetachWeapon(RightWeapon);
 	DetachWeapon(LeftWeapon);
+}
+
+void UWeaponComponent::OnBeginSkill(USkill* Skill)
+{
+	User->GetPlayerState<AProjectRPlayerState>()->GetBuff(UCast::StaticClass())->ApplyBuff();
+}
+
+void UWeaponComponent::OnEndSkill(USkill* Skill)
+{
+	User->GetPlayerState<AProjectRPlayerState>()->GetBuff(UCast::StaticClass())->ReleaseBuff();
 }
 
 void UWeaponComponent::DetachWeapon(UStaticMeshComponent* Weapon)
