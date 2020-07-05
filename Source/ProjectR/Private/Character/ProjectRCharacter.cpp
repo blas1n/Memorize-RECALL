@@ -61,7 +61,7 @@ void AProjectRCharacter::EndParrying(UObject* InParrying)
 		Parrying = nullptr;
 }
 
-void AProjectRCharacter::SetTurnRotate(float Yaw)
+void AProjectRCharacter::SetTurn(float Yaw)
 {
 	if (IsBuffActivate(ULock::StaticClass()))
 		return;
