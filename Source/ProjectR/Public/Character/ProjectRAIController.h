@@ -13,4 +13,16 @@ class PROJECTR_API AProjectRAIController final : public AAIController
 
 public:
 	AProjectRAIController();
+
+private:
+	void OnPossess(APawn* InPawn) override;
+	void OnUnPossess() override;
+
+	void Tick(float DeltaSeconds) override;
+
+	bool GetMoveTargetLocation(FVector& Out) const;
+
+private:
+	UPROPERTY()
+	class AProjectRCharacter* User;
 };
