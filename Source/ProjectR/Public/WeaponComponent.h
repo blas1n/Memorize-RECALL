@@ -52,7 +52,7 @@ private:
 	void OnBeginSkill(class USkill* Skill);
 	
 	UFUNCTION()
-	void OnEndSkill(class USkill* Skill);
+	void OnEndSkill(USkill* Skill);
 
 	void DetachWeapon(class UStaticMeshComponent* Weapon);
 	UStaticMeshComponent* CreateWeaponMesh(FName Socket);
