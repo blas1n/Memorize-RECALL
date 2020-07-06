@@ -100,9 +100,9 @@ void UWeaponComponent::EquipWeapon(UWeapon* NewWeapon)
 {
 	if (CurWeapon)
 	{
-		CurWeapon->Unequip();
 		CurWeapon->OnBeginSkill.RemoveDynamic(this, &UWeaponComponent::OnBeginSkill);
-		CurWeapon->OnBeginSkill.RemoveDynamic(this, &UWeaponComponent::OnEndSkill);
+		CurWeapon->OnEndSkill.RemoveDynamic(this, &UWeaponComponent::OnEndSkill);
+		CurWeapon->Unequip();
 	}
 
 	CurWeapon = NewWeapon;
