@@ -141,12 +141,14 @@ void UWeaponComponent::EnableRagdoll(AController* Instigator)
 
 void UWeaponComponent::OnBeginSkill(USkill* Skill)
 {
-	User->GetPlayerState<AProjectRPlayerState>()->GetBuff(UCast::StaticClass())->ApplyBuff();
+	if (auto* PlayerState = User->GetPlayerState<AProjectRPlayerState>())
+		PlayerState->GetBuff(UCast::StaticClass())->ApplyBuff();
 }
 
 void UWeaponComponent::OnEndSkill(USkill* Skill)
 {
-	User->GetPlayerState<AProjectRPlayerState>()->GetBuff(UCast::StaticClass())->ReleaseBuff();
+	if (auto* PlayerState = User->GetPlayerState<AProjectRPlayerState>())
+		PlayerState->GetBuff(UCast::StaticClass())->ReleaseBuff();
 }
 
 void UWeaponComponent::DetachWeapon(UStaticMeshComponent* Weapon)
