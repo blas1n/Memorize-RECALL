@@ -26,6 +26,9 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void SetNewWeapon(FName Name, uint8 Index);
 
+	UFUNCTION(BlueprintCallable)
+	uint8 GetDeltaWeaponIndex(int32 Delta) const;
+
 	void SetWeaponCollision(bool bEnableRight, bool bEnableLeft);
 
 	FORCEINLINE class UWeapon* GetWeapon() const noexcept { return CurWeapon; }

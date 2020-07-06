@@ -56,6 +56,18 @@ void UWeaponComponent::SetNewWeapon(FName Name, uint8 Index)
 		EquipWeapon(Weapons[Index]);
 }
 
+uint8 UWeaponComponent::GetDeltaWeaponIndex(int32 Delta) const
+{
+	const int32 SetIdx = static_cast<int32>(CurIndex) + Delta;
+	int32 NewIdx = ((SetIdx % WeaponNum) + WeaponNum) % WeaponNum;
+
+	const int32 Sign = FMath::Sign(Delta);
+	while (!Weapons[NewIdx])
+		NewIdx = (((NewIdx + Sign) % WeaponNum) + WeaponNum) % WeaponNum;
+
+	return static_cast<uint8>(NewIdx);
+}
+
 void UWeaponComponent::SetWeaponCollision(bool bEnableRight, bool bEnableLeft)
 {
 	RightWeapon->SetGenerateOverlapEvents(bEnableRight);
