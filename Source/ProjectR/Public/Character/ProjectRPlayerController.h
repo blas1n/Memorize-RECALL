@@ -12,7 +12,9 @@ class PROJECTR_API AProjectRPlayerController final : public APlayerController
 	GENERATED_BODY()
 
 private:
-	void BeginPlay() override;
+	void OnPossess(APawn* InPawn) override;
+	void OnUnPossess() override;
+
 	void Tick(float DeltaSeconds) override;
 	void SetupInputComponent() override;
 

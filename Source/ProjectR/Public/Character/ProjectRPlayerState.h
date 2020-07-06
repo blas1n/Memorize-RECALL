@@ -12,7 +12,7 @@ class PROJECTR_API AProjectRPlayerState final : public APlayerState
 	GENERATED_BODY()
 
 public:
-	void InitFromDataTable(const FName& Name);
+	AProjectRPlayerState();
 
 	UFUNCTION(BlueprintCallable) 
 	void HealHealth(int32 Value) noexcept;
@@ -59,6 +59,7 @@ public:
 	FORCEINLINE float GetWalkSpeed() const noexcept { return WalkSpeed; }
 	
 private:
+	void BeginPlay() override;
 	void Tick(float DeltaSeconds) override;
 
 private:

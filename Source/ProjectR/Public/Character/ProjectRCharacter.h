@@ -29,7 +29,7 @@ public:
 	void EndParrying(UObject* InParrying);
 
 	UFUNCTION(BlueprintCallable)
-	void SetTurnRotate(float Yaw);
+	void SetTurn(float Yaw);
 
 	UFUNCTION(BlueprintCallable)
 	void Jumping();
@@ -40,10 +40,11 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void Walk();
 
-	UFUNCTION(BlueprintImplementableEvent)
+	UFUNCTION(BlueprintNativeEvent)
 	FVector GetViewLocation() const;
 	
 	FORCEINLINE class UWeaponComponent* GetWeaponComponent() const noexcept { return WeaponComponent; }
+	FORCEINLINE const FName& GetName() const noexcept { return Name; }
 
 	FORCEINLINE bool IsRunning() const noexcept { return bIsRunning; }
 	FORCEINLINE bool IsDeath() const noexcept { return bIsDeath; }
@@ -66,7 +67,7 @@ private:
 	void HealHealthAndEnergy(AProjectRCharacter* Target, int32 Damage);
 
 	bool IsBuffActivate(TSubclassOf<class UBuff> BuffClass) const;
-
+	FVector GetViewLocation_Implementation() const;
 	void Death();
 
 public:
@@ -86,8 +87,8 @@ private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = true))
 	UWeaponComponent* WeaponComponent;
 
-	UPROPERTY(EditAnywhere, Category = Data, meta = (AllowPrivateAccess = true))
-	FName StatDataRowName;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = true))
+	FName Name;
 
 	UPROPERTY()
 	UObject* Parrying;
