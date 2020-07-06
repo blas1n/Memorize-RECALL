@@ -12,6 +12,8 @@ class PROJECTR_API AProjectRPlayerState final : public APlayerState
 	GENERATED_BODY()
 
 public:
+	AProjectRPlayerState();
+
 	UFUNCTION(BlueprintCallable) 
 	void HealHealth(int32 Value) noexcept;
 
