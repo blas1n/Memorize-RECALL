@@ -37,7 +37,7 @@ bool UWeaponComponent::CanUseSkill(uint8 Index) const
 
 void UWeaponComponent::SwapWeapon(uint8 Index)
 {
-	if (CurIndex == Index || Weapons[Index] == nullptr)
+	if (Index >= Weapons.Num() || CurIndex == Index || Weapons[Index] == nullptr)
 		return;
 	
 	EquipWeapon(Weapons[Index]);
