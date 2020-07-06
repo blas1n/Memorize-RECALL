@@ -9,6 +9,12 @@
 #include "Framework/ProjectRGameInstance.h"
 #include "Data/StatData.h"
 
+AProjectRPlayerState::AProjectRPlayerState()
+	: Super()
+{
+	PrimaryActorTick.bCanEverTick = true;
+}
+
 void AProjectRPlayerState::HealHealth(int32 Value) noexcept
 {
 	Health = FMath::Clamp(Health + Value, 0, MaxHealth);
