@@ -22,7 +22,8 @@ void UFaint::BeginBuff()
 	if (bIsPlayer)
 		Cast<APlayerController>(Controller)->DisableInput(nullptr);
 	else
-		Cast<AAIController>(Controller)->GetBrainComponent()->StopLogic(TEXT("Faint"));
+		if (auto* Brain = Cast<AAIController>(Controller)->GetBrainComponent())
+			Brain->StopLogic(TEXT("Faint"));
 }
 
 void UFaint::EndBuff()
@@ -33,7 +34,8 @@ void UFaint::EndBuff()
 	if (bIsPlayer)
 		Cast<APlayerController>(Controller)->EnableInput(nullptr);
 	else
-		Cast<AAIController>(Controller)->GetBrainComponent()->RestartLogic();
+		if (auto* Brain = Cast<AAIController>(Controller)->GetBrainComponent())
+			Brain->RestartLogic();
 }
 
 bool UFaint::IsActivate_Implementation() const

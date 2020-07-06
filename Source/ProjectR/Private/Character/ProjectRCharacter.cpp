@@ -7,6 +7,7 @@
 #include "GameFramework/Controller.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "TimerManager.h"
+#include "Buff/Cast.h"
 #include "Buff/Lock.h"
 #include "Buff/Root.h"
 #include "Buff/Run.h"
@@ -61,11 +62,8 @@ void AProjectRCharacter::EndParrying(UObject* InParrying)
 		Parrying = nullptr;
 }
 
-void AProjectRCharacter::SetTurnRotate(float Yaw)
+void AProjectRCharacter::SetTurn(float Yaw)
 {
-	if (IsBuffActivate(ULock::StaticClass()))
-		return;
-
 	bIsTurning = true;
 	TurnedYaw = Yaw;
 }
@@ -105,16 +103,14 @@ void AProjectRCharacter::BeginPlay()
 	for (int32 Idx = WeaponNum - 1; Idx >= 0; --Idx)
 		WeaponComponent->SetNewWeapon(WeaponNames[Idx], Idx);
 
-	GetPlayerState<AProjectRPlayerState>()->InitFromDataTable(StatDataRowName);
 	OnAttack.AddDynamic(this, &AProjectRCharacter::HealHealthAndEnergy);
-	Walk();
 }
 
 void AProjectRCharacter::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
 
-	if (!bIsTurning || IsBuffActivate(ULock::StaticClass()))
+	if (!bIsTurning || IsBuffActivate(ULock::StaticClass()) || IsBuffActivate(UCast::StaticClass()))
 		return;
 
 	const FRotator CurRotation = GetActorRotation();
@@ -125,7 +121,8 @@ void AProjectRCharacter::Tick(float DeltaSeconds)
 	}
 
 	const FRotator TurnRotation{ CurRotation.Pitch, TurnedYaw, CurRotation.Roll };
-	SetActorRotation(FMath::Lerp(CurRotation, TurnRotation, DeltaSeconds * 10.0f));
+	const float Speed = GetCharacterMovement()->IsFalling() ? 2.0f : 10.0f;
+	SetActorRotation(FMath::Lerp(CurRotation, TurnRotation, DeltaSeconds * Speed));
 }
 
 float AProjectRCharacter::TakeDamage(float DamageAmount, const FDamageEvent& DamageEvent,
@@ -165,6 +162,14 @@ void AProjectRCharacter::HealHealthAndEnergy(AProjectRCharacter* Target, int32 D
 bool AProjectRCharacter::IsBuffActivate(TSubclassOf<UBuff> BuffClass) const
 {
 	return GetPlayerState<AProjectRPlayerState>()->GetBuff(BuffClass)->IsActivate();
+}
+
+FVector AProjectRCharacter::GetViewLocation_Implementation() const
+{
+	FVector Vec;
+	FRotator Rot;
+	GetActorEyesViewPoint(Vec, Rot);
+	return Vec;
 }
 
 void AProjectRCharacter::Death()
