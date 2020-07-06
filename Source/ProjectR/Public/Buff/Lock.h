@@ -26,8 +26,6 @@ private:
 
 	bool IsActivate_Implementation() const override;
 
-	FRotator GetLookAtToTarget(const FVector& Location, const FRotator& Rotation, float DeltaSeconds);
-
 private:
 	UPROPERTY()
 	AProjectRCharacter* LockedTarget;
