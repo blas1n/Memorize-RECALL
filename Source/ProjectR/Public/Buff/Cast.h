@@ -6,9 +6,6 @@
 #include "Buff/Buff.h"
 #include "Cast.generated.h"
 
-/**
- * 
- */
 UCLASS()
 class PROJECTR_API UCast : public UBuff
 {
