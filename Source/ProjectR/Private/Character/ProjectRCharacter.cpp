@@ -101,7 +101,6 @@ void AProjectRCharacter::Death()
 	bIsDeath = true;
 	OnDeath.Broadcast(LastHitBy);
 
-	// Enable Ragdoll.
 	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	GetMesh()->SetCollisionEnabled(ECollisionEnabled::PhysicsOnly);
 	GetMesh()->SetSimulatePhysics(true);
