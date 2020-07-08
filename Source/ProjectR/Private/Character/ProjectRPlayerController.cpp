@@ -93,7 +93,7 @@ void AProjectRPlayerController::InputPitch(float Value)
 
 void AProjectRPlayerController::PressDodge()
 {
-	if (!User && !UBuffLibrary::IsActivate<URoot>(User)) return;
+	if (!User || UBuffLibrary::IsActivate<URoot>(User)) return;
 
 	if (UBuffLibrary::IsActivate<ULock>(User))
 		User->GetWeaponComponent()->StartSkill(4);
