@@ -6,11 +6,18 @@
 #include "Buff/Buff.h"
 #include "Cast.generated.h"
 
-UCLASS()
+UCLASS(BlueprintType)
 class PROJECTR_API UCast : public UBuff
 {
 	GENERATED_BODY()
-	
+
+public:
+	UFUNCTION(BlueprintCallable)
+	void StopSkill();
+
+	void SetCurSkill(class USkill* Skill);
+	bool CanUseSkill(const USkill* Skill) const;
+
 private:
 	void OnApply() override;
 	void OnRelease() override;
@@ -18,5 +25,8 @@ private:
 	bool IsActivate_Implementation() const override;
 
 private:
-	uint8 bIsLocked : 1;
+	UPROPERTY()
+	class USkill* CurSkill;
+
+	uint8 bIsCasting : 1;
 };
