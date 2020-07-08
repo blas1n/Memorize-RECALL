@@ -95,7 +95,7 @@ UBuff* AProjectRPlayerState::GetBuff(TSubclassOf<UBuff> BuffClass) const
 	if (!Ret)
 	{
 		Ret = NewObject<UBuff>(GetPawn(), BuffClass);
-		Ret->Initialize();
+		Ret->BeginPlay();
 		Buffs.Add(Ret);
 	}
 	
