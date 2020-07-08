@@ -105,3 +105,27 @@ void UWeapon::PlayEquipAnim()
 	if (EquipAnim)
 		User->PlayAnimMontage(EquipAnim);
 }
+
+void UWeapon::AddComponents(USkill* Skill)
+{
+	const auto Datas = Skill->GetNeedComponents();
+	
+	for (const auto& Data : Datas)
+	{
+		auto** ComponentPtr = Components.Find(Data.Name);
+		UActorComponent* Component = nullptr;
+
+		if (ComponentPtr)
+		{
+			Component = *ComponentPtr;
+		}
+		else
+		{
+			Component = NewObject<UActorComponent>(User, Data.Class);
+			Component->RegisterComponent();
+			Components.Add(Data.Name, Component);
+		}
+
+		Data.Handler.ExecuteIfBound(Component);
+	}
+}

@@ -54,6 +54,8 @@ private:
 	UFUNCTION()
 	void PlayEquipAnim();
 
+	void AddComponents(class USkill* Skill);
+
 	template <class T>
 	void AsyncLoad(T*& Ptr, const TAssetPtr<T>& SoftPtr)
 	{
@@ -118,6 +120,8 @@ private:
 
 	UPROPERTY()
 	TArray<class USkill*> Skills;
+	UPROPERTY()
+	TMap<FName, UActorComponent*> Components;
 
 	UPROPERTY()
 	TSubclassOf<class UAnimInstance> UpperAnimInstance;
