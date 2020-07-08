@@ -22,24 +22,6 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void Attack(AProjectRCharacter* Target, int32 Damage);
 
-	UFUNCTION(BlueprintCallable)
-	void BeginParrying(UObject* InParrying);
-
-	UFUNCTION(BlueprintCallable)
-	void EndParrying(UObject* InParrying);
-
-	UFUNCTION(BlueprintCallable)
-	void SetTurn(float Yaw);
-
-	UFUNCTION(BlueprintCallable)
-	void Jumping();
-
-	UFUNCTION(BlueprintCallable)
-	void Run();
-
-	UFUNCTION(BlueprintCallable)
-	void Walk();
-
 	UFUNCTION(BlueprintNativeEvent)
 	FVector GetViewLocation() const;
 	
@@ -52,8 +34,6 @@ public:
 
 private:
 	void BeginPlay() override;
-
-	void Tick(float DeltaSeconds) override;
 
 	float TakeDamage(float DamageAmount, const FDamageEvent& DamageEvent,
 		AController* EventInstigator, AActor* DamageCauser) override;
@@ -87,11 +67,5 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = true))
 	FName Name;
 
-	UPROPERTY()
-	UObject* Parrying;
-
-	float TurnedYaw;
-
-	uint8 bIsTurning : 1;
 	uint8 bIsDeath : 1;
 };

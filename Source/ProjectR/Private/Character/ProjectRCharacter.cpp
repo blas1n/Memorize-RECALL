@@ -49,79 +49,11 @@ void AProjectRCharacter::Attack(AProjectRCharacter* Target, int32 Damage)
 		OnAttack.Broadcast(Target, TakingDamage);
 }
 
-void AProjectRCharacter::BeginParrying(UObject* InParrying)
-{
-	if (InParrying->GetClass()->ImplementsInterface(UParryable::StaticClass()))
-		Parrying = InParrying;
-}
-
-void AProjectRCharacter::EndParrying(UObject* InParrying)
-{
-	if (Parrying == InParrying)
-		Parrying = nullptr;
-}
-
-void AProjectRCharacter::SetTurn(float Yaw)
-{
-	bIsTurning = true;
-	TurnedYaw = Yaw;
-}
-
-void AProjectRCharacter::Jumping()
-{
-	if (!IsBuffActivate(URoot::StaticClass()))
-		Jump();
-}
-
-void AProjectRCharacter::Run()
-{
-	bIsRunning = true;
-
-	if (IsBuffActivate(URun::StaticClass())) return;
-
-	auto* Movement = GetCharacterMovement();
-	Movement->MaxWalkSpeed = GetPlayerState<AProjectRPlayerState>()->GetRunSpeed();
-	GetPlayerState<AProjectRPlayerState>()->GetBuff(ULock::StaticClass())->ReleaseBuff();
-}
-
-void AProjectRCharacter::Walk()
-{
-	auto* Movement = GetCharacterMovement();
-	Movement->MaxWalkSpeed = GetPlayerState<AProjectRPlayerState>()->GetWalkSpeed();
-	bIsRunning = false;
-}
-
 void AProjectRCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 
-	const TArray<FName> WeaponNames = GetWeaponNames();
-	const int32 WeaponNum = WeaponNames.Num();
-
-	// Some optimize trick
-	for (int32 Idx = WeaponNum - 1; Idx >= 0; --Idx)
-		WeaponComponent->SetNewWeapon(WeaponNames[Idx], Idx);
-
 	OnAttack.AddDynamic(this, &AProjectRCharacter::HealHealthAndEnergy);
-}
-
-void AProjectRCharacter::Tick(float DeltaSeconds)
-{
-	Super::Tick(DeltaSeconds);
-
-	if (!bIsTurning || IsBuffActivate(ULock::StaticClass()) || IsBuffActivate(UCast::StaticClass()))
-		return;
-
-	const FRotator CurRotation = GetActorRotation();
-	if (FMath::IsNearlyEqual(CurRotation.Yaw, TurnedYaw, 5.0f))
-	{
-		bIsTurning = false;
-		return;
-	}
-
-	const FRotator TurnRotation{ CurRotation.Pitch, TurnedYaw, CurRotation.Roll };
-	const float Speed = GetCharacterMovement()->IsFalling() ? 2.0f : 10.0f;
-	SetActorRotation(FMath::Lerp(CurRotation, TurnRotation, DeltaSeconds * Speed));
 }
 
 float AProjectRCharacter::TakeDamage(float DamageAmount, const FDamageEvent& DamageEvent,
@@ -129,11 +61,9 @@ float AProjectRCharacter::TakeDamage(float DamageAmount, const FDamageEvent& Dam
 {
 	auto Damage = static_cast<int32>(DamageAmount);
 	auto* Character = Cast<AProjectRCharacter>(DamageCauser);
-	if (Parrying && IParryable::Execute_IsParryable(Parrying, Damage, EventInstigator, Character))
-	{
-		IParryable::Execute_Parry(Parrying, Damage, EventInstigator, Character);
+
+	if (UBuffLibrary::GetBuff<UParrying>(this)->ParryIfCan(Damage, EventInstigator, Character))
 		return 0.0f;
-	}
 
 	Damage = Super::TakeDamage(Damage, DamageEvent, EventInstigator, DamageCauser);
 
