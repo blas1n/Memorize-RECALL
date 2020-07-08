@@ -11,7 +11,7 @@
 #include "Skill.h"
 #include "WeaponComponent.h"
 
-void UWeapon::Initialize(const FName& InName)
+void UWeapon::BeginPlay(const FName& InName)
 {
 	User = Cast<AProjectRCharacter>(GetOuter());
 	Name = InName;
@@ -40,10 +40,10 @@ void UWeapon::Initialize(const FName& InName)
 	}
 }
 
-void UWeapon::Release()
+void UWeapon::EndPlay()
 {
 	for (USkill* Skill : Skills)
-		Skill->Release();
+		Skill->EndPlay();
 }
 
 void UWeapon::Equip()

@@ -6,11 +6,11 @@
 #include "Character/ProjectRPlayerState.h"
 #include "Weapon.h"
 
-void USkill::Initialize()
+void USkill::BeginPlay()
 {
 	Weapon = Cast<UWeapon>(GetOuter());
 	User = Cast<AProjectRCharacter>(Weapon->GetOuter());
-	OnInitialize();
+	ReceiveBeginPlay();
 }
 
 UWorld* USkill::GetWorld() const

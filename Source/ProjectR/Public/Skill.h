@@ -12,10 +12,10 @@ class PROJECTR_API USkill final : public UObject
 	GENERATED_BODY()
 	
 public:
-	void Initialize();
+	void BeginPlay();
 
 	UFUNCTION(BlueprintImplementableEvent)
-	void Release();
+	void EndPlay();
 
 	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent)
 	void Use();
@@ -28,8 +28,8 @@ public:
 	FORCEINLINE bool IsCastSkill() const noexcept { return bIsCastSkill; }
 
 protected:
-	UFUNCTION(BlueprintImplementableEvent, meta = (DisplayName = "Initialize"))
-	void OnInitialize();
+	UFUNCTION(BlueprintImplementableEvent, meta = (DisplayName = "BeginPlay"))
+	void ReceiveBeginPlay();
 
 	UFUNCTION(BlueprintCallable, meta = (BlueprintProtected))
 	class UActorComponent* NewComponent(TSubclassOf<UActorComponent> Class);
