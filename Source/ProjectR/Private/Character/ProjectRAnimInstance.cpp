@@ -31,11 +31,8 @@ void UProjectRAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 	Velocity = User->GetActorRotation().UnrotateVector(Movement->Velocity);
 	Speed = Velocity.Size();
 	
-	auto* PlayerState = User->GetPlayerState<AProjectRPlayerState>();
-	if (!PlayerState) return;
-
-	bIsLooking = PlayerState->GetBuff(ULock::StaticClass())->IsActivate();
-	bIsStuned = PlayerState->GetBuff(UFaint::StaticClass())->IsActivate();
+	bIsLooking = UBuffLibrary::IsActivate<ULock>(User);
+	bIsStuned = UBuffLibrary::IsActivate<UFaint>(User);
 	bIsInAir = Movement->IsFalling();
 }
 
