@@ -15,7 +15,10 @@ public:
 	UWeaponComponent();
 
 	UFUNCTION(BlueprintCallable)
-	void UseSkill(uint8 Index);
+	void StartSkill(uint8 Index);
+
+	UFUNCTION(BlueprintCallable)
+	void EndSkill(uint8 Index);
 
 	UFUNCTION(BlueprintCallable)
 	bool CanUseSkill(uint8 Index) const;

@@ -31,14 +31,9 @@ public:
 	void Equip();
 	void Unequip();
 
-	void UseSkill(uint8 Index);
+	void StartSkill(uint8 Index);
+	void EndSkill(uint8 Index); 
 	bool CanUseSkill(uint8 Index) const;
-
-	UFUNCTION(BlueprintCallable)
-	void BeginSkill(USkill* Skill);
-
-	UFUNCTION(BlueprintCallable)
-	void EndSkill(USkill* Skill);
 
 	UFUNCTION(BlueprintCallable)
 	void SetWeaponCollision(bool bRightWeaponEnable, bool bLeftWeaponEnable);

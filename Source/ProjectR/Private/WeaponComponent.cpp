@@ -23,10 +23,14 @@ UWeaponComponent::UWeaponComponent()
 	CurIndex = 0;
 }
 
-void UWeaponComponent::UseSkill(uint8 Index)
+void UWeaponComponent::StartSkill(uint8 Index)
 {
-	if (CurWeapon)
-		CurWeapon->UseSkill(Index);
+	Weapons[CurIndex]->StartSkill(Index);
+}
+
+void UWeaponComponent::EndSkill(uint8 Index)
+{
+	Weapons[CurIndex]->EndSkill(Index);
 }
 
 bool UWeaponComponent::CanUseSkill(uint8 Index) const
