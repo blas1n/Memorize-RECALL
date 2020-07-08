@@ -7,11 +7,11 @@
 #include "GameFramework/Controller.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "TimerManager.h"
-#include "Buff/Cast.h"
 #include "Buff/Lock.h"
-#include "Buff/Root.h"
+#include "Buff/Parrying.h"
 #include "Buff/Run.h"
 #include "Character/ProjectRPlayerState.h"
+#include "BuffLibrary.h"
 #include "Parryable.h"
 #include "WeaponComponent.h"
 
@@ -20,23 +20,20 @@ AProjectRCharacter::AProjectRCharacter()
 {
 	PrimaryActorTick.bCanEverTick = true;
 
-	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
-	GetCapsuleComponent()->SetCollisionProfileName(TEXT("Hitable"));
-
 	bUseControllerRotationPitch = false;
 	bUseControllerRotationYaw = false;
 	bUseControllerRotationRoll = false;
 
+	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
+	GetCapsuleComponent()->SetCollisionProfileName(TEXT("Hitable"));
+
 	GetCharacterMovement()->JumpZVelocity = 600.f;
 	GetCharacterMovement()->AirControl = 0.1f;
 	GetCharacterMovement()->RotationRate = FRotator(0.0f, 270.0f, 0.0f);
-	GetCharacterMovement()->bOrientRotationToMovement = false;
+	GetCharacterMovement()->bOrientRotationToMovement = true;
 	GetCharacterMovement()->bAllowPhysicsRotationDuringAnimRootMotion = true;
 
 	WeaponComponent = CreateDefaultSubobject<UWeaponComponent>(TEXT("Weapon"));
-
-	Parrying = nullptr;
-	bIsTurning = false;
 	bIsDeath = false;
 }
 
