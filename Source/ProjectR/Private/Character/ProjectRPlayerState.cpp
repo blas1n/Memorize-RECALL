@@ -4,10 +4,11 @@
 #include "Engine/World.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
-#include "Buff/Buff.h"
+#include "Buff/Run.h"
 #include "Character/ProjectRCharacter.h"
 #include "Data/StatData.h"
 #include "Framework/ProjectRGameInstance.h"
+#include "BuffLibrary.h"
 
 AProjectRPlayerState::AProjectRPlayerState()
 	: Super()
@@ -66,7 +67,7 @@ void AProjectRPlayerState::SetRunSpeed(float Value)
 	RunSpeed = Value;
 
 	auto* User = GetPawn<AProjectRCharacter>();
-	if (IsValid(User) && User->IsRunning())
+	if (User && UBuffLibrary::IsActivate<URun>(User))
 		User->GetCharacterMovement()->MaxWalkSpeed = RunSpeed;
 }
 
@@ -75,7 +76,7 @@ void AProjectRPlayerState::SetWalkSpeed(float Value)
 	WalkSpeed = Value;
 
 	auto* User = GetPawn<AProjectRCharacter>();
-	if (IsValid(User) && !User->IsRunning())
+	if (User && !UBuffLibrary::IsActivate<URun>(User))
 		User->GetCharacterMovement()->MaxWalkSpeed = WalkSpeed;
 }
 
