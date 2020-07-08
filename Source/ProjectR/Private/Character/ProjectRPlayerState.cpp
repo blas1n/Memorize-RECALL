@@ -81,7 +81,7 @@ void AProjectRPlayerState::SetWalkSpeed(float Value)
 
 UBuff* AProjectRPlayerState::GetBuff(TSubclassOf<UBuff> BuffClass) const
 {
-	UBuff* Ret = nullptr;;
+	UBuff* Ret = nullptr;
 
 	for (UBuff* Buff : Buffs)
 	{
