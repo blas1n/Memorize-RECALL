@@ -1,6 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "Buff/Lock.h"
+#include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/Controller.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Character/ProjectRCharacter.h"
@@ -28,14 +29,20 @@ void ULock::Tick(float DeltaSeconds)
 	GetTarget()->SetActorRotation(ActorLookAt);
 }
 
-void ULock::BeginBuff()
+void ULock::OnApply()
 {
-	GetTarget()->Walk();
+	if (!LockedTarget)
+	{
+		GetTarget()->GetCharacterMovement()
+			->bOrientRotationToMovement = false;
+	}
+
 	bIsLocked = true;
 }
 
-void ULock::EndBuff()
+void ULock::OnRelease()
 {
+	GetTarget()->GetCharacterMovement()->bOrientRotationToMovement = true;
 	bIsLocked = false;
 }
 
