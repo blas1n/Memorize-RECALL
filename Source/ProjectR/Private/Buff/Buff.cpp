@@ -52,10 +52,7 @@ void UBuff::Block()
 
 void UBuff::Unblock()
 {
-	if (--BlockCount > 0)
-		return;
-
-	if (bIsActivateBeforeBlock)
+	if (--BlockCount == 0 && bIsActivateBeforeBlock)
 		Apply();
 }
 
