@@ -119,7 +119,7 @@ private:
 	class AProjectRCharacter* User;
 
 	UPROPERTY()
-	TArray<class USkill*> Skills;
+	TArray<USkill*> Skills;
 	UPROPERTY()
 	TMap<FName, UActorComponent*> Components;
 
