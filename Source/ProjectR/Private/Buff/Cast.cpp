@@ -1,18 +1,40 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "Buff/Cast.h"
+#include "Skill.h"
 
-void UCast::BeginBuff()
+void UCast::StopSkill()
 {
-	bIsLocked = true;
+	if (!IsActivate()) return;
+	
+	CurSkill->End();
+	CurSkill = nullptr;
 }
 
-void UCast::EndBuff()
+void UCast::SetCurSkill(USkill* Skill)
 {
-	bIsLocked = false;
+	if (!CanUseSkill(Skill)) return;
+
+	StopSkill();
+	CurSkill = Skill;
+}
+
+bool UCast::CanUseSkill(const USkill* Skill) const
+{
+	return !IsActivate() || CurSkill->GetPriority() < Skill->GetPriority();
+}
+
+void UCast::OnApply()
+{
+	bIsCasting = true;
+}
+
+void UCast::OnRelease()
+{
+	bIsCasting = false;
 }
 
 bool UCast::IsActivate_Implementation() const
 {
-	return bIsLocked;
+	return bIsCasting;
 }

@@ -15,7 +15,10 @@ public:
 	UWeaponComponent();
 
 	UFUNCTION(BlueprintCallable)
-	void UseSkill(uint8 Index);
+	void StartSkill(uint8 Index);
+
+	UFUNCTION(BlueprintCallable)
+	void EndSkill(uint8 Index);
 
 	UFUNCTION(BlueprintCallable)
 	bool CanUseSkill(uint8 Index) const;
@@ -24,14 +27,13 @@ public:
 	void SwapWeapon(uint8 Index);
 
 	UFUNCTION(BlueprintCallable)
-	void SetNewWeapon(FName Name, uint8 Index);
-
-	UFUNCTION(BlueprintCallable)
-	uint8 GetDeltaWeaponIndex(int32 Delta) const;
+	void CreateNewWeapon(FName Name, uint8 Index);
 
 	void SetWeaponCollision(bool bEnableRight, bool bEnableLeft);
 
-	FORCEINLINE class UWeapon* GetWeapon() const noexcept { return CurWeapon; }
+	FORCEINLINE class UWeapon* GetWeapon() noexcept { return Weapons[CurIndex]; }
+	FORCEINLINE const UWeapon* GetWeapon() const noexcept { return Weapons[CurIndex]; }
+
 	FORCEINLINE uint8 GetWeaponNum() const noexcept { return WeaponNum; }
 	FORCEINLINE uint8 GetWeaponIndex() const noexcept { return CurIndex; }
 
@@ -39,26 +41,20 @@ private:
 	void BeginPlay() override;
 	void EndPlay(EEndPlayReason::Type EndPlayReason);
 
-	void EquipWeapon(UWeapon* NewWeapon);
-
-	UFUNCTION()
-	void SetWeaponMesh();
+	UStaticMeshComponent* CreateWeaponComponent(FName Name);
+	void EquipWeapon(UWeapon* NewWeapon, bool bNeedUnequip);
 
 	UFUNCTION()
 	void OnWeaponOverlapped(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
 		UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
 	UFUNCTION()
-	void EnableRagdoll(AController* Instigator);
+	void SetWeaponMesh();
 
 	UFUNCTION()
-	void OnBeginSkill(class USkill* Skill);
-	
-	UFUNCTION()
-	void OnEndSkill(USkill* Skill);
+	void Detach(AController* Instigator);
 
-	void DetachWeapon(class UStaticMeshComponent* Weapon);
-	UStaticMeshComponent* CreateWeaponMesh(FName Socket);
+	void DetachOnce(class UStaticMeshComponent* Weapon);
 
 private:
 	UPROPERTY()
@@ -72,9 +68,6 @@ private:
 
 	UPROPERTY()
 	class AProjectRCharacter* User;
-
-	UPROPERTY()
-	UWeapon* CurWeapon;
 
 	uint8 WeaponNum;
 	uint8 CurIndex;

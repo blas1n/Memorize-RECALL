@@ -7,7 +7,7 @@
 #include "Buff/Lock.h"
 #include "Buff/Root.h"
 #include "Character/ProjectRCharacter.h"
-#include "Character/ProjectRPlayerState.h"
+#include "BuffLibrary.h"
 #include "Weapon.h"
 #include "WeaponComponent.h"
 
@@ -31,11 +31,8 @@ void UProjectRAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 	Velocity = User->GetActorRotation().UnrotateVector(Movement->Velocity);
 	Speed = Velocity.Size();
 	
-	auto* PlayerState = User->GetPlayerState<AProjectRPlayerState>();
-	if (!PlayerState) return;
-
-	bIsLooking = PlayerState->GetBuff(ULock::StaticClass())->IsActivate();
-	bIsStuned = PlayerState->GetBuff(UFaint::StaticClass())->IsActivate();
+	bIsLooking = UBuffLibrary::IsActivate<ULock>(User);
+	bIsStuned = UBuffLibrary::IsActivate<UFaint>(User);
 	bIsInAir = Movement->IsFalling();
 }
 
@@ -61,18 +58,18 @@ void UProjectRAnimInstance::AnimNotify_Execute()
 
 void UProjectRAnimInstance::AnimNotify_EnableMove()
 {
-	const auto* User = Cast<AProjectRCharacter>(TryGetPawnOwner());
-	User->GetPlayerState<AProjectRPlayerState>()->GetBuff(URoot::StaticClass())->ReleaseBuff();
+	if (auto* User = Cast<AProjectRCharacter>(TryGetPawnOwner()))
+		UBuffLibrary::ApplyBuff<URoot>(User);
 }
 
 void UProjectRAnimInstance::AnimNotify_DisableMove()
 {
-	const auto* User = Cast<AProjectRCharacter>(TryGetPawnOwner());
-	User->GetPlayerState<AProjectRPlayerState>()->GetBuff(URoot::StaticClass())->ApplyBuff();
+	if (auto* User = Cast<AProjectRCharacter>(TryGetPawnOwner()))
+		UBuffLibrary::ReleaseBuff<URoot>(User);
 }
 
 UWeapon* UProjectRAnimInstance::GetWeapon() const
 {
 	const auto* User = Cast<AProjectRCharacter>(TryGetPawnOwner());
-	return User->GetWeaponComponent()->GetWeapon();
+	return User ? User->GetWeaponComponent()->GetWeapon() : nullptr;
 }

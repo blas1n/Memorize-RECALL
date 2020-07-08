@@ -1,18 +1,23 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "Buff/Root.h"
+#include "Buff/Lock.h"
+#include "Character/ProjectRCharacter.h"
+#include "BuffLibrary.h"
 
-void URoot::BeginBuff()
+void URoot::OnApply()
 {
-	bIsRooted = true;
+	if (++Count == 1)
+		UBuffLibrary::BlockBuff<ULock>(GetTarget());
 }
 
-void URoot::EndBuff()
+void URoot::OnRelease()
 {
-	bIsRooted = false;
+	if (--Count == 0)
+		UBuffLibrary::UnblockBuff<ULock>(GetTarget());
 }
 
 bool URoot::IsActivate_Implementation() const
 {
-	return bIsRooted;
+	return Count > 0;
 }

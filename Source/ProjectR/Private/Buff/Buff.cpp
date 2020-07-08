@@ -1,41 +1,62 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "Buff/Buff.h"
-#include "Engine/World.h"
 #include "GameFramework/Controller.h"
-#include "TimerManager.h"
 #include "Character/ProjectRCharacter.h"
 
-void UBuff::Initialize()
+void UBuff::BeginPlay()
 {
 	Target = GetTypedOuter<AProjectRCharacter>();
-	RecieveInitialize();
+	RecieveBeginPlay();
 }
 
-void UBuff::ApplyBuff()
+void UBuff::EndPlay()
 {
-	BeginBuff();
-	RecieveBeginBuff();
-}
-
-void UBuff::ReleaseBuff()
-{
-	EndBuff();
-	RecieveEndBuff();
-}
-
-void UBuff::ApplyBuffWithDuration(float Duration)
-{
-	ApplyBuff();
-
-	FTimerHandle Handle;
-	Target->GetWorld()->GetTimerManager().SetTimer(Handle, [this]
-		{
-			ReleaseBuff();
-		}, Duration, false);
+	RecieveEndPlay();
 }
 
 void UBuff::Tick(float DeltaSeconds)
 {
 	RecieveTick(DeltaSeconds);
+}
+
+void UBuff::Apply()
+{
+	bIsActivateBeforeBlock = true;
+	if (IsBlocked()) return;
+
+	OnApply();
+	RecieveOnApply();
+}
+
+void UBuff::Release()
+{
+	bIsActivateBeforeBlock = false;
+	if (IsBlocked()) return;
+
+	OnRelease();
+	RecieveOnRelease();
+}
+
+void UBuff::Block()
+{
+	if (++BlockCount > 1)
+		return;
+
+	bIsActivateBeforeBlock = IsActivate();
+	if (!bIsActivateBeforeBlock) return;
+
+	OnRelease();
+	RecieveOnRelease();
+}
+
+void UBuff::Unblock()
+{
+	if (--BlockCount == 0 && bIsActivateBeforeBlock)
+		Apply();
+}
+
+bool UBuff::IsBlocked() const
+{
+	return BlockCount > 0;
 }

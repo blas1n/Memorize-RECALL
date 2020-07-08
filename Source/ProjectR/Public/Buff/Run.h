@@ -6,17 +6,17 @@
 #include "Buff/Buff.h"
 #include "Run.generated.h"
 
-UCLASS()
+UCLASS(BlueprintType)
 class PROJECTR_API URun final : public UBuff
 {
 	GENERATED_BODY()
 
 private:
-	void BeginBuff() override;
-	void EndBuff() override;
+	void OnApply() override;
+	void OnRelease() override;
 
 	bool IsActivate_Implementation() const override;
 
 private:
-	uint8 Count;
+	uint8 bIsRun : 1;
 };

@@ -12,36 +12,46 @@ class PROJECTR_API UBuff : public UObject
 	GENERATED_BODY()
 
 public:
-	virtual void Initialize();
+	virtual void BeginPlay();
+	virtual void EndPlay();
 	virtual void Tick(float DeltaSeconds);
 	
 	UFUNCTION(BlueprintCallable)
-	void ApplyBuff();
+	void Apply();
 
 	UFUNCTION(BlueprintCallable)
-	void ReleaseBuff();
+	void Release();
 
 	UFUNCTION(BlueprintCallable)
-	void ApplyBuffWithDuration(float Duration);
+	void Block();
+
+	UFUNCTION(BlueprintCallable)
+	void Unblock();
 
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
 	bool IsActivate() const;
 
+	UFUNCTION(BlueprintCallable)
+	bool IsBlocked() const;
+
 protected:
-	UFUNCTION(BlueprintImplementableEvent, meta = (DisplayName = "Initialize"))
-	void RecieveInitialize();
+	UFUNCTION(BlueprintImplementableEvent, meta = (DisplayName = "BeginPlay"))
+	void RecieveBeginPlay();
+
+	UFUNCTION(BlueprintImplementableEvent, meta = (DisplayName = "EndPlay"))
+	void RecieveEndPlay();
 
 	UFUNCTION(BlueprintImplementableEvent, meta = (DisplayName = "Tick"))
 	void RecieveTick(float DeltaSeconds);
 
-	UFUNCTION(BlueprintImplementableEvent, meta = (DisplayName = "BeginBuff"))
-	void RecieveBeginBuff();
+	UFUNCTION(BlueprintImplementableEvent, meta = (DisplayName = "OnApply"))
+	void RecieveOnApply();
 
-	UFUNCTION(BlueprintImplementableEvent, meta = (DisplayName = "EndBuff"))
-	void RecieveEndBuff();
+	UFUNCTION(BlueprintImplementableEvent, meta = (DisplayName = "OnRelease"))
+	void RecieveOnRelease();
 
-	virtual void BeginBuff() {}
-	virtual void EndBuff() {}
+	virtual void OnApply() {}
+	virtual void OnRelease() {}
 
 	virtual bool IsActivate_Implementation() const { return false; }
 
@@ -50,4 +60,7 @@ protected:
 private:
 	UPROPERTY(BlueprintReadOnly, meta = (AllowPrivateAccess = true))
 	AProjectRCharacter* Target;
+
+	uint8 BlockCount;
+	uint8 bIsActivateBeforeBlock : 1;
 };
