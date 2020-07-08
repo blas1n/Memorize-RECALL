@@ -39,10 +39,10 @@ public:
 	void SetEnergyHeal(float Value) noexcept;
 
 	UFUNCTION(BlueprintSetter)
-	void SetRunSpeed(float Value) noexcept;
+	void SetRunSpeed(float Value);
 
 	UFUNCTION(BlueprintSetter)
-	void SetWalkSpeed(float Value) noexcept;
+	void SetWalkSpeed(float Value);
 
 	UFUNCTION(BlueprintCallable)
 	class UBuff* GetBuff(TSubclassOf<UBuff> BuffClass) const;

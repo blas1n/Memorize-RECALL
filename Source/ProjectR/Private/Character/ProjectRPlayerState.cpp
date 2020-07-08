@@ -69,7 +69,7 @@ void AProjectRPlayerState::SetEnergyHeal(float Value) noexcept
 	EnergyHeal = Value;
 }
 
-void AProjectRPlayerState::SetRunSpeed(float Value) noexcept
+void AProjectRPlayerState::SetRunSpeed(float Value)
 {
 	RunSpeed = Value;
 
@@ -78,7 +78,7 @@ void AProjectRPlayerState::SetRunSpeed(float Value) noexcept
 		User->GetCharacterMovement()->MaxWalkSpeed = RunSpeed;
 }
 
-void AProjectRPlayerState::SetWalkSpeed(float Value) noexcept
+void AProjectRPlayerState::SetWalkSpeed(float Value)
 {
 	WalkSpeed = Value;
 
