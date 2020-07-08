@@ -23,7 +23,7 @@ void AProjectRPlayerState::HealHealth(int32 Value) noexcept
 void AProjectRPlayerState::HealHealthByDamage(int32 Damage) noexcept
 {
 	if (Damage > 0.0f && HealthHeal != 0.0f)
-		HealHealth(static_cast<float>(Damage) * HealthHeal);
+		HealHealth(FMath::TruncToInt(static_cast<float>(Damage) * HealthHeal));
 }
 
 void AProjectRPlayerState::SetMaxHealth(int32 Value, bool bWithCur) noexcept
@@ -50,7 +50,7 @@ void AProjectRPlayerState::HealEnergy(int32 Value) noexcept
 void AProjectRPlayerState::HealEnergyByDamage(int32 Damage) noexcept
 {
 	if (Damage > 0.0f && EnergyHeal != 0.0f)
-		HealEnergy(static_cast<float>(Damage) * EnergyHeal);
+		HealEnergy(FMath::TruncToInt(static_cast<float>(Damage) * EnergyHeal));
 }
 
 void AProjectRPlayerState::SetMaxEnergy(int32 Value, bool bWithCur) noexcept
