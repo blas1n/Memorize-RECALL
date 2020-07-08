@@ -11,9 +11,7 @@ void UCast::StopCast()
 
 void UCast::CastSkill(USkill* NewSkill)
 {
-	if (IsActivate())
-		StopCast();
-
+	StopCast();
 	Skill = NewSkill;
 	Apply();
 }
