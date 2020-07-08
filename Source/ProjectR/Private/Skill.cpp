@@ -2,8 +2,10 @@
 
 #include "Skill.h"
 #include "Engine/World.h"
+#include "Buff/Cast.h"
 #include "Character/ProjectRCharacter.h"
 #include "Character/ProjectRPlayerState.h"
+#include "BuffLibrary.h"
 #include "Weapon.h"
 
 void USkill::BeginPlay()
@@ -52,12 +54,18 @@ void USkill::ApplyCooltime()
 
 bool USkill::IsEnoughEnergy() const
 {
-	return User->GetPlayerState<AProjectRPlayerState>()->GetEnergy() >= UseEnergy;
+	auto* PlayerState = User->GetPlayerState<AProjectRPlayerState>();
+	if (!PlayerState) return true;
+
+	return PlayerState->GetEnergy() >= UseEnergy;
 }
 
 void USkill::ApplyEnergy()
 {
-	User->GetPlayerState<AProjectRPlayerState>()->HealEnergy(-UseEnergy);
+	if (auto* PlayerState = User->GetPlayerState<AProjectRPlayerState>())
+		PlayerState->HealEnergy(-UseEnergy);
+}
+
 bool USkill::CanUse_Implementation() const
 {
 	return UBuffLibrary::GetBuff<UCast>(User)->CanUseSkill(this);
