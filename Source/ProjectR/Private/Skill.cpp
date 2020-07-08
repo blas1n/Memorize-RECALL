@@ -21,7 +21,6 @@ void USkill::Start()
 		UBuffLibrary::GetBuff<UCast>(User)->CastSkill(this);
 
 	ReceiveStart();
-	Weapon->OnBeginSkill.Broadcast(this);
 }
 
 void USkill::End()
@@ -30,7 +29,6 @@ void USkill::End()
 		UBuffLibrary::ReleaseBuff<UCast>(User);
 
 	ReceiveEnd();
-	Weapon->OnEndSkill.Broadcast(this);
 }
 
 UWorld* USkill::GetWorld() const
