@@ -120,6 +120,7 @@ private:
 
 	UPROPERTY()
 	TArray<USkill*> Skills;
+
 	UPROPERTY()
 	TMap<FName, UActorComponent*> Components;
 
@@ -142,6 +143,5 @@ private:
 
 	FName Name;
 	uint8 Key;
-	uint8 UseSkillCount;
 	uint8 AsyncLoadCount;
 };
