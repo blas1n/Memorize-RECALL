@@ -48,8 +48,6 @@ public:
 
 	FORCEINLINE class UWeaponComponent* GetWeaponComponent() const noexcept { return WeaponComponent; }
 	FORCEINLINE const FName& GetName() const noexcept { return Name; }
-
-	FORCEINLINE bool IsRunning() const noexcept { return bIsRunning; }
 	FORCEINLINE bool IsDeath() const noexcept { return bIsDeath; }
 
 private:
@@ -95,6 +93,5 @@ private:
 	float TurnedYaw;
 
 	uint8 bIsTurning : 1;
-	uint8 bIsRunning : 1;
 	uint8 bIsDeath : 1;
 };

@@ -37,7 +37,6 @@ AProjectRCharacter::AProjectRCharacter()
 
 	Parrying = nullptr;
 	bIsTurning = false;
-	bIsRunning = false;
 	bIsDeath = false;
 }
 
