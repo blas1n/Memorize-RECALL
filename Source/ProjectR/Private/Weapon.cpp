@@ -4,7 +4,9 @@
 #include "Animation/AnimInstance.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "Engine/StaticMesh.h"
+#include "Components/ActorComponent.h"
 #include "Kismet/GameplayStatics.h"
+#include "Buff/Cast.h"
 #include "Character/ProjectRCharacter.h"
 #include "Data/WeaponData.h"
 #include "Framework/ProjectRGameInstance.h"
@@ -30,13 +32,13 @@ void UWeapon::BeginPlay(const FName& InName)
 	AsyncLoad(LeftWeaponMesh, WeaponData.LeftMesh);
 	AsyncLoad(EquipAnim, WeaponData.EquipAnim);
 
-	Skills.SetNum(WeaponData.Skills.Num());
-
+	Skills.Init(nullptr, WeaponData.Skills.Num());
 	for (int32 Index = 0; Index < WeaponData.Skills.Num(); ++Index)
 	{
 		TSubclassOf<USkill> SkillClass = WeaponData.Skills[Index];
 		Skills[Index] = NewObject<USkill>(this, SkillClass);
-		Skills[Index]->Initialize();
+		Skills[Index]->BeginPlay();
+		AddComponents(Skills[Index]);
 	}
 }
 
@@ -76,16 +78,10 @@ void UWeapon::EndSkill(uint8 Index)
 		Skills[Index]->End();
 }
 
-void UWeapon::BeginSkill(USkill* Skill)
+bool UWeapon::CanUseSkill(uint8 Index) const
 {
-	++UseSkillCount;
-	OnBeginSkill.Broadcast(Skill);
-}
-
-void UWeapon::EndSkill(USkill* Skill)
-{
-	--UseSkillCount;
-	OnEndSkill.Broadcast(Skill);
+	if (Skills.Num() <= Index) return false;
+	return Skills[Index]->CanUse();
 }
 
 void UWeapon::SetWeaponCollision(bool bRightWeaponEnable, bool bLeftWeaponEnable)
