@@ -43,15 +43,14 @@ public:
 	UFUNCTION(BlueprintNativeEvent)
 	FVector GetViewLocation() const;
 	
+	UFUNCTION(BlueprintImplementableEvent)
+	TArray<FName> GetWeaponNames();
+
 	FORCEINLINE class UWeaponComponent* GetWeaponComponent() const noexcept { return WeaponComponent; }
 	FORCEINLINE const FName& GetName() const noexcept { return Name; }
 
 	FORCEINLINE bool IsRunning() const noexcept { return bIsRunning; }
 	FORCEINLINE bool IsDeath() const noexcept { return bIsDeath; }
-
-protected:
-	UFUNCTION(BlueprintImplementableEvent)
-	TArray<FName> GetWeaponNames();
 
 private:
 	void BeginPlay() override;
