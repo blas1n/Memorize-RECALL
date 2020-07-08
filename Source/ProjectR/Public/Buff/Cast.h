@@ -7,7 +7,7 @@
 #include "Cast.generated.h"
 
 UCLASS(BlueprintType)
-class PROJECTR_API UCast : public UBuff
+class PROJECTR_API UCast final : public UBuff
 {
 	GENERATED_BODY()
 
