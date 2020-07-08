@@ -6,8 +6,8 @@
 #include "Kismet/GameplayStatics.h"
 #include "Buff/Buff.h"
 #include "Character/ProjectRCharacter.h"
-#include "Framework/ProjectRGameInstance.h"
 #include "Data/StatData.h"
+#include "Framework/ProjectRGameInstance.h"
 
 AProjectRPlayerState::AProjectRPlayerState()
 	: Super()
