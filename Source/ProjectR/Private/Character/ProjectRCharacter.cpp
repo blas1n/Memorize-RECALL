@@ -88,11 +88,6 @@ void AProjectRCharacter::HealHealthAndEnergy(AProjectRCharacter* Target, int32 D
 	MyPlayerState->HealEnergyByDamage(Damage);
 }
 
-bool AProjectRCharacter::IsBuffActivate(TSubclassOf<UBuff> BuffClass) const
-{
-	return GetPlayerState<AProjectRPlayerState>()->GetBuff(BuffClass)->IsActivate();
-}
-
 FVector AProjectRCharacter::GetViewLocation_Implementation() const
 {
 	FVector Vec;
