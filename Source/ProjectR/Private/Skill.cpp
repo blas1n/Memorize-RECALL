@@ -17,24 +17,20 @@ void USkill::BeginPlay()
 
 void USkill::Start()
 {
-	if (Priority >= 0)
-	{
-		auto* Cast = UBuffLibrary::GetBuff<UCast>(User);
-		Cast->SetCurSkill(this);
-		Cast->Apply();
-	}
+	if (GetPriority() >= 0)
+		UBuffLibrary::GetBuff<UCast>(User)->CastSkill(this);
 
-	Weapon->OnBeginSkill.Broadcast(this);
 	ReceiveStart();
+	Weapon->OnBeginSkill.Broadcast(this);
 }
 
 void USkill::End()
 {
-	if (Priority >= 0)
+	if (GetPriority() >= 0)
 		UBuffLibrary::ReleaseBuff<UCast>(User);
 
-	Weapon->OnEndSkill.Broadcast(this);
 	ReceiveEnd();
+	Weapon->OnEndSkill.Broadcast(this);
 }
 
 UWorld* USkill::GetWorld() const
