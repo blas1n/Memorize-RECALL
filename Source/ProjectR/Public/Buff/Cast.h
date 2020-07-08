@@ -13,20 +13,17 @@ class PROJECTR_API UCast final : public UBuff
 
 public:
 	UFUNCTION(BlueprintCallable)
-	void StopSkill();
+	void StopCast();
 
-	void SetCurSkill(class USkill* Skill);
-	bool CanUseSkill(const USkill* Skill) const;
+	void CastSkill(class USkill* NewSkill);
+	bool CanUseSkill(const USkill* NewSkill) const;
 
 private:
-	void OnApply() override;
 	void OnRelease() override;
 
 	bool IsActivate_Implementation() const override;
 
 private:
 	UPROPERTY()
-	class USkill* CurSkill;
-
-	uint8 bIsCasting : 1;
+	USkill* Skill;
 };

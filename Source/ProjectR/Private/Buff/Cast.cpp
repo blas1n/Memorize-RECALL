@@ -3,38 +3,32 @@
 #include "Buff/Cast.h"
 #include "Skill.h"
 
-void UCast::StopSkill()
+void UCast::StopCast()
 {
-	if (!IsActivate()) return;
-	
-	CurSkill->End();
-	CurSkill = nullptr;
+	if (IsActivate())
+		Skill->End();
 }
 
-void UCast::SetCurSkill(USkill* Skill)
+void UCast::CastSkill(USkill* NewSkill)
 {
-	if (!CanUseSkill(Skill)) return;
+	if (IsActivate())
+		StopCast();
 
-	StopSkill();
-	CurSkill = Skill;
+	Skill = NewSkill;
+	Apply();
 }
 
-bool UCast::CanUseSkill(const USkill* Skill) const
+bool UCast::CanUseSkill(const USkill* NewSkill) const
 {
-	return !IsActivate() || CurSkill->GetPriority() < Skill->GetPriority();
-}
-
-void UCast::OnApply()
-{
-	bIsCasting = true;
+	return !IsActivate() || (Skill->GetPriority() < NewSkill->GetPriority());
 }
 
 void UCast::OnRelease()
 {
-	bIsCasting = false;
+	Skill = nullptr;
 }
 
 bool UCast::IsActivate_Implementation() const
 {
-	return bIsCasting;
+	return Skill != nullptr;
 }
