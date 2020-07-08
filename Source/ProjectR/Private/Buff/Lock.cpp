@@ -17,13 +17,16 @@ void ULock::Tick(float DeltaSeconds)
 
 	GetTarget()->GetController()->SetControlRotation(ControlLookAt);
 
+	if (GetTarget()->GetCharacterMovement()->Velocity.SizeSquared2D() <= 10000.0f)
+		return;
+
 	const FVector ActorLocation = GetTarget()->GetActorLocation();
 	
 	FRotator ActorLookAt = UKismetMathLibrary::
 		FindLookAtRotation(GetTarget()->GetActorLocation(), TargetLocation);
 	
 	ActorLookAt.Pitch = 0.0f;
-	
+
 	const FRotator ActorRotation = GetTarget()->GetActorRotation();
 	ActorLookAt = FMath::Lerp(ActorRotation, ActorLookAt, DeltaSeconds * 5.0f);
 	GetTarget()->SetActorRotation(ActorLookAt);
@@ -31,12 +34,7 @@ void ULock::Tick(float DeltaSeconds)
 
 void ULock::OnApply()
 {
-	if (!LockedTarget)
-	{
-		GetTarget()->GetCharacterMovement()
-			->bOrientRotationToMovement = false;
-	}
-
+	GetTarget()->GetCharacterMovement()->bOrientRotationToMovement = false;
 	bIsLocked = true;
 }
 
