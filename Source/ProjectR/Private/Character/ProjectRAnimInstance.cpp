@@ -5,6 +5,7 @@
 #include "Kismet/KismetMathLibrary.h"
 #include "Buff/Faint.h"
 #include "Buff/Lock.h"
+#include "Buff/Root.h"
 #include "Character/ProjectRCharacter.h"
 #include "BuffLibrary.h"
 #include "Weapon.h"
@@ -53,6 +54,18 @@ void UProjectRAnimInstance::AnimNotify_Shoot()
 void UProjectRAnimInstance::AnimNotify_Execute()
 {
 	GetWeapon()->OnExecute.Broadcast();
+}
+
+void UProjectRAnimInstance::AnimNotify_EnableMove()
+{
+	if (auto* User = Cast<AProjectRCharacter>(TryGetPawnOwner()))
+		UBuffLibrary::ApplyBuff<URoot>(User);
+}
+
+void UProjectRAnimInstance::AnimNotify_DisableMove()
+{
+	if (auto* User = Cast<AProjectRCharacter>(TryGetPawnOwner()))
+		UBuffLibrary::ReleaseBuff<URoot>(User);
 }
 
 UWeapon* UProjectRAnimInstance::GetWeapon() const
