@@ -25,8 +25,8 @@ class PROJECTR_API UWeapon final : public UObject
 	GENERATED_BODY()
 	
 public:
-	void Initialize(const FName& InName);
-	void Release();
+	void BeginPlay(const FName& InName);
+	void EndPlay();
 
 	void Equip();
 	void Unequip();
