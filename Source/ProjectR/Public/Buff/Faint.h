@@ -13,10 +13,10 @@ class PROJECTR_API UFaint final : public UBuff
 	GENERATED_BODY()
 	
 private:
-	void Initialize() override;
+	void BeginPlay() override;
 
-	void BeginBuff() override;
-	void EndBuff() override;
+	void OnApply() override;
+	void OnRelease() override;
 
 	bool IsActivate_Implementation() const override;
 

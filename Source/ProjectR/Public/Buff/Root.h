@@ -6,17 +6,17 @@
 #include "Buff/Buff.h"
 #include "Root.generated.h"
 
-UCLASS()
-class PROJECTR_API URoot final : public UBuff
+UCLASS(BlueprintType)
+class PROJECTR_API URoot : public UBuff
 {
 	GENERATED_BODY()
 	
 private:
-	void BeginBuff() override;
-	void EndBuff() override;
+	void OnApply() override;
+	void OnRelease() override;
 
 	bool IsActivate_Implementation() const override;
 
 private:
-	uint8 bIsRooted : 1;
+	uint8 Count;
 };

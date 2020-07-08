@@ -4,10 +4,11 @@
 #include "Engine/World.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
-#include "Buff/Buff.h"
+#include "Buff/Run.h"
 #include "Character/ProjectRCharacter.h"
-#include "Framework/ProjectRGameInstance.h"
 #include "Data/StatData.h"
+#include "Framework/ProjectRGameInstance.h"
+#include "BuffLibrary.h"
 
 AProjectRPlayerState::AProjectRPlayerState()
 	: Super()
@@ -23,18 +24,14 @@ void AProjectRPlayerState::HealHealth(int32 Value) noexcept
 void AProjectRPlayerState::HealHealthByDamage(int32 Damage) noexcept
 {
 	if (Damage > 0.0f && HealthHeal != 0.0f)
-		HealHealth(static_cast<float>(Damage) * HealthHeal);
+		HealHealth(FMath::TruncToInt(static_cast<float>(Damage) * HealthHeal));
 }
 
 void AProjectRPlayerState::SetMaxHealth(int32 Value, bool bWithCur) noexcept
 {
-	if (bWithCur)
-	{
-		const int32 Delta = Value - Health;
-		Health += Delta;
-	}
-
+	if (bWithCur) Health += Value - MaxHealth;
 	MaxHealth = Value;
+	Health = FMath::Min(Health, MaxHealth);
 }
 
 void AProjectRPlayerState::SetHealthHeal(float Value) noexcept
@@ -50,18 +47,14 @@ void AProjectRPlayerState::HealEnergy(int32 Value) noexcept
 void AProjectRPlayerState::HealEnergyByDamage(int32 Damage) noexcept
 {
 	if (Damage > 0.0f && EnergyHeal != 0.0f)
-		HealEnergy(static_cast<float>(Damage) * EnergyHeal);
+		HealEnergy(FMath::TruncToInt(static_cast<float>(Damage) * EnergyHeal));
 }
 
 void AProjectRPlayerState::SetMaxEnergy(int32 Value, bool bWithCur) noexcept
 {
-	if (bWithCur)
-	{
-		const int32 Delta = Value - Energy;
-		Energy += Delta;
-	}
-
+	if (bWithCur) Energy += Value - MaxEnergy;
 	MaxEnergy = Value;
+	Energy = FMath::Min(Health, MaxEnergy);
 }
 
 void AProjectRPlayerState::SetEnergyHeal(float Value) noexcept
@@ -69,27 +62,27 @@ void AProjectRPlayerState::SetEnergyHeal(float Value) noexcept
 	EnergyHeal = Value;
 }
 
-void AProjectRPlayerState::SetRunSpeed(float Value) noexcept
+void AProjectRPlayerState::SetRunSpeed(float Value)
 {
 	RunSpeed = Value;
 
 	auto* User = GetPawn<AProjectRCharacter>();
-	if (IsValid(User) && User->IsRunning())
+	if (User && UBuffLibrary::IsActivate<URun>(User))
 		User->GetCharacterMovement()->MaxWalkSpeed = RunSpeed;
 }
 
-void AProjectRPlayerState::SetWalkSpeed(float Value) noexcept
+void AProjectRPlayerState::SetWalkSpeed(float Value)
 {
 	WalkSpeed = Value;
 
 	auto* User = GetPawn<AProjectRCharacter>();
-	if (IsValid(User) && !User->IsRunning())
+	if (User && !UBuffLibrary::IsActivate<URun>(User))
 		User->GetCharacterMovement()->MaxWalkSpeed = WalkSpeed;
 }
 
 UBuff* AProjectRPlayerState::GetBuff(TSubclassOf<UBuff> BuffClass) const
 {
-	UBuff* Ret = nullptr;;
+	UBuff* Ret = nullptr;
 
 	for (UBuff* Buff : Buffs)
 	{
@@ -103,7 +96,7 @@ UBuff* AProjectRPlayerState::GetBuff(TSubclassOf<UBuff> BuffClass) const
 	if (!Ret)
 	{
 		Ret = NewObject<UBuff>(GetPawn(), BuffClass);
-		Ret->Initialize();
+		Ret->BeginPlay();
 		Buffs.Add(Ret);
 	}
 	
@@ -128,8 +121,14 @@ void AProjectRPlayerState::BeginPlay()
 
 	SetRunSpeed(StatData.RunSpeed);
 	SetWalkSpeed(StatData.WalkSpeed);
+}
 
-	MyPawn->Walk();
+void AProjectRPlayerState::EndPlay(EEndPlayReason::Type EndPlayReason)
+{
+	for (UBuff* Buff : Buffs)
+		Buff->EndPlay();
+
+	Super::EndPlay(EndPlayReason);
 }
 
 void AProjectRPlayerState::Tick(float DeltaSeconds)

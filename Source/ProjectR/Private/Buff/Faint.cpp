@@ -6,15 +6,15 @@
 #include "GameFramework/PlayerController.h"
 #include "Character/ProjectRCharacter.h"
 
-void UFaint::Initialize()
+void UFaint::BeginPlay()
 {
-	Super::Initialize();
+	Super::BeginPlay();
 
 	Controller = GetTarget()->GetController();
 	bIsPlayer = Controller->IsPlayerController();
 }
 
-void UFaint::BeginBuff()
+void UFaint::OnApply()
 {
 	if (++Count > 1)
 		return;
@@ -26,7 +26,7 @@ void UFaint::BeginBuff()
 			Brain->StopLogic(TEXT("Faint"));
 }
 
-void UFaint::EndBuff()
+void UFaint::OnRelease()
 {
 	if (--Count > 0)
 		return;

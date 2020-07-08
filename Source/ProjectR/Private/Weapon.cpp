@@ -4,14 +4,16 @@
 #include "Animation/AnimInstance.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "Engine/StaticMesh.h"
+#include "Components/ActorComponent.h"
 #include "Kismet/GameplayStatics.h"
+#include "Buff/Cast.h"
 #include "Character/ProjectRCharacter.h"
 #include "Data/WeaponData.h"
 #include "Framework/ProjectRGameInstance.h"
 #include "Skill.h"
 #include "WeaponComponent.h"
 
-void UWeapon::Initialize(const FName& InName)
+void UWeapon::BeginPlay(const FName& InName)
 {
 	User = Cast<AProjectRCharacter>(GetOuter());
 	Name = InName;
@@ -30,20 +32,20 @@ void UWeapon::Initialize(const FName& InName)
 	AsyncLoad(LeftWeaponMesh, WeaponData.LeftMesh);
 	AsyncLoad(EquipAnim, WeaponData.EquipAnim);
 
-	Skills.SetNum(WeaponData.Skills.Num());
-
+	Skills.Init(nullptr, WeaponData.Skills.Num());
 	for (int32 Index = 0; Index < WeaponData.Skills.Num(); ++Index)
 	{
 		TSubclassOf<USkill> SkillClass = WeaponData.Skills[Index];
 		Skills[Index] = NewObject<USkill>(this, SkillClass);
-		Skills[Index]->Initialize();
+		Skills[Index]->BeginPlay();
+		AddComponents(Skills[Index]);
 	}
 }
 
-void UWeapon::Release()
+void UWeapon::EndPlay()
 {
 	for (USkill* Skill : Skills)
-		Skill->Release();
+		Skill->EndPlay();
 }
 
 void UWeapon::Equip()
@@ -64,33 +66,22 @@ void UWeapon::Unequip()
 	OnUnequipped.Broadcast();
 }
 
-void UWeapon::UseSkill(uint8 Index)
+void UWeapon::StartSkill(uint8 Index)
 {
 	if (CanUseSkill(Index))
-		Skills[Index]->Use();
+		Skills[Index]->Start();
+}
+
+void UWeapon::EndSkill(uint8 Index)
+{
+	if (Skills.Num() > Index)
+		Skills[Index]->End();
 }
 
 bool UWeapon::CanUseSkill(uint8 Index) const
 {
 	if (Skills.Num() <= Index) return false;
-	
-	const USkill* Skill = Skills[Index];
-	if (UseSkillCount > 0 && Skill->IsCastSkill())
-		return false;
-
-	return Skill->CanUse();
-}
-
-void UWeapon::BeginSkill(USkill* Skill)
-{
-	++UseSkillCount;
-	OnBeginSkill.Broadcast(Skill);
-}
-
-void UWeapon::EndSkill(USkill* Skill)
-{
-	--UseSkillCount;
-	OnEndSkill.Broadcast(Skill);
+	return Skills[Index]->CanUse();
 }
 
 void UWeapon::SetWeaponCollision(bool bRightWeaponEnable, bool bLeftWeaponEnable)
@@ -109,4 +100,28 @@ void UWeapon::PlayEquipAnim()
 {
 	if (EquipAnim)
 		User->PlayAnimMontage(EquipAnim);
+}
+
+void UWeapon::AddComponents(USkill* Skill)
+{
+	const auto Datas = Skill->GetNeedComponents();
+	
+	for (const auto& Data : Datas)
+	{
+		auto** ComponentPtr = Components.Find(Data.Name);
+		UActorComponent* Component = nullptr;
+
+		if (ComponentPtr)
+		{
+			Component = *ComponentPtr;
+		}
+		else
+		{
+			Component = NewObject<UActorComponent>(User, Data.Class);
+			Component->RegisterComponent();
+			Components.Add(Data.Name, Component);
+		}
+
+		Data.Handler.ExecuteIfBound(Component);
+	}
 }

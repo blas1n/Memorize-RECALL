@@ -6,33 +6,59 @@
 #include "UObject/NoExportTypes.h"
 #include "Skill.generated.h"
 
+DECLARE_DYNAMIC_DELEGATE_OneParam(FOnComponentHandler, class UActorComponent*, Component);
+
+USTRUCT(Atomic, BlueprintType)
+struct FComponentInitData
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FName Name;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TSubclassOf<UActorComponent> Class;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FOnComponentHandler Handler;
+};
+
 UCLASS(Abstract, Blueprintable)
 class PROJECTR_API USkill final : public UObject
 {
 	GENERATED_BODY()
 	
 public:
-	void Initialize();
+	void BeginPlay();
 
 	UFUNCTION(BlueprintImplementableEvent)
-	void Release();
+	void EndPlay();
 
-	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent)
-	void Use();
+	UFUNCTION(BlueprintCallable)
+	void Start();
+
+	UFUNCTION(BlueprintCallable)
+	void End();
 
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
 	bool CanUse() const;
 
+	UFUNCTION(BlueprintImplementableEvent)
+	TArray<FComponentInitData> GetNeedComponents();
+
 	UWorld* GetWorld() const override;
 
-	FORCEINLINE bool IsCastSkill() const noexcept { return bIsCastSkill; }
+	FORCEINLINE int32 GetPriority() const noexcept { return Priority; }
 
 protected:
-	UFUNCTION(BlueprintImplementableEvent, meta = (DisplayName = "Initialize"))
-	void OnInitialize();
+	UFUNCTION(BlueprintImplementableEvent, meta = (DisplayName = "BeginPlay"))
+	void ReceiveBeginPlay();
 
-	UFUNCTION(BlueprintCallable, meta = (BlueprintProtected))
-	class UActorComponent* NewComponent(TSubclassOf<UActorComponent> Class);
+	UFUNCTION(BlueprintImplementableEvent, meta = (DisplayName = "Start"))
+	void ReceiveStart();
+
+	UFUNCTION(BlueprintImplementableEvent, meta = (DisplayName = "End"))
+	void ReceiveEnd();
 
 	UFUNCTION(BlueprintCallable, meta = (BlueprintProtected))
 	bool IsNotCoolTime() const;
@@ -53,7 +79,7 @@ protected:
 	FORCEINLINE const UWeapon* GetWeapon() const noexcept { return Weapon; }
 
 private:
-	FORCEINLINE bool CanUse_Implementation() const { return true; }
+	bool CanUse_Implementation() const;
 
 private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Owner, meta = (AllowPrivateAccess = true))
@@ -63,13 +89,13 @@ private:
 	UWeapon* Weapon;
 
 	UPROPERTY(EditDefaultsOnly, Category = Data, meta = (AllowPrivateAccess = true))
+	int32 Priority;
+
+	UPROPERTY(EditDefaultsOnly, Category = Data, meta = (AllowPrivateAccess = true))
 	float CoolTime;
 
 	UPROPERTY(EditDefaultsOnly, Category = Data, meta = (AllowPrivateAccess = true))
 	uint8 UseEnergy;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Data, meta = (AllowPrivateAccess = true))
-	uint8 bIsCastSkill : 1;
 
 	float NextUseTime;
 };

@@ -4,19 +4,20 @@
 
 #include "CoreMinimal.h"
 #include "Buff/Buff.h"
-#include "Cast.generated.h"
+#include "Parrying.generated.h"
 
 UCLASS(BlueprintType)
-class PROJECTR_API UCast : public UBuff
+class PROJECTR_API UParrying final : public UBuff
 {
 	GENERATED_BODY()
 
 public:
 	UFUNCTION(BlueprintCallable)
-	void StopSkill();
-
-	void SetCurSkill(class USkill* Skill);
-	bool CanUseSkill(const USkill* Skill) const;
+	bool ParryIfCan(int32 Damage, class AController*
+		Instigator, class AProjectRCharacter* Causer);
+	
+	UFUNCTION(BlueprintCallable)
+	void SetParryingObject(UObject* Object);
 
 private:
 	void OnApply() override;
@@ -26,7 +27,7 @@ private:
 
 private:
 	UPROPERTY()
-	class USkill* CurSkill;
+	UObject* ParryingObject;
 
-	uint8 bIsCasting : 1;
+	uint8 bIsParrying : 1;
 };

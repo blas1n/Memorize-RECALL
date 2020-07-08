@@ -25,20 +25,15 @@ class PROJECTR_API UWeapon final : public UObject
 	GENERATED_BODY()
 	
 public:
-	void Initialize(const FName& InName);
-	void Release();
+	void BeginPlay(const FName& InName);
+	void EndPlay();
 
 	void Equip();
 	void Unequip();
 
-	void UseSkill(uint8 Index);
+	void StartSkill(uint8 Index);
+	void EndSkill(uint8 Index); 
 	bool CanUseSkill(uint8 Index) const;
-
-	UFUNCTION(BlueprintCallable)
-	void BeginSkill(USkill* Skill);
-
-	UFUNCTION(BlueprintCallable)
-	void EndSkill(USkill* Skill);
 
 	UFUNCTION(BlueprintCallable)
 	void SetWeaponCollision(bool bRightWeaponEnable, bool bLeftWeaponEnable);
@@ -58,6 +53,8 @@ public:
 private:
 	UFUNCTION()
 	void PlayEquipAnim();
+
+	void AddComponents(class USkill* Skill);
 
 	template <class T>
 	void AsyncLoad(T*& Ptr, const TAssetPtr<T>& SoftPtr)
@@ -122,7 +119,10 @@ private:
 	class AProjectRCharacter* User;
 
 	UPROPERTY()
-	TArray<class USkill*> Skills;
+	TArray<USkill*> Skills;
+
+	UPROPERTY()
+	TMap<FName, UActorComponent*> Components;
 
 	UPROPERTY()
 	TSubclassOf<class UAnimInstance> UpperAnimInstance;
@@ -143,6 +143,5 @@ private:
 
 	FName Name;
 	uint8 Key;
-	uint8 UseSkillCount;
 	uint8 AsyncLoadCount;
 };

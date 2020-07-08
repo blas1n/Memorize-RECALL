@@ -1,6 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "Buff/Lock.h"
+#include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/Controller.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Character/ProjectRCharacter.h"
@@ -9,41 +10,41 @@ void ULock::Tick(float DeltaSeconds)
 {
 	if (!LockedTarget) return;
 
-	const FVector ControlLocation = GetTarget()->GetViewLocation();
-	const FRotator ControlRotation = GetTarget()->GetControlRotation();
-	const FRotator ControlLookAt = GetLookAtToTarget(ControlLocation, ControlRotation, DeltaSeconds);
+	const FVector TargetLocation = LockedTarget->GetActorLocation();
+
+	const FRotator ControlLookAt = UKismetMathLibrary::
+		FindLookAtRotation(GetTarget()->GetViewLocation(), TargetLocation);
+
 	GetTarget()->GetController()->SetControlRotation(ControlLookAt);
 
-	const FVector ActorLocation = GetTarget()->GetActorLocation();
-	const FRotator ActorRotation = GetTarget()->GetActorRotation();
+	if (GetTarget()->GetCharacterMovement()->Velocity.SizeSquared2D() <= 10000.0f)
+		return;
 
-	FRotator ActorLookAt = GetLookAtToTarget(ActorLocation, ActorRotation, DeltaSeconds);
-	ActorLookAt.Pitch = 0.0f;
+	const FVector ActorLocation = GetTarget()->GetActorLocation();
 	
+	FRotator ActorLookAt = UKismetMathLibrary::
+		FindLookAtRotation(GetTarget()->GetActorLocation(), TargetLocation);
+	
+	ActorLookAt.Pitch = 0.0f;
+
+	const FRotator ActorRotation = GetTarget()->GetActorRotation();
+	ActorLookAt = FMath::Lerp(ActorRotation, ActorLookAt, DeltaSeconds * 5.0f);
 	GetTarget()->SetActorRotation(ActorLookAt);
 }
 
-void ULock::BeginBuff()
+void ULock::OnApply()
 {
-	GetTarget()->Walk();
+	GetTarget()->GetCharacterMovement()->bOrientRotationToMovement = false;
 	bIsLocked = true;
 }
 
-void ULock::EndBuff()
+void ULock::OnRelease()
 {
+	GetTarget()->GetCharacterMovement()->bOrientRotationToMovement = true;
 	bIsLocked = false;
 }
 
 bool ULock::IsActivate_Implementation() const
 {
 	return bIsLocked;
-}
-
-FRotator ULock::GetLookAtToTarget(const FVector& Location, const FRotator& Rotation, float DeltaSeconds)
-{
-	const FVector TargetLocation = LockedTarget->GetActorLocation();
-	const FRotator LookRotation = UKismetMathLibrary::
-		FindLookAtRotation(Location, TargetLocation);
-
-	return FMath::Lerp(Rotation, LookRotation, DeltaSeconds * 5.0f);
 }
