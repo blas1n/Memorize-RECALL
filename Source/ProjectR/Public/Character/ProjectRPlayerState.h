@@ -60,6 +60,7 @@ public:
 	
 private:
 	void BeginPlay() override;
+	void EndPlay(EEndPlayReason::Type EndPlayReason) override;
 	void Tick(float DeltaSeconds) override;
 
 private:
