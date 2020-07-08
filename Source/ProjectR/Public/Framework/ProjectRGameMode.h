@@ -10,5 +10,4 @@ UCLASS(Abstract, Blueprintable)
 class PROJECTR_API AProjectRGameMode : public AGameModeBase
 {
 	GENERATED_BODY()
-	
 };
