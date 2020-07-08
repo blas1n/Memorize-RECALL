@@ -58,4 +58,7 @@ bool USkill::IsEnoughEnergy() const
 void USkill::ApplyEnergy()
 {
 	User->GetPlayerState<AProjectRPlayerState>()->HealEnergy(-UseEnergy);
+bool USkill::CanUse_Implementation() const
+{
+	return UBuffLibrary::GetBuff<UCast>(User)->CanUseSkill(this);
 }
