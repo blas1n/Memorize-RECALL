@@ -6,9 +6,9 @@
 #include "Kismet/GameplayStatics.h"
 #include "TimerManager.h"
 #include "Buff/Lock.h"
-#include "Buff/Root.h"
+#include "Buff/Run.h"
 #include "Character/ProjectRCharacter.h"
-#include "Character/ProjectRPlayerState.h"
+#include "BuffLibrary.h"
 #include "WeaponComponent.h"
 
 DECLARE_DELEGATE_OneParam(FIndexer, uint8);
@@ -28,10 +28,8 @@ void AProjectRPlayerController::OnUnPossess()
 void AProjectRPlayerController::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
-	
 	if (!User) return;
 
-	SetUserTransformByInput();
 	CheckLockTarget();
 	Turn(DeltaSeconds);
 }
@@ -70,22 +68,12 @@ void AProjectRPlayerController::SetupInputComponent()
 
 void AProjectRPlayerController::MoveForward(float Value)
 {
-	if (!User || IsBuffActivate(URoot::StaticClass())) return;
-
-	if (IsBuffActivate(ULock::StaticClass()))
-		User->AddMovementInput(GetDirectionVectorByActor(EAxis::X), Value);
-	else
-		MoveInput.X = Value;
+	User->AddMovementInput(GetDirectionVector(EAxis::X), Value);
 }
 
 void AProjectRPlayerController::MoveRight(float Value)
 {
-	if (!User || IsBuffActivate(URoot::StaticClass())) return;
-
-	if (IsBuffActivate(ULock::StaticClass()))
-		User->AddMovementInput(GetDirectionVectorByActor(EAxis::Y), Value);
-	else
-		MoveInput.Y = Value;
+	User->AddMovementInput(GetDirectionVector(EAxis::Y), Value);
 }
 
 void AProjectRPlayerController::InputYaw(float Value)
@@ -104,31 +92,30 @@ void AProjectRPlayerController::PressDodge()
 {
 	if (!User) return;
 
-	if (IsBuffActivate(ULock::StaticClass()))
-		User->GetWeaponComponent()->UseSkill(4);
-	else User->Jumping();
+	if (UBuffLibrary::IsActivate<ULock>(User))
+		User->GetWeaponComponent()->StartSkill(4);
+	else User->Jump();
 }
 
 void AProjectRPlayerController::ReleaseDodge()
 {
-	if (User || User->GetCharacterMovement()->IsFalling())
+	if (User && User->GetCharacterMovement()->IsFalling())
 		User->StopJumping();
 }
 
 void AProjectRPlayerController::Run()
 {
-	if (User) User->Run();
+	UBuffLibrary::ApplyBuff<URun>(User);
 }
 
 void AProjectRPlayerController::Walk()
 {
-	if (User) User->Walk();
+	UBuffLibrary::ReleaseBuff<URun>(User);
 }
 
 void AProjectRPlayerController::SwapWeapon(uint8 Index)
 {
-	if (User)
-		User->GetWeaponComponent()->SwapWeapon(Index);
+	if (User) User->GetWeaponComponent()->SwapWeapon(Index);
 }
 
 void AProjectRPlayerController::SwapWeapon(float Value)
@@ -136,14 +123,18 @@ void AProjectRPlayerController::SwapWeapon(float Value)
 	if (!User || Value == 0.0f) return;
 
 	const auto* WeaponComponent = User->GetWeaponComponent();
-	const uint8 Idx = WeaponComponent->GetDeltaWeaponIndex(FMath::RoundFromZero(Value));
-	SwapWeapon(Idx);
+	const int32 WeaponNum = static_cast<int32>(WeaponComponent->GetWeaponNum());
+
+	int32 Idx = static_cast<int32>(WeaponComponent->GetWeaponIndex());
+	Idx += FMath::RoundFromZero(Value);
+	Idx = ((Idx % WeaponNum) + WeaponNum) % WeaponNum;
+	
+	SwapWeapon(static_cast<uint8>(Idx));
 }
 
 void AProjectRPlayerController::UseSkill(uint8 Index)
 {
-	if (User)
-		User->GetWeaponComponent()->UseSkill(Index);
+	if (User) User->GetWeaponComponent()->StartSkill(Index);
 }
 
 void AProjectRPlayerController::LockOn()
@@ -160,23 +151,20 @@ void AProjectRPlayerController::LockOn()
 		if (CheckLockOn(Enemy, Angle, Distance))
 			LockTarget = Cast<AProjectRCharacter>(Enemy);
 
-	auto* LockBuff = Cast<ULock>(GetPlayerState
-		<AProjectRPlayerState>()->GetBuff(ULock::StaticClass()));
-
+	auto* LockBuff = UBuffLibrary::GetBuff<ULock>(User);
 	LockBuff->SetLockedTarget(LockTarget);
+	LockBuff->Apply();
 
 	if (!LockTarget)
 	{
 		TurnRotation.Yaw = User->GetActorRotation().Yaw;
 		bIsTurning = true;
 	}
-
-	LockBuff->ApplyBuff();
 }
 
 void AProjectRPlayerController::LockOff()
 {
-	GetPlayerState<AProjectRPlayerState>()->GetBuff(ULock::StaticClass())->ReleaseBuff();
+	UBuffLibrary::ReleaseBuff<ULock>(User);
 }
 
 bool AProjectRPlayerController::CheckLockOn(const AActor* Enemy, float& OutAngle, float& OutDistance) const
@@ -193,7 +181,7 @@ bool AProjectRPlayerController::CheckLockOn(const AActor* Enemy, float& OutAngle
 	if (SizeSquare > FMath::Square(LockOnDistance)) return false;
 
 	Diff.Normalize();
-	const float Angle = FMath::Acos(FVector::DotProduct(Diff, GetDirectionVectorByController(EAxis::X)));
+	const float Angle = FMath::Acos(FVector::DotProduct(Diff, GetDirectionVector(EAxis::X)));
 
 	if (Angle > FMath::DegreesToRadians(LockOnAngle * 0.5f))
 		return false;
@@ -242,29 +230,10 @@ bool AProjectRPlayerController::CheckLockOn(const AActor* Enemy, float& OutAngle
 	return false;
 }
 
-void AProjectRPlayerController::SetUserTransformByInput()
-{
-	if (IsBuffActivate(ULock::StaticClass()) || IsBuffActivate(URoot::StaticClass()) || MoveInput.IsZero()) return;
-
-	const FVector Forward = GetDirectionVectorByActor(EAxis::X);
-	const float Value = FMath::Max(FMath::Abs(MoveInput.X), FMath::Abs(MoveInput.Y));
-	User->AddMovementInput(Forward, Value);
-
-	const FVector Direction = MoveInput.GetUnsafeNormal();
-	float Angle = FMath::Acos(FVector::DotProduct(Direction, FVector::ForwardVector));
-	const bool IsClockwise = FVector::CrossProduct(Direction, FVector::ForwardVector).Z <= 0.0f;
-	Angle = FMath::RadiansToDegrees(IsClockwise ? Angle : -Angle);
-
-	const float Yaw = FRotator::NormalizeAxis(GetControlRotation().Yaw + Angle);
-	User->SetTurn(Yaw);
-}
-
 void AProjectRPlayerController::CheckLockTarget()
 {
-	const auto* LockTarget = Cast<ULock>(GetPlayerState
-		<AProjectRPlayerState>()->GetBuff(ULock::StaticClass()))->GetLockedTarget();
-
-	if (!IsValid(LockTarget)) return;
+	const auto* LockTarget = UBuffLibrary::GetBuff<ULock>(User)->GetLockedTarget();
+	if (!LockTarget) return;
 
 	if (LockTarget->IsDeath())
 	{
@@ -294,21 +263,9 @@ void AProjectRPlayerController::Turn(float DeltaSeconds)
 	SetControlRotation(FMath::Lerp(CurRotation, TurnRotation, DeltaSeconds * 8.0f));
 }
 
-FVector AProjectRPlayerController::GetDirectionVectorByActor(EAxis::Type Axis) const
-{
-	const FRotator Rotation = User->GetActorRotation();
-	const FRotator YawRotation(0, Rotation.Yaw, 0);
-	return FRotationMatrix(YawRotation).GetUnitAxis(Axis);
-}
-
-FVector AProjectRPlayerController::GetDirectionVectorByController(EAxis::Type Axis) const
+FVector AProjectRPlayerController::GetDirectionVector(EAxis::Type Axis) const
 {
 	const FRotator Rotation = GetControlRotation();
 	const FRotator YawRotation(0, Rotation.Yaw, 0);
 	return FRotationMatrix(YawRotation).GetUnitAxis(Axis);
-}
-
-bool AProjectRPlayerController::IsBuffActivate(TSubclassOf<class UBuff> BuffClass) const
-{
-	return GetPlayerState<AProjectRPlayerState>()->GetBuff(BuffClass)->IsActivate();
 }
