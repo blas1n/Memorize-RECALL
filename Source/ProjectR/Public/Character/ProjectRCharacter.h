@@ -43,7 +43,6 @@ private:
 	UFUNCTION()
 	void HealHealthAndEnergy(AProjectRCharacter* Target, int32 Damage);
 
-	bool IsBuffActivate(TSubclassOf<class UBuff> BuffClass) const;
 	FVector GetViewLocation_Implementation() const;
 	void Death();
 
