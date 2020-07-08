@@ -48,7 +48,7 @@ public:
 
 	UWorld* GetWorld() const override;
 
-	FORCEINLINE bool IsCastSkill() const noexcept { return bIsCastSkill; }
+	FORCEINLINE int32 GetPriority() const noexcept { return Priority; }
 
 protected:
 	UFUNCTION(BlueprintImplementableEvent, meta = (DisplayName = "BeginPlay"))
@@ -79,7 +79,7 @@ protected:
 	FORCEINLINE const UWeapon* GetWeapon() const noexcept { return Weapon; }
 
 private:
-	FORCEINLINE bool CanUse_Implementation() const { return true; }
+	bool CanUse_Implementation() const;
 
 private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Owner, meta = (AllowPrivateAccess = true))
@@ -89,13 +89,13 @@ private:
 	UWeapon* Weapon;
 
 	UPROPERTY(EditDefaultsOnly, Category = Data, meta = (AllowPrivateAccess = true))
+	int32 Priority;
+
+	UPROPERTY(EditDefaultsOnly, Category = Data, meta = (AllowPrivateAccess = true))
 	float CoolTime;
 
 	UPROPERTY(EditDefaultsOnly, Category = Data, meta = (AllowPrivateAccess = true))
 	uint8 UseEnergy;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Data, meta = (AllowPrivateAccess = true))
-	uint8 bIsCastSkill : 1;
 
 	float NextUseTime;
 };
