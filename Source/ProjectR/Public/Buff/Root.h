@@ -7,7 +7,7 @@
 #include "Root.generated.h"
 
 UCLASS(BlueprintType)
-class PROJECTR_API URoot : public UBuff
+class PROJECTR_API URoot final : public UBuff
 {
 	GENERATED_BODY()
 	
