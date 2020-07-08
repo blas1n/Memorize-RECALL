@@ -120,8 +120,14 @@ void AProjectRPlayerState::BeginPlay()
 
 	SetRunSpeed(StatData.RunSpeed);
 	SetWalkSpeed(StatData.WalkSpeed);
+}
 
-	MyPawn->Walk();
+void AProjectRPlayerState::EndPlay(EEndPlayReason::Type EndPlayReason)
+{
+	for (UBuff* Buff : Buffs)
+		Buff->EndPlay();
+
+	Super::EndPlay(EndPlayReason);
 }
 
 void AProjectRPlayerState::Tick(float DeltaSeconds)
