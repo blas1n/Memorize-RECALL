@@ -17,8 +17,11 @@ public:
 	UFUNCTION(BlueprintImplementableEvent)
 	void EndPlay();
 
-	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent)
-	void Use();
+	UFUNCTION(BlueprintCallable)
+	void Start();
+
+	UFUNCTION(BlueprintCallable)
+	void End();
 
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
 	bool CanUse() const;
@@ -31,8 +34,11 @@ protected:
 	UFUNCTION(BlueprintImplementableEvent, meta = (DisplayName = "BeginPlay"))
 	void ReceiveBeginPlay();
 
-	UFUNCTION(BlueprintCallable, meta = (BlueprintProtected))
-	class UActorComponent* NewComponent(TSubclassOf<UActorComponent> Class);
+	UFUNCTION(BlueprintImplementableEvent, meta = (DisplayName = "Start"))
+	void ReceiveStart();
+
+	UFUNCTION(BlueprintImplementableEvent, meta = (DisplayName = "End"))
+	void ReceiveEnd();
 
 	UFUNCTION(BlueprintCallable, meta = (BlueprintProtected))
 	bool IsNotCoolTime() const;

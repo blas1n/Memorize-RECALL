@@ -64,21 +64,16 @@ void UWeapon::Unequip()
 	OnUnequipped.Broadcast();
 }
 
-void UWeapon::UseSkill(uint8 Index)
+void UWeapon::StartSkill(uint8 Index)
 {
 	if (CanUseSkill(Index))
-		Skills[Index]->Use();
+		Skills[Index]->Start();
 }
 
-bool UWeapon::CanUseSkill(uint8 Index) const
+void UWeapon::EndSkill(uint8 Index)
 {
-	if (Skills.Num() <= Index) return false;
-	
-	const USkill* Skill = Skills[Index];
-	if (UseSkillCount > 0 && Skill->IsCastSkill())
-		return false;
-
-	return Skill->CanUse();
+	if (Skills.Num() > Index)
+		Skills[Index]->End();
 }
 
 void UWeapon::BeginSkill(USkill* Skill)
