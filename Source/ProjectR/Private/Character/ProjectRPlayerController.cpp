@@ -6,6 +6,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "TimerManager.h"
 #include "Buff/Lock.h"
+#include "Buff/Root.h"
 #include "Buff/Run.h"
 #include "Character/ProjectRCharacter.h"
 #include "BuffLibrary.h"
@@ -68,29 +69,31 @@ void AProjectRPlayerController::SetupInputComponent()
 
 void AProjectRPlayerController::MoveForward(float Value)
 {
-	User->AddMovementInput(GetDirectionVector(EAxis::X), Value);
+	if (!UBuffLibrary::IsActivate<URoot>(User))
+		User->AddMovementInput(GetDirectionVector(EAxis::X), Value);
 }
 
 void AProjectRPlayerController::MoveRight(float Value)
 {
-	User->AddMovementInput(GetDirectionVector(EAxis::Y), Value);
+	if (!UBuffLibrary::IsActivate<URoot>(User))
+		User->AddMovementInput(GetDirectionVector(EAxis::Y), Value);
 }
 
 void AProjectRPlayerController::InputYaw(float Value)
 {
-	if (!bIsTurning)
+	if (!bIsTurning && !UBuffLibrary::IsActivate<URoot>(User))
 		AddYawInput(Value);
 }
 
 void AProjectRPlayerController::InputPitch(float Value)
 {
-	if (!bIsTurning)
+	if (!bIsTurning && !UBuffLibrary::IsActivate<URoot>(User))
 		AddPitchInput(Value);
 }
 
 void AProjectRPlayerController::PressDodge()
 {
-	if (!User) return;
+	if (!User && !UBuffLibrary::IsActivate<URoot>(User)) return;
 
 	if (UBuffLibrary::IsActivate<ULock>(User))
 		User->GetWeaponComponent()->StartSkill(4);
