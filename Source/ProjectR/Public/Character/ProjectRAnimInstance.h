@@ -29,12 +29,6 @@ private:
 	UFUNCTION()
 	void AnimNotify_Execute();
 
-	UFUNCTION()
-	void AnimNotify_EnableMove();
-
-	UFUNCTION()
-	void AnimNotify_DisableMove();
-
 	class UWeapon* GetWeapon() const;
 
 private:
