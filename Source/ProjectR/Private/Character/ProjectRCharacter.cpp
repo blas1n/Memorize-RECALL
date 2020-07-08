@@ -8,7 +8,7 @@
 #include "Kismet/KismetMathLibrary.h"
 #include "TimerManager.h"
 #include "Buff/Lock.h"
-#include "Buff/Parrying.h"
+#include "Buff/Parry.h"
 #include "Buff/Run.h"
 #include "Character/ProjectRPlayerState.h"
 #include "BuffLibrary.h"
@@ -59,7 +59,7 @@ float AProjectRCharacter::TakeDamage(float DamageAmount, const FDamageEvent& Dam
 	auto Damage = static_cast<int32>(DamageAmount);
 	auto* Character = Cast<AProjectRCharacter>(DamageCauser);
 
-	if (UBuffLibrary::GetBuff<UParrying>(this)->ParryIfCan(Damage, EventInstigator, Character))
+	if (UBuffLibrary::GetBuff<UParry>(this)->ParryIfCan(Damage, EventInstigator, Character))
 		return 0.0f;
 
 	Damage = Super::TakeDamage(Damage, DamageEvent, EventInstigator, DamageCauser);
