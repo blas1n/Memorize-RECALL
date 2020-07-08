@@ -12,8 +12,8 @@ class PROJECTR_API UCast : public UBuff
 	GENERATED_BODY()
 	
 private:
-	void BeginBuff() override;
-	void EndBuff() override;
+	void OnApply() override;
+	void OnRelease() override;
 
 	bool IsActivate_Implementation() const override;
 

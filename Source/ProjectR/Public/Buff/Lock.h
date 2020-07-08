@@ -6,7 +6,7 @@
 #include "Buff/Buff.h"
 #include "Lock.generated.h"
 
-UCLASS()
+UCLASS(BlueprintType)
 class PROJECTR_API ULock final : public UBuff
 {
 	GENERATED_BODY()
@@ -21,8 +21,8 @@ public:
 private:
 	void Tick(float DeltaSeconds) override;
 
-	void BeginBuff() override;
-	void EndBuff() override;
+	void OnApply() override;
+	void OnRelease() override;
 
 	bool IsActivate_Implementation() const override;
 

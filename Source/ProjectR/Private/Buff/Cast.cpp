@@ -2,17 +2,22 @@
 
 #include "Buff/Cast.h"
 
-void UCast::BeginBuff()
+bool UCast::CanUseSkill(const USkill* Skill) const
 {
-	bIsLocked = true;
+	return !IsActivate() || CurSkill->GetPriority() < Skill->GetPriority();
 }
 
-void UCast::EndBuff()
+void UCast::OnApply()
 {
-	bIsLocked = false;
+	bIsCasting = true;
+}
+
+void UCast::OnRelease()
+{
+	bIsCasting = false;
 }
 
 bool UCast::IsActivate_Implementation() const
 {
-	return bIsLocked;
+	return bIsCasting;
 }
