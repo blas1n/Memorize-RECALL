@@ -44,7 +44,6 @@ public:
 	UFUNCTION(BlueprintSetter)
 	void SetWalkSpeed(float Value);
 
-	UFUNCTION(BlueprintCallable)
 	class UBuff* GetBuff(TSubclassOf<UBuff> BuffClass) const;
 
 	FORCEINLINE int32 GetHealth() const noexcept { return Health; }
