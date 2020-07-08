@@ -39,14 +39,10 @@ private:
 	void LockOff();
 	bool CheckLockOn(const AActor* Enemy, float& OutAngle, float& OutDistance) const;
 
-	void SetUserTransformByInput();
 	void CheckLockTarget();
 	void Turn(float DeltaSeconds);
 
-	FVector GetDirectionVectorByActor(EAxis::Type Axis) const;
-	FVector GetDirectionVectorByController(EAxis::Type Axis) const;
-
-	bool IsBuffActivate(TSubclassOf<class UBuff> BuffClass) const;
+	FVector GetDirectionVector(EAxis::Type Axis) const;
 
 private:
 	UPROPERTY()
@@ -68,6 +64,5 @@ private:
 	float LockOnAngle;
 
 	FRotator TurnRotation;
-	FVector MoveInput;
 	uint8 bIsTurning : 1;
 };
