@@ -3,7 +3,7 @@
 #include "Character/ProjectRAnimInstance.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/KismetMathLibrary.h"
-#include "Buff/Faint.h"
+#include "Buff/Stun.h"
 #include "Buff/Lock.h"
 #include "Buff/Root.h"
 #include "Character/ProjectRCharacter.h"
@@ -32,7 +32,7 @@ void UProjectRAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 	Speed = Velocity.Size();
 	
 	bIsLooking = UBuffLibrary::IsActivate<ULock>(User);
-	bIsStuned = UBuffLibrary::IsActivate<UFaint>(User);
+	bIsStuned = UBuffLibrary::IsActivate<UStun>(User);
 	bIsInAir = Movement->IsFalling();
 }
 
@@ -59,13 +59,13 @@ void UProjectRAnimInstance::AnimNotify_Execute()
 void UProjectRAnimInstance::AnimNotify_EnableMove()
 {
 	if (auto* User = Cast<AProjectRCharacter>(TryGetPawnOwner()))
-		UBuffLibrary::ApplyBuff<URoot>(User);
+		UBuffLibrary::ReleaseBuff<URoot>(User);
 }
 
 void UProjectRAnimInstance::AnimNotify_DisableMove()
 {
 	if (auto* User = Cast<AProjectRCharacter>(TryGetPawnOwner()))
-		UBuffLibrary::ReleaseBuff<URoot>(User);
+		UBuffLibrary::ApplyBuff<URoot>(User);
 }
 
 UWeapon* UProjectRAnimInstance::GetWeapon() const

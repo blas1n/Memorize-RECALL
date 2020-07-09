@@ -15,8 +15,6 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnBeginAttack);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnEndAttack);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnShoot);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnExecute);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnBeginSkill, class USkill*, Skill);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnEndSkill, USkill*, Skill);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnWeaponHitted, class AProjectRCharacter*, Target);
 
 UCLASS(BlueprintType)
@@ -104,12 +102,6 @@ public:
 
 	UPROPERTY(BlueprintAssignable)
 	FOnExecute OnExecute;
-
-	UPROPERTY(BlueprintAssignable)
-	FOnBeginSkill OnBeginSkill;
-
-	UPROPERTY(BlueprintAssignable)
-	FOnEndSkill OnEndSkill;
 
 	UPROPERTY(BlueprintAssignable)
 	FOnWeaponHitted OnWeaponHitted;

@@ -7,7 +7,7 @@
 #include "BuffLibrary.generated.h"
 
 UCLASS()
-class PROJECTR_API UBuffLibrary : public UBlueprintFunctionLibrary
+class PROJECTR_API UBuffLibrary final : public UBlueprintFunctionLibrary
 {
 	GENERATED_BODY()
 

@@ -81,19 +81,19 @@ void AProjectRPlayerController::MoveRight(float Value)
 
 void AProjectRPlayerController::InputYaw(float Value)
 {
-	if (!bIsTurning && !UBuffLibrary::IsActivate<URoot>(User))
+	if (!bIsTurning)
 		AddYawInput(Value);
 }
 
 void AProjectRPlayerController::InputPitch(float Value)
 {
-	if (!bIsTurning && !UBuffLibrary::IsActivate<URoot>(User))
+	if (!bIsTurning)
 		AddPitchInput(Value);
 }
 
 void AProjectRPlayerController::PressDodge()
 {
-	if (!User && !UBuffLibrary::IsActivate<URoot>(User)) return;
+	if (!User || UBuffLibrary::IsActivate<URoot>(User)) return;
 
 	if (UBuffLibrary::IsActivate<ULock>(User))
 		User->GetWeaponComponent()->StartSkill(4);

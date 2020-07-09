@@ -7,26 +7,25 @@
 #include "Cast.generated.h"
 
 UCLASS(BlueprintType)
-class PROJECTR_API UCast : public UBuff
+class PROJECTR_API UCast final : public UBuff
 {
 	GENERATED_BODY()
 
 public:
 	UFUNCTION(BlueprintCallable)
-	void StopSkill();
+	void StopCast();
 
-	void SetCurSkill(class USkill* Skill);
-	bool CanUseSkill(const USkill* Skill) const;
+	void CastSkill(class USkill* NewSkill);
+	bool CanUseSkill(const USkill* NewSkill) const;
+
+	FORCEINLINE USkill* GetSkill() const { return Skill; }
 
 private:
-	void OnApply() override;
 	void OnRelease() override;
 
 	bool IsActivate_Implementation() const override;
 
 private:
-	UPROPERTY()
-	class USkill* CurSkill;
-
-	uint8 bIsCasting : 1;
+	UPROPERTY(BlueprintReadOnly, meta = (AllowPrivateAccess = true))
+	USkill* Skill;
 };

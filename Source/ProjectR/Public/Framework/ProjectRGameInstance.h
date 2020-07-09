@@ -7,7 +7,7 @@
 #include "ProjectRGameInstance.generated.h"
 
 UCLASS(Abstract, Blueprintable)
-class PROJECTR_API UProjectRGameInstance : public UGameInstance
+class PROJECTR_API UProjectRGameInstance final : public UGameInstance
 {
 	GENERATED_BODY()
 	
