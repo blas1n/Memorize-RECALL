@@ -59,13 +59,13 @@ void UProjectRAnimInstance::AnimNotify_Execute()
 void UProjectRAnimInstance::AnimNotify_EnableMove()
 {
 	if (auto* User = Cast<AProjectRCharacter>(TryGetPawnOwner()))
-		UBuffLibrary::ApplyBuff<URoot>(User);
+		UBuffLibrary::ReleaseBuff<URoot>(User);
 }
 
 void UProjectRAnimInstance::AnimNotify_DisableMove()
 {
 	if (auto* User = Cast<AProjectRCharacter>(TryGetPawnOwner()))
-		UBuffLibrary::ReleaseBuff<URoot>(User);
+		UBuffLibrary::ApplyBuff<URoot>(User);
 }
 
 UWeapon* UProjectRAnimInstance::GetWeapon() const
