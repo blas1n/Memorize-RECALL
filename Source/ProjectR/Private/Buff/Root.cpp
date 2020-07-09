@@ -7,17 +7,17 @@
 
 void URoot::OnApply()
 {
-	if (++Count == 1)
-		UBuffLibrary::BlockBuff<ULock>(GetTarget());
+	bIsRoot = true;
+	UBuffLibrary::BlockBuff<ULock>(GetTarget());
 }
 
 void URoot::OnRelease()
 {
-	if (--Count == 0)
-		UBuffLibrary::UnblockBuff<ULock>(GetTarget());
+	bIsRoot = false;
+	UBuffLibrary::UnblockBuff<ULock>(GetTarget());
 }
 
 bool URoot::IsActivate_Implementation() const
 {
-	return Count > 0;
+	return bIsRoot;
 }
