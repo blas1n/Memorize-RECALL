@@ -18,12 +18,14 @@ public:
 	void CastSkill(class USkill* NewSkill);
 	bool CanUseSkill(const USkill* NewSkill) const;
 
+	FORCEINLINE USkill* GetSkill() const { return Skill; }
+
 private:
 	void OnRelease() override;
 
 	bool IsActivate_Implementation() const override;
 
 private:
-	UPROPERTY()
+	UPROPERTY(BlueprintReadOnly, meta = (AllowPrivateAccess = true))
 	USkill* Skill;
 };
