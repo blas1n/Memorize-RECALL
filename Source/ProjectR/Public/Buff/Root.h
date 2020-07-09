@@ -18,5 +18,5 @@ private:
 	bool IsActivate_Implementation() const override;
 
 private:
-	uint8 Count;
+	uint8 bIsRoot : 1;
 };
