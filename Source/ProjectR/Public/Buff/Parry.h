@@ -4,10 +4,10 @@
 
 #include "CoreMinimal.h"
 #include "Buff/Buff.h"
-#include "Parrying.generated.h"
+#include "Parry.generated.h"
 
 UCLASS(BlueprintType)
-class PROJECTR_API UParrying final : public UBuff
+class PROJECTR_API UParry final : public UBuff
 {
 	GENERATED_BODY()
 
@@ -17,7 +17,7 @@ public:
 		Instigator, class AProjectRCharacter* Causer);
 	
 	UFUNCTION(BlueprintCallable)
-	void SetParryingObject(UObject* Object);
+	void SetParryObject(UObject* Object);
 
 private:
 	void OnApply() override;
@@ -27,7 +27,7 @@ private:
 
 private:
 	UPROPERTY()
-	UObject* ParryingObject;
+	UObject* ParryObject;
 
-	uint8 bIsParrying : 1;
+	uint8 bIsParry : 1;
 };

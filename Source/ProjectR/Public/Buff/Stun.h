@@ -5,10 +5,10 @@
 #include "CoreMinimal.h"
 #include "Buff/Buff.h"
 #include "Misc/TVariant.h"
-#include "Faint.generated.h"
+#include "Stun.generated.h"
 
 UCLASS(BlueprintType)
-class PROJECTR_API UFaint final : public UBuff
+class PROJECTR_API UStun final : public UBuff
 {
 	GENERATED_BODY()
 	
