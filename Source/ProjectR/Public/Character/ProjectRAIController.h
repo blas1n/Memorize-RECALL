@@ -13,4 +13,11 @@ class PROJECTR_API AProjectRAIController final : public AAIController
 
 public:
 	AProjectRAIController();
+private:
+	void OnPossess(APawn* InPawn) override;
+	void OnUnPossess() override;
+
+	UFUNCTION()
+	void OnDeath(AController* LastInstigator);
+
 };
