@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "AIController.h"
+#include "Data/PerceptionData.h"
 #include "ProjectRAIController.generated.h"
 
 UCLASS()
@@ -13,6 +14,11 @@ class PROJECTR_API AProjectRAIController final : public AAIController
 
 public:
 	AProjectRAIController();
+
+protected:
+	UFUNCTION(BlueprintCallable, meta = (BlueprintProtected))
+	void InitPerception(const struct FPerceptionData& Data);
+
 private:
 	void OnPossess(APawn* InPawn) override;
 	void OnUnPossess() override;
@@ -20,4 +26,7 @@ private:
 	UFUNCTION()
 	void OnDeath(AController* LastInstigator);
 
+private:
+	UPROPERTY(BlueprintReadWrite, Category = Sense, meta = (AllowPrivateAccess = true))
+	class UAISenseConfig_Sight* SightConfig;
 };
