@@ -27,6 +27,6 @@ private:
 	void OnDeath(AController* LastInstigator);
 
 private:
-	UPROPERTY(BlueprintReadWrite, Category = Sense, meta = (AllowPrivateAccess = true))
+	UPROPERTY()
 	class UAISenseConfig_Sight* SightConfig;
 };
