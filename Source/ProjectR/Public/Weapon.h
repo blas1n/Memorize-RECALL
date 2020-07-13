@@ -4,7 +4,6 @@
 
 #include "CoreMinimal.h"
 #include "UObject/NoExportTypes.h"
-#include "Engine/AssetManager.h"
 #include "Weapon.generated.h"
 
 DECLARE_DYNAMIC_DELEGATE(FOnAsyncLoadEndedSingle);
@@ -33,6 +32,8 @@ public:
 	void EndSkill(uint8 Index); 
 	bool CanUseSkill(uint8 Index) const;
 
+	void LoadAll(const struct FWeaponData& WeaponData);
+
 	UFUNCTION(BlueprintCallable)
 	void SetWeaponCollision(bool bRightWeaponEnable, bool bLeftWeaponEnable);
 
@@ -51,37 +52,7 @@ public:
 private:
 	UFUNCTION()
 	void PlayEquipAnim();
-
 	void AddComponents(class USkill* Skill);
-
-	template <class T>
-	void AsyncLoad(T*& Ptr, const TAssetPtr<T>& SoftPtr)
-	{
-		if (SoftPtr.IsNull())
-		{
-			CheckAndCallAsyncLoadDelegate();
-			return;
-		}
-
-		auto OnAsyncLoaded = [this, &Ptr = Ptr, &SoftPtr = SoftPtr]() mutable
-		{
-			Ptr = SoftPtr.Get();
-			CheckAndCallAsyncLoadDelegate();
-		};
-
-		if (SoftPtr.IsPending())
-		{
-			FStreamableDelegate Callback;
-			Callback.BindLambda([this, OnAsyncLoaded = MoveTemp(OnAsyncLoaded)]() mutable
-			{
-				OnAsyncLoaded();
-			});
-
-			UAssetManager::GetStreamableManager().RequestAsyncLoad(SoftPtr.ToSoftObjectPath(), MoveTemp(Callback));
-		}
-		else OnAsyncLoaded();
-	}
-
 	FORCEINLINE void CheckAndCallAsyncLoadDelegate() { if (--AsyncLoadCount == 0) OnAsyncLoadEnded.Broadcast(); }
 
 public:
