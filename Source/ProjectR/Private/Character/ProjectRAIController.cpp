@@ -37,8 +37,11 @@ void AProjectRAIController::OnPossess(APawn* InPawn)
 
 void AProjectRAIController::OnUnPossess()
 {
-	Cast<AProjectRCharacter>(GetPawn())->OnDeath
-		.RemoveDynamic(this, &AProjectRAIController::OnDeath);
+	if (GetPawn() != nullptr)
+	{
+		Cast<AProjectRCharacter>(GetPawn())->OnDeath
+			.RemoveDynamic(this, &AProjectRAIController::OnDeath);
+	}
 
 	Super::OnUnPossess();
 }
