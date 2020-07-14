@@ -26,6 +26,7 @@ private:
 	
 	void PressDodge();
 	void ReleaseDodge();
+	void Dodge();
 
 	void Run();
 	void Walk();

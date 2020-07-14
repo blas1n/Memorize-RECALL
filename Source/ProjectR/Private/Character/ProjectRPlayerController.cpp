@@ -59,6 +59,7 @@ void AProjectRPlayerController::SetupInputComponent()
 
 	InputComponent->BindAction(TEXT("Dodge"), IE_Pressed, this, &AProjectRPlayerController::PressDodge);
 	InputComponent->BindAction(TEXT("Dodge"), IE_Released, this, &AProjectRPlayerController::ReleaseDodge);
+	InputComponent->BindAction(TEXT("OnlyDodge"), IE_Released, this, &AProjectRPlayerController::Dodge);
 
 	InputComponent->BindAction(TEXT("Run"), IE_Pressed, this, &AProjectRPlayerController::Run);
 	InputComponent->BindAction(TEXT("Run"), IE_Released, this, &AProjectRPlayerController::Walk);
@@ -114,6 +115,12 @@ void AProjectRPlayerController::ReleaseDodge()
 {
 	if (User && User->GetCharacterMovement()->IsFalling())
 		User->StopJumping();
+}
+
+void AProjectRPlayerController::Dodge()
+{
+	if (User && !UBuffLibrary::IsActivate<URoot>(User) && UBuffLibrary::IsActivate<ULock>(User))
+		User->GetWeaponComponent()->StartSkill(4);
 }
 
 void AProjectRPlayerController::Run()
