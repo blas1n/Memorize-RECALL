@@ -4,7 +4,6 @@
 
 #include "CoreMinimal.h"
 #include "Engine/DataTable.h"
-#include "Templates/SubclassOf.h"
 #include "LogicData.h"
 #include "AIData.generated.h"
 
