@@ -8,6 +8,8 @@
 
 void ULock::Lock(AActor* InLockedTarget)
 {
+	if (IsBlocked()) return;
+
 	LockedTarget = InLockedTarget;
 	Apply();
 }
