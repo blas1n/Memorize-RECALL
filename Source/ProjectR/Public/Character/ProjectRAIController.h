@@ -22,6 +22,9 @@ public:
 
 	void InitLogic(const struct FLogicData& LogicData);
 
+	UFUNCTION(BlueprintCallable)
+	void SetAIState(EAIState NewAIState);
+
 private:
 	void Tick(float DeltaSeconds) override;
 
@@ -33,23 +36,15 @@ private:
 	UFUNCTION()
 	void OnPerceptionUpdated(const TArray<AActor*>& UpdatedActors);
 
-	void OnSightUpdated(const AActor* Actor, const struct FAIStimulus& Stimulus);
+	void OnSightUpdated(AActor* Actor, const struct FAIStimulus& Stimulus);
 	void SetFloorLocation(const FVector& BaseLocation);
 
 	UFUNCTION()
 	void OnDeath(AController* LastInstigator);
 
-	void SetAIState(EAIState NewAIState);
-
 private:
 	UPROPERTY()
-	class UAISenseConfig_Sight* SightConfig;
-
-	UPROPERTY()
-	const AActor* TargetActor;
-
-	FTimerHandle QuestHandle;
-	float QuestDuration;
+	AActor* TargetActor;
 	
 	float DetectionValue;
 	float DetectionIncrease;

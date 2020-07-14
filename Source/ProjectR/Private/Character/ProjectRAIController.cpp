@@ -7,9 +7,10 @@
 #include "Kismet/KismetMathLibrary.h"
 #include "Perception/AIPerceptionComponent.h"
 #include "Perception/AISenseConfig_Sight.h"
-#include "TimerManager.h"
+#include "Buff/Lock.h"
 #include "Character/ProjectRCharacter.h"
 #include "Data/LogicData.h"
+#include "BuffLibrary.h"
 #include "ProjectRStatics.h"
 
 AProjectRAIController::AProjectRAIController()
@@ -18,8 +19,8 @@ AProjectRAIController::AProjectRAIController()
 	bWantsPlayerState = true;
 
 	SetPerceptionComponent(*CreateDefaultSubobject<UAIPerceptionComponent>(TEXT("AI Perception")));
-
-	SightConfig = CreateDefaultSubobject<UAISenseConfig_Sight>(TEXT("SightConfig"));
+	
+	auto* SightConfig = CreateDefaultSubobject<UAISenseConfig_Sight>(TEXT("AISenseConfig_Sight"));
 	SightConfig->DetectionByAffiliation.bDetectEnemies = true;
 	SightConfig->DetectionByAffiliation.bDetectNeutrals = true;
 	SightConfig->DetectionByAffiliation.bDetectFriendlies = true;
@@ -39,9 +40,31 @@ void AProjectRAIController::InitLogic(const FLogicData& LogicData)
 	DetectionIncrease = LogicData.DetectionIncrease;
 	DetectionDecrease = LogicData.DetectionDecrease;
 
+	auto* SightConfig = Cast<UAISenseConfig_Sight>(GetPerceptionComponent()
+		->GetSenseConfig(UAISense::GetSenseID<UAISense_Sight>()));
+
 	SightConfig->SightRadius = LogicData.SightRadius;
 	SightConfig->LoseSightRadius = LogicData.LoseSightRadius;
 	SightConfig->PeripheralVisionAngleDegrees = LogicData.FOV;
+	GetPerceptionComponent()->RequestStimuliListenerUpdate();
+}
+
+void AProjectRAIController::SetAIState(EAIState NewAIState)
+{
+	AIState = NewAIState;
+	if (auto* MyBlackboard = GetBlackboardComponent())
+		MyBlackboard->SetValueAsEnum(TEXT("AIState"), static_cast<uint8>(AIState));
+
+	if (AIState == EAIState::Patrol || AIState == EAIState::Quest)
+	{
+		if (AIState == EAIState::Quest)
+			DetectionValue = 0.0f;
+
+		UBuffLibrary::ReleaseBuff<ULock>(GetPawn<AProjectRCharacter>());
+		return;
+	}
+
+	UBuffLibrary::GetBuff<ULock>(GetPawn<AProjectRCharacter>())->Lock(TargetActor);
 }
 
 void AProjectRAIController::Tick(float DeltaSeconds)
@@ -113,44 +136,29 @@ void AProjectRAIController::OnPerceptionUpdated(const TArray<AActor*>& UpdatedAc
 	}
 }
 
-void AProjectRAIController::OnSightUpdated(const AActor* Actor, const FAIStimulus& Stimulus)
+void AProjectRAIController::OnSightUpdated(AActor* Actor, const FAIStimulus& Stimulus)
 {
-	TargetActor = Actor;
 	bIsSeePlayer = Stimulus.IsActive();
-
 	if (auto* MyBlackboard = GetBlackboardComponent())
 		MyBlackboard->SetValueAsBool(TEXT("IsSeePlayer"), bIsSeePlayer);
 
 	if (bIsSeePlayer)
 	{
+		TargetActor = Actor;
+
 		if (AIState == EAIState::Patrol)
-		{
 			SetAIState(EAIState::Detection);
-			return;
-		}
-		if (AIState == EAIState::Quest)
-		{
+		else if (AIState == EAIState::Quest)
 			SetAIState(EAIState::Chase);
-			GetWorldTimerManager().ClearTimer(QuestHandle);
-			return;
-		}
 	}
 	else
 	{
+		TargetActor = nullptr;
+
 		if (AIState == EAIState::Detection)
-		{
 			SetFloorLocation(Stimulus.StimulusLocation);
-			return;
-		}
-		if (AIState == EAIState::Chase)
-		{
+		else if (AIState == EAIState::Chase)
 			SetAIState(EAIState::Quest);
-			GetWorldTimerManager().SetTimer(QuestHandle, [this]
-				{
-					SetAIState(EAIState::Patrol);
-				}, QuestDuration, false);
-			return;
-		}
 	}
 }
 
@@ -170,11 +178,4 @@ void AProjectRAIController::SetFloorLocation(const FVector& BaseLocation)
 void AProjectRAIController::OnDeath(AController* LastInstigator)
 {
 	UnPossess();
-}
-
-void AProjectRAIController::SetAIState(EAIState NewAIState)
-{
-	AIState = NewAIState;
-	if (auto* MyBlackboard = GetBlackboardComponent())
-		MyBlackboard->SetValueAsEnum(TEXT("AIState"), static_cast<uint8>(AIState));
 }
