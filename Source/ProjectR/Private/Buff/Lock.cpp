@@ -6,6 +6,12 @@
 #include "Kismet/KismetMathLibrary.h"
 #include "Character/ProjectRCharacter.h"
 
+void ULock::Lock(AActor* InLockedTarget)
+{
+	LockedTarget = InLockedTarget;
+	Apply();
+}
+
 void ULock::Tick(float DeltaSeconds)
 {
 	if (!LockedTarget) return;

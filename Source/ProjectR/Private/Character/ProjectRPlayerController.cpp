@@ -155,8 +155,7 @@ void AProjectRPlayerController::LockOn()
 			LockTarget = Cast<AProjectRCharacter>(Enemy);
 
 	auto* LockBuff = UBuffLibrary::GetBuff<ULock>(User);
-	LockBuff->SetLockedTarget(LockTarget);
-	LockBuff->Apply();
+	LockBuff->Lock(LockTarget);
 
 	if (!LockTarget)
 	{
@@ -235,7 +234,7 @@ bool AProjectRPlayerController::CheckLockOn(const AActor* Enemy, float& OutAngle
 
 void AProjectRPlayerController::CheckLockTarget()
 {
-	const auto* LockTarget = UBuffLibrary::GetBuff<ULock>(User)->GetLockedTarget();
+	const auto* LockTarget = Cast<AProjectRCharacter>(UBuffLibrary::GetBuff<ULock>(User)->GetLockedTarget());
 	if (!LockTarget) return;
 
 	if (LockTarget->IsDeath())
