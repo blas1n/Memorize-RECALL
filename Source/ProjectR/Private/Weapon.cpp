@@ -9,6 +9,7 @@
 #include "Character/ProjectRCharacter.h"
 #include "Data/WeaponData.h"
 #include "Framework/ProjectRGameInstance.h"
+#include "ProjectRStatics.h"
 #include "Skill.h"
 #include "WeaponComponent.h"
 
@@ -26,10 +27,7 @@ void UWeapon::BeginPlay(const FName& InName)
 	RightWeaponTransform = WeaponData.RightTransform;
 	LeftWeaponTransform = WeaponData.LeftTransform;
 	
-	AsyncLoadCount = 3;
-	AsyncLoad(RightWeaponMesh, WeaponData.RightMesh);
-	AsyncLoad(LeftWeaponMesh, WeaponData.LeftMesh);
-	AsyncLoad(EquipAnim, WeaponData.EquipAnim);
+	LoadAll(WeaponData);
 
 	Skills.Init(nullptr, WeaponData.Skills.Num());
 	for (int32 Index = 0; Index < WeaponData.Skills.Num(); ++Index)
@@ -81,6 +79,39 @@ bool UWeapon::CanUseSkill(uint8 Index) const
 {
 	if (Skills.Num() <= Index) return false;
 	return Skills[Index]->CanUse();
+}
+
+void UWeapon::LoadAll(const FWeaponData& WeaponData)
+{
+	if (!WeaponData.RightMesh.IsNull())
+	{
+		++AsyncLoadCount;
+		UProjectRStatics::AsyncLoad(WeaponData.RightMesh, [this, &RightMeshPtr = WeaponData.RightMesh]() mutable
+		{
+			RightWeaponMesh = RightMeshPtr.Get();
+			CheckAndCallAsyncLoadDelegate();
+		});
+	}
+
+	if (!WeaponData.LeftMesh.IsNull())
+	{
+		++AsyncLoadCount;
+		UProjectRStatics::AsyncLoad(WeaponData.LeftMesh, [this, &LeftMeshPtr = WeaponData.LeftMesh]() mutable
+		{
+			LeftWeaponMesh = LeftMeshPtr.Get();
+			CheckAndCallAsyncLoadDelegate();
+		});
+	}
+
+	if (!WeaponData.EquipAnim.IsNull())
+	{
+		++AsyncLoadCount;
+		UProjectRStatics::AsyncLoad(WeaponData.EquipAnim, [this, &EquipAnimPtr = WeaponData.EquipAnim]() mutable
+		{
+			EquipAnim = EquipAnimPtr.Get();
+			CheckAndCallAsyncLoadDelegate();
+		});
+	}
 }
 
 void UWeapon::SetWeaponCollision(bool bRightWeaponEnable, bool bLeftWeaponEnable)
