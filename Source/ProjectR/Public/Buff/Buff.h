@@ -62,5 +62,5 @@ private:
 	AProjectRCharacter* Target;
 
 	uint8 BlockCount;
-	uint8 bIsActivateBeforeBlock : 1;
+	uint8 bIsActivateWithoutBlock : 1;
 };
