@@ -52,7 +52,7 @@ public:
 private:
 	UFUNCTION()
 	void PlayEquipAnim();
-	void AddComponents(class USkill* Skill);
+
 	FORCEINLINE void CheckAndCallAsyncLoadDelegate() { if (--AsyncLoadCount == 0) OnAsyncLoadEnded.Broadcast(); }
 
 public:
@@ -82,10 +82,7 @@ private:
 	class AProjectRCharacter* User;
 
 	UPROPERTY()
-	TArray<USkill*> Skills;
-
-	UPROPERTY()
-	TMap<FName, UActorComponent*> Components;
+	TArray<class USkill*> Skills;
 
 	UPROPERTY()
 	TSubclassOf<class UAnimInstance> UpperAnimInstance;

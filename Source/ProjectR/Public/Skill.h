@@ -6,23 +6,6 @@
 #include "UObject/NoExportTypes.h"
 #include "Skill.generated.h"
 
-DECLARE_DYNAMIC_DELEGATE_OneParam(FOnComponentHandler, class UActorComponent*, Component);
-
-USTRUCT(Atomic, BlueprintType)
-struct FComponentInitData
-{
-	GENERATED_BODY()
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	FName Name;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	TSubclassOf<UActorComponent> Class;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	FOnComponentHandler Handler;
-};
-
 UCLASS(Abstract, Blueprintable)
 class PROJECTR_API USkill final : public UObject
 {
@@ -42,9 +25,6 @@ public:
 
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
 	bool CanUse() const;
-
-	UFUNCTION(BlueprintImplementableEvent)
-	TArray<FComponentInitData> GetNeedComponents();
 
 	UWorld* GetWorld() const override;
 
