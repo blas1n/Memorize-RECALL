@@ -149,7 +149,7 @@ void AProjectRPlayerController::UseSkill(uint8 Index)
 
 void AProjectRPlayerController::LockOn()
 {
-	if (!User) return;
+	if (!User || UBuffLibrary::IsBlocked<ULock>(User)) return;
 
 	TArray<AActor*> Enemys;
 	UGameplayStatics::GetAllActorsOfClass(GetWorld(), AProjectRCharacter::StaticClass(), Enemys);
