@@ -108,6 +108,7 @@ void AProjectRPlayerState::BeginPlay()
 	Super::BeginPlay();
 
 	auto* MyPawn = GetPawn<AProjectRCharacter>();
+	if (!MyPawn) return;
 
 	const auto* GameInstance = Cast<UProjectRGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
 	const auto* DataTable = GameInstance->GetDataTable(TEXT("StatData"));
