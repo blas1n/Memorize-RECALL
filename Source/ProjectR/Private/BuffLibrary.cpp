@@ -9,14 +9,14 @@
 
 UBuff* UBuffLibrary::GetBuff(AProjectRCharacter* Character, TSubclassOf<UBuff> BuffClass)
 {
+	if (!Character) return nullptr;
 	auto* PlayerState = Character->GetPlayerState<AProjectRPlayerState>();
 	return PlayerState ? PlayerState->GetBuff(BuffClass) : nullptr;
 }
 
 const UBuff* UBuffLibrary::GetBuff(const AProjectRCharacter* Character, TSubclassOf<UBuff> BuffClass)
 {
-	auto* PlayerState = Character->GetPlayerState<AProjectRPlayerState>();
-	return PlayerState ? PlayerState->GetBuff(BuffClass) : nullptr;
+	return GetBuff(const_cast<AProjectRCharacter*>(Character), BuffClass);
 }
 
 void UBuffLibrary::ApplyBuff(AProjectRCharacter* Character, TSubclassOf<UBuff> BuffClass)
