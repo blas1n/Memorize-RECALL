@@ -40,23 +40,27 @@ void UBuff::Release()
 
 void UBuff::Block()
 {
-	if (++BlockCount > 1)
-		return;
+	const bool bWasBlock = bIsBlock;
+	bIsBlock = true;
 
-	bIsActivateWithoutBlock = IsActivate();
-	if (!bIsActivateWithoutBlock) return;
+	if (!bWasBlock)
+	{
+		bIsActivateWithoutBlock = IsActivate();
+		if (!bIsActivateWithoutBlock) return;
 
-	OnRelease();
-	RecieveOnRelease();
+		OnRelease();
+		RecieveOnRelease();
+	}
 }
 
 void UBuff::Unblock()
 {
-	if (--BlockCount == 0 && bIsActivateWithoutBlock)
+	bIsBlock = false;
+	if (bIsActivateWithoutBlock)
 		Apply();
 }
 
 bool UBuff::IsBlocked() const
 {
-	return BlockCount > 0;
+	return bIsBlock;
 }

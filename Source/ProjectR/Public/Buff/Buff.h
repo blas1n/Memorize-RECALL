@@ -61,6 +61,6 @@ private:
 	UPROPERTY(BlueprintReadOnly, meta = (AllowPrivateAccess = true))
 	AProjectRCharacter* Target;
 
-	uint8 BlockCount;
+	uint8 bIsBlock : 1;
 	uint8 bIsActivateWithoutBlock : 1;
 };
