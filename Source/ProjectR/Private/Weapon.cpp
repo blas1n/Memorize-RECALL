@@ -7,6 +7,7 @@
 #include "Components/ActorComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Character/ProjectRCharacter.h"
+#include "Data/SkillData.h"
 #include "Data/WeaponData.h"
 #include "Framework/ProjectRGameInstance.h"
 #include "ProjectRStatics.h"
@@ -29,12 +30,14 @@ void UWeapon::BeginPlay(const FName& InName)
 	
 	LoadAll(WeaponData);
 
-	Skills.Init(nullptr, WeaponData.Skills.Num());
-	for (int32 Index = 0; Index < WeaponData.Skills.Num(); ++Index)
+	const int32 SkillNum = WeaponData.SkillsData.Num();
+	Skills.Init(nullptr, SkillNum);
+	for (int32 Index = 0; Index < SkillNum; ++Index)
 	{
-		TSubclassOf<USkill> SkillClass = WeaponData.Skills[Index];
+		const FSkillData& SkillData = WeaponData.SkillsData[Index];
+		TSubclassOf<USkill> SkillClass = SkillData.SkillClass;
 		Skills[Index] = NewObject<USkill>(this, SkillClass);
-		Skills[Index]->BeginPlay();
+		Skills[Index]->BeginPlay(SkillData);
 		AddComponents(Skills[Index]);
 	}
 }

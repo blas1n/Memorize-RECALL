@@ -5,14 +5,20 @@
 #include "Buff/Cast.h"
 #include "Character/ProjectRCharacter.h"
 #include "Character/ProjectRPlayerState.h"
+#include "Data/SkillData.h"
 #include "BuffLibrary.h"
 #include "Weapon.h"
 
-void USkill::BeginPlay()
+void USkill::BeginPlay(const FSkillData& SkillData)
 {
 	Weapon = Cast<UWeapon>(GetOuter());
 	User = Cast<AProjectRCharacter>(Weapon->GetOuter());
-	ReceiveBeginPlay();
+
+	Priority = SkillData.Priority;
+	CoolTime = SkillData.CoolTime;
+	UseEnergy = SkillData.UseEnergy;
+
+	ReceiveBeginPlay(SkillData.AdditionalData);
 }
 
 void USkill::Start()
