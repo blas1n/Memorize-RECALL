@@ -109,11 +109,18 @@ void AProjectRPlayerController::ReleaseDodge()
 void AProjectRPlayerController::Run()
 {
 	UBuffLibrary::ApplyBuff<URun>(User);
+	bIsRunned = true;
+
+	auto Temp = bIsLocked;
+	if (Temp) LockOff();
+	bIsLocked = MoveTemp(Temp);
 }
 
 void AProjectRPlayerController::Walk()
 {
 	UBuffLibrary::ReleaseBuff<URun>(User);
+	bIsRunned = false;
+	if (bIsLocked) LockOn();
 }
 
 void AProjectRPlayerController::SwapWeapon(uint8 Index)
@@ -162,11 +169,19 @@ void AProjectRPlayerController::LockOn()
 		TurnRotation.Yaw = User->GetActorRotation().Yaw;
 		bIsTurning = true;
 	}
+
+	bIsLocked = true;
+
+	auto Temp = bIsRunned;
+	if (Temp) Walk();
+	bIsRunned = MoveTemp(Temp);
 }
 
 void AProjectRPlayerController::LockOff()
 {
 	UBuffLibrary::ReleaseBuff<ULock>(User);
+	bIsLocked = false;
+	if (bIsRunned) Run();
 }
 
 bool AProjectRPlayerController::CheckLockOn(const AActor* Enemy, float& OutAngle, float& OutDistance) const
