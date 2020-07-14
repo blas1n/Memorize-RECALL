@@ -9,6 +9,7 @@
 
 UBuff* UBuffLibrary::GetBuff(AProjectRCharacter* Character, TSubclassOf<UBuff> BuffClass)
 {
+	if (!Character) return nullptr;
 	auto* PlayerState = Character->GetPlayerState<AProjectRPlayerState>();
 	return PlayerState ? PlayerState->GetBuff(BuffClass) : nullptr;
 }

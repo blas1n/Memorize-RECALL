@@ -23,6 +23,13 @@ void AProjectRPlayerController::OnPossess(APawn* InPawn)
 void AProjectRPlayerController::OnUnPossess()
 {
 	User = nullptr;
+
+	if (GetPawn() != nullptr)
+	{
+		Cast<AProjectRCharacter>(GetPawn())->OnDeath
+			.RemoveDynamic(this, &AProjectRPlayerController::OnDeath);
+	}
+
 	Super::OnUnPossess();
 }
 
@@ -69,13 +76,13 @@ void AProjectRPlayerController::SetupInputComponent()
 
 void AProjectRPlayerController::MoveForward(float Value)
 {
-	if (!UBuffLibrary::IsActivate<URoot>(User))
+	if (User && !UBuffLibrary::IsActivate<URoot>(User))
 		User->AddMovementInput(GetDirectionVector(EAxis::X), Value);
 }
 
 void AProjectRPlayerController::MoveRight(float Value)
 {
-	if (!UBuffLibrary::IsActivate<URoot>(User))
+	if (User && !UBuffLibrary::IsActivate<URoot>(User))
 		User->AddMovementInput(GetDirectionVector(EAxis::Y), Value);
 }
 

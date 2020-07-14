@@ -23,7 +23,8 @@ void ULock::Tick(float DeltaSeconds)
 	const FRotator ControlLookAt = UKismetMathLibrary::
 		FindLookAtRotation(GetTarget()->GetViewLocation(), TargetLocation);
 
-	GetTarget()->GetController()->SetControlRotation(ControlLookAt);
+	if (AController* Controller = GetTarget()->GetController())
+		Controller->SetControlRotation(ControlLookAt);
 }
 
 void ULock::OnApply()
