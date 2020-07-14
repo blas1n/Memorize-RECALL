@@ -23,9 +23,6 @@ struct FLogicData
 	float DetectionDecrease;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	float QuestDuration;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float SightRadius;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)

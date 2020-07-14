@@ -38,7 +38,6 @@ void AProjectRAIController::InitLogic(const FLogicData& LogicData)
 
 	DetectionIncrease = LogicData.DetectionIncrease;
 	DetectionDecrease = LogicData.DetectionDecrease;
-	QuestDuration = LogicData.QuestDuration;
 
 	SightConfig->SightRadius = LogicData.SightRadius;
 	SightConfig->LoseSightRadius = LogicData.LoseSightRadius;
