@@ -65,4 +65,6 @@ private:
 
 	FRotator TurnRotation;
 	uint8 bIsTurning : 1;
+	uint8 bIsRunned : 1;
+	uint8 bIsLocked : 1;
 };
