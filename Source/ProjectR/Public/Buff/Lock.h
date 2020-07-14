@@ -12,10 +12,9 @@ class PROJECTR_API ULock final : public UBuff
 	GENERATED_BODY()
 
 public:
-	FORCEINLINE void SetLockedTarget(class AProjectRCharacter*
-		InLockedTarget) noexcept { LockedTarget = InLockedTarget; }
+	void Lock(AActor* InLockedTarget);
 	
-	FORCEINLINE AProjectRCharacter* GetLockedTarget()
+	FORCEINLINE AActor* GetLockedTarget()
 		const noexcept { return LockedTarget; }
 
 private:
@@ -28,7 +27,7 @@ private:
 
 private:
 	UPROPERTY()
-	AProjectRCharacter* LockedTarget;
+	AActor* LockedTarget;
 
 	uint8 bIsLocked : 1;
 };
