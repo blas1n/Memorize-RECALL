@@ -81,6 +81,8 @@ void AProjectRCharacter::Landed(const FHitResult& Hit)
 void AProjectRCharacter::HealHealthAndEnergy(AProjectRCharacter* Target, int32 Damage)
 {
 	auto* MyPlayerState = GetPlayerState<AProjectRPlayerState>();
+	if (!MyPlayerState) return;
+
 	MyPlayerState->HealHealthByDamage(Damage);
 	MyPlayerState->HealEnergyByDamage(Damage);
 }

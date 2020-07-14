@@ -64,7 +64,8 @@ void AProjectRAIController::SetAIState(EAIState NewAIState)
 		return;
 	}
 
-	UBuffLibrary::GetBuff<ULock>(GetPawn<AProjectRCharacter>())->Lock(TargetActor);
+	if (auto* Lock = UBuffLibrary::GetBuff<ULock>(GetPawn<AProjectRCharacter>()))
+		Lock->Lock(TargetActor);
 }
 
 void AProjectRAIController::Tick(float DeltaSeconds)
