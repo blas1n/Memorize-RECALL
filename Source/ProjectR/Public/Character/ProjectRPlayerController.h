@@ -44,6 +44,9 @@ private:
 
 	FVector GetDirectionVector(EAxis::Type Axis) const;
 
+	UFUNCTION()
+	void OnDeath(AController* LastInstigator);
+
 private:
 	UPROPERTY()
 	class AProjectRCharacter* User;

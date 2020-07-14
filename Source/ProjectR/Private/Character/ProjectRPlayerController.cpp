@@ -18,6 +18,9 @@ void AProjectRPlayerController::OnPossess(APawn* InPawn)
 {
 	Super::OnPossess(InPawn);
 	User = Cast<AProjectRCharacter>(InPawn);
+
+	Cast<AProjectRCharacter>(InPawn)->OnDeath
+		.AddDynamic(this, &AProjectRPlayerController::OnDeath);
 }
 
 void AProjectRPlayerController::OnUnPossess()
@@ -292,4 +295,9 @@ FVector AProjectRPlayerController::GetDirectionVector(EAxis::Type Axis) const
 	const FRotator Rotation = GetControlRotation();
 	const FRotator YawRotation(0, Rotation.Yaw, 0);
 	return FRotationMatrix(YawRotation).GetUnitAxis(Axis);
+}
+
+void AProjectRPlayerController::OnDeath(AController* LastInstigator)
+{
+	UnPossess();
 }
