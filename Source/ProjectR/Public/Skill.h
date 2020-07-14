@@ -88,14 +88,8 @@ private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Owner, meta = (AllowPrivateAccess = true))
 	UWeapon* Weapon;
 
-	UPROPERTY(EditDefaultsOnly, Category = Data, meta = (AllowPrivateAccess = true))
 	int32 Priority;
-
-	UPROPERTY(EditDefaultsOnly, Category = Data, meta = (AllowPrivateAccess = true))
 	float CoolTime;
-
-	UPROPERTY(EditDefaultsOnly, Category = Data, meta = (AllowPrivateAccess = true))
-	uint8 UseEnergy;
-
 	float NextUseTime;
+	uint8 UseEnergy;
 };
