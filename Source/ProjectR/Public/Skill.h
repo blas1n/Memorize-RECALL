@@ -29,7 +29,7 @@ class PROJECTR_API USkill final : public UObject
 	GENERATED_BODY()
 	
 public:
-	void BeginPlay();
+	void BeginPlay(const struct FSkillData& SkillData);
 
 	UFUNCTION(BlueprintImplementableEvent)
 	void EndPlay();
@@ -52,7 +52,7 @@ public:
 
 protected:
 	UFUNCTION(BlueprintImplementableEvent, meta = (DisplayName = "BeginPlay"))
-	void ReceiveBeginPlay();
+	void ReceiveBeginPlay(class UDataAsset* SkillData);
 
 	UFUNCTION(BlueprintImplementableEvent, meta = (DisplayName = "Start"))
 	void ReceiveStart();
