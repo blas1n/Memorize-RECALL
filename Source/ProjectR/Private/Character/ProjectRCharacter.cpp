@@ -7,6 +7,7 @@
 #include "GameFramework/Controller.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "TimerManager.h"
+#include "Buff/Cast.h"
 #include "Buff/Lock.h"
 #include "Buff/Parry.h"
 #include "Buff/Run.h"
@@ -97,6 +98,8 @@ FVector AProjectRCharacter::GetViewLocation_Implementation() const
 
 void AProjectRCharacter::Death()
 {
+	UBuffLibrary::GetBuff<UCast>(this)->StopCast();
+
 	bIsDeath = true;
 	OnDeath.Broadcast(LastHitBy);
 
