@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Engine/DataTable.h"
+#include "SkillData.h"
 #include "WeaponData.generated.h"
 
 USTRUCT(Atomic, BlueprintType)
@@ -15,7 +16,7 @@ struct FWeaponData : public FTableRowBase
 	int32 Key;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	TArray<TSubclassOf<class USkill>> Skills;
+	TArray<FSkillData> SkillsData;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TSubclassOf<class UAnimInstance> UpperAnimInstance;
