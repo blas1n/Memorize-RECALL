@@ -14,8 +14,11 @@ bool UParry::ParryIfCan(int32 Damage, AController* Instigator, AProjectRCharacte
 
 void UParry::SetParryObject(UObject* Object)
 {
-	if (Object->GetClass()->ImplementsInterface(UParryable::StaticClass()))
-		ParryObject = Object;
+	if (!Object->GetClass()->ImplementsInterface(UParryable::StaticClass()))
+		return;
+
+	ParryObject = Object;
+	Apply();
 }
 
 void UParry::OnApply()
