@@ -36,24 +36,15 @@ void UProjectRAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 	bIsInAir = Movement->IsFalling();
 }
 
-void UProjectRAnimInstance::AnimNotify_BeginAttack()
-{
-	GetWeapon()->OnBeginAttack.Broadcast();
-}
-
-void UProjectRAnimInstance::AnimNotify_EndAttack()
-{
-	GetWeapon()->OnEndAttack.Broadcast();
-}
-
-void UProjectRAnimInstance::AnimNotify_Shoot()
-{
-	GetWeapon()->OnShoot.Broadcast();
-}
-
 void UProjectRAnimInstance::AnimNotify_Execute()
 {
-	GetWeapon()->OnExecute.Broadcast();
+	const auto* User = Cast<AProjectRCharacter>(TryGetPawnOwner());
+	if (!User) return;
+
+	auto* Weapon = User->GetWeaponComponent()->GetWeapon();
+	if (!Weapon) return;
+
+	Weapon->OnExecute.Broadcast();
 }
 
 void UProjectRAnimInstance::AnimNotify_EnableMove()
@@ -66,10 +57,4 @@ void UProjectRAnimInstance::AnimNotify_DisableMove()
 {
 	if (auto* User = Cast<AProjectRCharacter>(TryGetPawnOwner()))
 		UBuffLibrary::ApplyBuff<URoot>(User);
-}
-
-UWeapon* UProjectRAnimInstance::GetWeapon() const
-{
-	const auto* User = Cast<AProjectRCharacter>(TryGetPawnOwner());
-	return User ? User->GetWeaponComponent()->GetWeapon() : nullptr;
 }

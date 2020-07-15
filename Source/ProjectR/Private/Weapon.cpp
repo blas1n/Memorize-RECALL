@@ -83,6 +83,19 @@ bool UWeapon::CanUseSkill(uint8 Index) const
 	return Skills[Index]->CanUse();
 }
 
+void UWeapon::RegisterOnAsyncLoadEnded(const FOnAsyncLoadEndedSingle& Callback)
+{
+	check(Callback.IsBound());
+	if (AsyncLoadCount) OnAsyncLoadEnded.Add(Callback);
+	else Callback.Execute();
+}
+
+void UWeapon::PlayEquipAnim()
+{
+	if (EquipAnim)
+		User->PlayAnimMontage(EquipAnim);
+}
+
 void UWeapon::LoadAll(const FWeaponData& WeaponData)
 {
 	if (!WeaponData.RightMesh.IsNull())
@@ -114,22 +127,4 @@ void UWeapon::LoadAll(const FWeaponData& WeaponData)
 			CheckAndCallAsyncLoadDelegate();
 		});
 	}
-}
-
-void UWeapon::SetWeaponCollision(bool bRightWeaponEnable, bool bLeftWeaponEnable)
-{
-	User->GetWeaponComponent()->SetWeaponCollision(bRightWeaponEnable, bLeftWeaponEnable);
-}
-
-void UWeapon::RegisterOnAsyncLoadEnded(const FOnAsyncLoadEndedSingle& Callback)
-{
-	check(Callback.IsBound());
-	if (AsyncLoadCount) OnAsyncLoadEnded.Add(Callback);
-	else Callback.Execute();
-}
-
-void UWeapon::PlayEquipAnim()
-{
-	if (EquipAnim)
-		User->PlayAnimMontage(EquipAnim);
 }
