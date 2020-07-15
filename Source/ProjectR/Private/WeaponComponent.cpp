@@ -13,8 +13,8 @@ UWeaponComponent::UWeaponComponent()
 {
 	PrimaryComponentTick.bCanEverTick = false;
 
-	RightWeapon = CreateWeaponComponent(TEXT("RightWeapon"));
-	LeftWeapon = CreateWeaponComponent(TEXT("LeftWeapon"));
+	RightWeapon = CreateWeaponComponent(TEXT("RightWeapon"), TEXT("weapon_r"));
+	LeftWeapon = CreateWeaponComponent(TEXT("LeftWeapon"), TEXT("weapon_l"));
 
 	User = nullptr;
 	WeaponNum = 0;
@@ -89,7 +89,7 @@ void UWeaponComponent::EndPlay(EEndPlayReason::Type EndPlayReason)
 	Super::EndPlay(EndPlayReason);
 }
 
-UStaticMeshComponent* UWeaponComponent::CreateWeaponComponent(FName Name)
+UStaticMeshComponent* UWeaponComponent::CreateWeaponComponent(const FName& Name, const FName& SocketName)
 {
 	auto* Component = CreateDefaultSubobject<UStaticMeshComponent>(Name);
 	check(Component);
@@ -98,6 +98,15 @@ UStaticMeshComponent* UWeaponComponent::CreateWeaponComponent(FName Name)
 	Component->SetMobility(EComponentMobility::Movable);
 	Component->SetCollisionProfileName(TEXT("Weapon"));
 	Component->SetGenerateOverlapEvents(false);
+
+	auto* Character = Cast<ACharacter>(GetOwner());
+	if (Character)
+	{
+		auto* MeshComponent = Character->GetMesh();
+		const auto Rules = FAttachmentTransformRules::KeepWorldTransform;
+		if (MeshComponent->DoesSocketExist(SocketName))
+			Component->AttachToComponent(MeshComponent, Rules, SocketName);
+	}
 
 	return Component;
 }
