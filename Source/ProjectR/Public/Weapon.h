@@ -10,11 +10,7 @@ DECLARE_DYNAMIC_DELEGATE(FOnAsyncLoadEndedSingle);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnAsyncLoadEnded);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnEquipped);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnUnequipped);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnBeginAttack);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnEndAttack);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnShoot);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnExecute);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnWeaponHitted, class AProjectRCharacter*, Target);
 
 UCLASS(BlueprintType)
 class PROJECTR_API UWeapon final : public UObject
@@ -32,11 +28,6 @@ public:
 	void EndSkill(uint8 Index); 
 	bool CanUseSkill(uint8 Index) const;
 
-	void LoadAll(const struct FWeaponData& WeaponData);
-
-	UFUNCTION(BlueprintCallable)
-	void SetWeaponCollision(bool bRightWeaponEnable, bool bLeftWeaponEnable);
-
 	UFUNCTION(BlueprintCallable)
 	void RegisterOnAsyncLoadEnded(const FOnAsyncLoadEndedSingle& Callback);
 
@@ -53,6 +44,8 @@ private:
 	UFUNCTION()
 	void PlayEquipAnim();
 
+	void LoadAll(const struct FWeaponData& WeaponData);
+
 	FORCEINLINE void CheckAndCallAsyncLoadDelegate() { if (--AsyncLoadCount == 0) OnAsyncLoadEnded.Broadcast(); }
 
 public:
@@ -63,19 +56,7 @@ public:
 	FOnUnequipped OnUnequipped;
 
 	UPROPERTY(BlueprintAssignable)
-	FOnBeginAttack OnBeginAttack;
-
-	UPROPERTY(BlueprintAssignable)
-	FOnEndAttack OnEndAttack;
-
-	UPROPERTY(BlueprintAssignable)
-	FOnShoot OnShoot;
-
-	UPROPERTY(BlueprintAssignable)
 	FOnExecute OnExecute;
-
-	UPROPERTY(BlueprintAssignable)
-	FOnWeaponHitted OnWeaponHitted;
 
 private:
 	UPROPERTY()

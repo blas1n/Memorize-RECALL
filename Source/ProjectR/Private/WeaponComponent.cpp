@@ -56,12 +56,6 @@ void UWeaponComponent::CreateNewWeapon(FName Name, uint8 Index)
 	Weapons[Index] = NewWeapon;
 }
 
-void UWeaponComponent::SetWeaponCollision(bool bEnableRight, bool bEnableLeft)
-{
-	RightWeapon->SetGenerateOverlapEvents(bEnableRight);
-	LeftWeapon->SetGenerateOverlapEvents(bEnableLeft);
-}
-
 void UWeaponComponent::BeginPlay()
 {
 	User = Cast<AProjectRCharacter>(GetOwner());
@@ -100,10 +94,8 @@ UStaticMeshComponent* UWeaponComponent::CreateWeaponComponent(FName Name)
 	auto* Component = CreateDefaultSubobject<UStaticMeshComponent>(Name);
 	check(Component);
 
-	Component->SetMobility(EComponentMobility::Movable);
-	Component->OnComponentBeginOverlap.AddDynamic(this, &UWeaponComponent::OnWeaponOverlapped);
-
 	Component->CanCharacterStepUpOn = ECanBeCharacterBase::ECB_No;
+	Component->SetMobility(EComponentMobility::Movable);
 	Component->SetCollisionProfileName(TEXT("Weapon"));
 	Component->SetGenerateOverlapEvents(false);
 
@@ -122,12 +114,6 @@ void UWeaponComponent::EquipWeapon(UWeapon* NewWeapon, bool bNeedUnequip)
 	FOnAsyncLoadEndedSingle Callback;
 	Callback.BindDynamic(this, &UWeaponComponent::SetWeaponMesh);
 	NewWeapon->RegisterOnAsyncLoadEnded(Callback);
-}
-
-void UWeaponComponent::OnWeaponOverlapped(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
-	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
-{
-	Weapons[CurIndex]->OnWeaponHitted.Broadcast(Cast<AProjectRCharacter>(OtherActor));
 }
 
 void UWeaponComponent::SetWeaponMesh()
