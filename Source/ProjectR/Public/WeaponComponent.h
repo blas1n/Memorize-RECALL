@@ -29,8 +29,6 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void CreateNewWeapon(FName Name, uint8 Index);
 
-	void SetWeaponCollision(bool bEnableRight, bool bEnableLeft);
-
 	FORCEINLINE class UStaticMeshComponent* GetRightWeapon() const noexcept { return RightWeapon; }
 	FORCEINLINE UStaticMeshComponent* GetLeftWeapon() const noexcept { return LeftWeapon; }
 
@@ -44,12 +42,8 @@ private:
 	void BeginPlay() override;
 	void EndPlay(EEndPlayReason::Type EndPlayReason);
 
-	UStaticMeshComponent* CreateWeaponComponent(FName Name);
+	UStaticMeshComponent* CreateWeaponComponent(const FName& Name, const FName& SocketName);
 	void EquipWeapon(UWeapon* NewWeapon, bool bNeedUnequip);
-
-	UFUNCTION()
-	void OnWeaponOverlapped(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
-		UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
 	UFUNCTION()
 	void SetWeaponMesh();
@@ -60,10 +54,10 @@ private:
 	void DetachOnce(class UStaticMeshComponent* Weapon);
 
 private:
-	UPROPERTY(BlueprintReadOnly, meta = (AllowPrivateAccess = true))
+	UPROPERTY()
 	UStaticMeshComponent* RightWeapon;
 
-	UPROPERTY(BlueprintReadOnly, meta = (AllowPrivateAccess = true))
+	UPROPERTY()
 	UStaticMeshComponent* LeftWeapon;
 
 	UPROPERTY()
