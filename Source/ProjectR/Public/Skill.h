@@ -6,30 +6,13 @@
 #include "UObject/NoExportTypes.h"
 #include "Skill.generated.h"
 
-DECLARE_DYNAMIC_DELEGATE_OneParam(FOnComponentHandler, class UActorComponent*, Component);
-
-USTRUCT(Atomic, BlueprintType)
-struct FComponentInitData
-{
-	GENERATED_BODY()
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	FName Name;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	TSubclassOf<UActorComponent> Class;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	FOnComponentHandler Handler;
-};
-
 UCLASS(Abstract, Blueprintable)
 class PROJECTR_API USkill final : public UObject
 {
 	GENERATED_BODY()
 	
 public:
-	void BeginPlay();
+	void BeginPlay(const struct FSkillData& SkillData);
 
 	UFUNCTION(BlueprintImplementableEvent)
 	void EndPlay();
@@ -43,16 +26,13 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
 	bool CanUse() const;
 
-	UFUNCTION(BlueprintImplementableEvent)
-	TArray<FComponentInitData> GetNeedComponents();
-
 	UWorld* GetWorld() const override;
 
 	FORCEINLINE int32 GetPriority() const noexcept { return Priority; }
 
 protected:
 	UFUNCTION(BlueprintImplementableEvent, meta = (DisplayName = "BeginPlay"))
-	void ReceiveBeginPlay();
+	void ReceiveBeginPlay(class UDataAsset* SkillData);
 
 	UFUNCTION(BlueprintImplementableEvent, meta = (DisplayName = "Start"))
 	void ReceiveStart();
@@ -88,14 +68,8 @@ private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Owner, meta = (AllowPrivateAccess = true))
 	UWeapon* Weapon;
 
-	UPROPERTY(EditDefaultsOnly, Category = Data, meta = (AllowPrivateAccess = true))
 	int32 Priority;
-
-	UPROPERTY(EditDefaultsOnly, Category = Data, meta = (AllowPrivateAccess = true))
 	float CoolTime;
-
-	UPROPERTY(EditDefaultsOnly, Category = Data, meta = (AllowPrivateAccess = true))
-	uint8 UseEnergy;
-
 	float NextUseTime;
+	uint8 UseEnergy;
 };

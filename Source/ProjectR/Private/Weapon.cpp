@@ -7,6 +7,7 @@
 #include "Components/ActorComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Character/ProjectRCharacter.h"
+#include "Data/SkillData.h"
 #include "Data/WeaponData.h"
 #include "Framework/ProjectRGameInstance.h"
 #include "ProjectRStatics.h"
@@ -29,13 +30,14 @@ void UWeapon::BeginPlay(const FName& InName)
 	
 	LoadAll(WeaponData);
 
-	Skills.Init(nullptr, WeaponData.Skills.Num());
-	for (int32 Index = 0; Index < WeaponData.Skills.Num(); ++Index)
+	const int32 SkillNum = WeaponData.SkillsData.Num();
+	Skills.Init(nullptr, SkillNum);
+	for (int32 Index = 0; Index < SkillNum; ++Index)
 	{
-		TSubclassOf<USkill> SkillClass = WeaponData.Skills[Index];
+		const FSkillData& SkillData = WeaponData.SkillsData[Index];
+		TSubclassOf<USkill> SkillClass = SkillData.SkillClass;
 		Skills[Index] = NewObject<USkill>(this, SkillClass);
-		Skills[Index]->BeginPlay();
-		AddComponents(Skills[Index]);
+		Skills[Index]->BeginPlay(SkillData);
 	}
 }
 
@@ -81,6 +83,19 @@ bool UWeapon::CanUseSkill(uint8 Index) const
 	return Skills[Index]->CanUse();
 }
 
+void UWeapon::RegisterOnAsyncLoadEnded(const FOnAsyncLoadEndedSingle& Callback)
+{
+	check(Callback.IsBound());
+	if (AsyncLoadCount) OnAsyncLoadEnded.Add(Callback);
+	else Callback.Execute();
+}
+
+void UWeapon::PlayEquipAnim()
+{
+	if (EquipAnim)
+		User->PlayAnimMontage(EquipAnim);
+}
+
 void UWeapon::LoadAll(const FWeaponData& WeaponData)
 {
 	if (!WeaponData.RightMesh.IsNull())
@@ -111,47 +126,5 @@ void UWeapon::LoadAll(const FWeaponData& WeaponData)
 			EquipAnim = EquipAnimPtr.Get();
 			CheckAndCallAsyncLoadDelegate();
 		});
-	}
-}
-
-void UWeapon::SetWeaponCollision(bool bRightWeaponEnable, bool bLeftWeaponEnable)
-{
-	User->GetWeaponComponent()->SetWeaponCollision(bRightWeaponEnable, bLeftWeaponEnable);
-}
-
-void UWeapon::RegisterOnAsyncLoadEnded(const FOnAsyncLoadEndedSingle& Callback)
-{
-	check(Callback.IsBound());
-	if (AsyncLoadCount) OnAsyncLoadEnded.Add(Callback);
-	else Callback.Execute();
-}
-
-void UWeapon::PlayEquipAnim()
-{
-	if (EquipAnim)
-		User->PlayAnimMontage(EquipAnim);
-}
-
-void UWeapon::AddComponents(USkill* Skill)
-{
-	const auto Datas = Skill->GetNeedComponents();
-	
-	for (const auto& Data : Datas)
-	{
-		auto** ComponentPtr = Components.Find(Data.Name);
-		UActorComponent* Component = nullptr;
-
-		if (ComponentPtr)
-		{
-			Component = *ComponentPtr;
-		}
-		else
-		{
-			Component = NewObject<UActorComponent>(User, Data.Class);
-			Component->RegisterComponent();
-			Components.Add(Data.Name, Component);
-		}
-
-		Data.Handler.ExecuteIfBound(Component);
 	}
 }
