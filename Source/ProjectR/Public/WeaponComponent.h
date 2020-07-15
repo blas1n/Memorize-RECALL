@@ -42,7 +42,7 @@ private:
 	void BeginPlay() override;
 	void EndPlay(EEndPlayReason::Type EndPlayReason);
 
-	UStaticMeshComponent* CreateWeaponComponent(FName Name);
+	UStaticMeshComponent* CreateWeaponComponent(const FName& Name, const FName& SocketName);
 	void EquipWeapon(UWeapon* NewWeapon, bool bNeedUnequip);
 
 	UFUNCTION()
@@ -54,10 +54,10 @@ private:
 	void DetachOnce(class UStaticMeshComponent* Weapon);
 
 private:
-	UPROPERTY(BlueprintReadOnly, meta = (AllowPrivateAccess = true))
+	UPROPERTY()
 	UStaticMeshComponent* RightWeapon;
 
-	UPROPERTY(BlueprintReadOnly, meta = (AllowPrivateAccess = true))
+	UPROPERTY()
 	UStaticMeshComponent* LeftWeapon;
 
 	UPROPERTY()
