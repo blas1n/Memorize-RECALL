@@ -96,4 +96,7 @@ private:
 
 	UPROPERTY()
 	mutable TArray<UBuff*> Buffs;
+
+	UPROPERTY()
+	class UDataTable* StatDataTable;
 };
