@@ -3,8 +3,6 @@
 #include "WeaponComponent.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "Components/StaticMeshComponent.h"
-#include "Engine/StaticMeshActor.h"
-#include "Kismet/GameplayStatics.h"
 #include "Character/ProjectRCharacter.h"
 #include "Weapon.h"
 
@@ -21,18 +19,36 @@ UWeaponComponent::UWeaponComponent()
 	CurIndex = 0;
 }
 
+void UWeaponComponent::Initialize(const TArray<int32>& Keies)
+{
+	WeaponNum = Keies.Num();
+	Weapons.SetNum(WeaponNum);
+
+	for (int32 Idx = 0; Idx < WeaponNum; ++Idx)
+	{
+		Weapons[Idx] = NewObject<UWeapon>(GetOwner());
+		Weapons[Idx]->Initialize(Keies[Idx]);
+	}
+
+	if (Weapons.Num() > 0)
+		EquipWeapon(Weapons[0], false);
+}
+
 void UWeaponComponent::StartSkill(uint8 Index)
 {
-	Weapons[CurIndex]->StartSkill(Index);
+	if (WeaponNum > 0)
+		Weapons[CurIndex]->StartSkill(Index);
 }
 
 void UWeaponComponent::EndSkill(uint8 Index)
 {
-	Weapons[CurIndex]->EndSkill(Index);
+	if (WeaponNum > 0)
+		Weapons[CurIndex]->EndSkill(Index);
 }
 
 bool UWeaponComponent::CanUseSkill(uint8 Index) const
 {
+	if (WeaponNum == 0) return false;
 	return Weapons[CurIndex]->CanUseSkill(Index);
 }
 
@@ -45,10 +61,11 @@ void UWeaponComponent::SwapWeapon(uint8 Index)
 	CurIndex = Index;
 }
 
-void UWeaponComponent::CreateNewWeapon(FName Name, uint8 Index)
+void UWeaponComponent::CreateNewWeapon(int32 Key, uint8 Index)
 {
 	auto* NewWeapon = NewObject<UWeapon>(User);
-	NewWeapon->BeginPlay(Name);
+	NewWeapon->Initialize(Key);
+	NewWeapon->BeginPlay();
 
 	EquipWeapon(NewWeapon, CurIndex == Index);
 
@@ -61,24 +78,10 @@ void UWeaponComponent::BeginPlay()
 	User = Cast<AProjectRCharacter>(GetOwner());
 	User->OnDeath.AddDynamic(this, &UWeaponComponent::Detach);
 
-	auto* MeshComponent = User->GetMesh();
-	const auto Rules = FAttachmentTransformRules::KeepWorldTransform;
-	RightWeapon->AttachToComponent(MeshComponent, Rules, TEXT("Weapon_r"));
-	LeftWeapon->AttachToComponent(MeshComponent, Rules, TEXT("Weapon_l"));
-
-	const TArray<FName> WeaponNames = User->GetWeaponNames();
-	WeaponNum = WeaponNames.Num();
-	Weapons.Init(nullptr, WeaponNum);
-
-	for (int32 Idx = 0; Idx < WeaponNum; ++Idx)
-	{
-		Weapons[Idx] = NewObject<UWeapon>(User);
-		Weapons[Idx]->BeginPlay(WeaponNames[Idx]);
-	}
-
-	if (Weapons.Num() > 0)
-		EquipWeapon(Weapons[0], false);
 	Super::BeginPlay();
+
+	for (UWeapon* Weapon : Weapons)
+		if (Weapon)	Weapon->BeginPlay();
 }
 
 void UWeaponComponent::EndPlay(EEndPlayReason::Type EndPlayReason)
@@ -103,7 +106,7 @@ UStaticMeshComponent* UWeaponComponent::CreateWeaponComponent(const FName& Name,
 	if (Character)
 	{
 		auto* MeshComponent = Character->GetMesh();
-		const auto Rules = FAttachmentTransformRules::KeepWorldTransform;
+		const auto Rules = FAttachmentTransformRules::KeepRelativeTransform;
 		if (MeshComponent->DoesSocketExist(SocketName))
 			Component->AttachToComponent(MeshComponent, Rules, SocketName);
 	}
@@ -120,18 +123,14 @@ void UWeaponComponent::EquipWeapon(UWeapon* NewWeapon, bool bNeedUnequip)
 
 	NewWeapon->Equip();
 
-	FOnAsyncLoadEndedSingle Callback;
-	Callback.BindDynamic(this, &UWeaponComponent::SetWeaponMesh);
-	NewWeapon->RegisterOnAsyncLoadEnded(Callback);
-}
-
-void UWeaponComponent::SetWeaponMesh()
-{
-	RightWeapon->SetStaticMesh(Weapons[CurIndex]->GetRightWeaponMesh());
-	RightWeapon->SetRelativeTransform(Weapons[CurIndex]->GetRightWeaponTransform());
-
-	LeftWeapon->SetStaticMesh(Weapons[CurIndex]->GetLeftWeaponMesh());
-	LeftWeapon->SetRelativeTransform(Weapons[CurIndex]->GetLeftWeaponTransform());
+	NewWeapon->RegisterOnAsyncLoadEnded(FOnAsyncLoadEndedSingle::CreateLambda([this]
+	{
+		RightWeapon->SetStaticMesh(Weapons[CurIndex]->GetRightWeaponMesh());
+		RightWeapon->SetRelativeTransform(Weapons[CurIndex]->GetRightWeaponTransform());
+	
+		LeftWeapon->SetStaticMesh(Weapons[CurIndex]->GetLeftWeaponMesh());
+		LeftWeapon->SetRelativeTransform(Weapons[CurIndex]->GetLeftWeaponTransform());
+	}));
 }
 
 void UWeaponComponent::Detach(AController* Instigator)
