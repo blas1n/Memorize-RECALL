@@ -13,16 +13,7 @@ struct FWeaponData : public FTableRowBase
 	GENERATED_BODY()
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	int32 Key;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	TArray<FSkillData> SkillsData;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	TSubclassOf<class UAnimInstance> UpperAnimInstance;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	TAssetPtr<class UAnimMontage> EquipAnim;
+	TArray<TSubclassOf<class USkill>> SkillClasses;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TAssetPtr<class UStaticMesh> RightMesh;
@@ -35,4 +26,10 @@ struct FWeaponData : public FTableRowBase
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FTransform LeftTransform;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TSubclassOf<class UAnimInstance> UpperAnimInstance;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TAssetPtr<class UAnimMontage> EquipAnim;
 };
