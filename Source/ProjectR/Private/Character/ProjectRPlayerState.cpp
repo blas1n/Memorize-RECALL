@@ -6,6 +6,7 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "UObject/ConstructorHelpers.h"
+#include "Buff/Lock.h"
 #include "Buff/Run.h"
 #include "Character/ProjectRCharacter.h"
 #include "Data/StatData.h"
@@ -84,13 +85,13 @@ void AProjectRPlayerState::SetWalkSpeed(float Value)
 		User->GetCharacterMovement()->MaxWalkSpeed = WalkSpeed;
 }
 
-void AProjectRPlayerState::SetLookSpeed(float Value)
+void AProjectRPlayerState::SetLockSpeed(float Value)
 {
-	LookSpeed = Value;
+	LockSpeed = Value;
 
 	auto* User = GetPawn<AProjectRCharacter>();
-	if (User && !UBuffLibrary::IsActivate<URun>(User))
-		User->GetCharacterMovement()->MaxWalkSpeed = LookSpeed;
+	if (User && UBuffLibrary::IsActivate<ULock>(User))
+		User->GetCharacterMovement()->MaxWalkSpeed = LockSpeed;
 }
 
 UBuff* AProjectRPlayerState::GetBuff(TSubclassOf<UBuff> BuffClass) const
@@ -140,7 +141,7 @@ void AProjectRPlayerState::BeginPlay()
 
 	SetRunSpeed(Data->RunSpeed);
 	SetWalkSpeed(Data->WalkSpeed);
-	SetWalkSpeed(Data->LookSpeed);
+	SetLockSpeed(Data->LockSpeed);
 }
 
 void AProjectRPlayerState::EndPlay(EEndPlayReason::Type EndPlayReason)
