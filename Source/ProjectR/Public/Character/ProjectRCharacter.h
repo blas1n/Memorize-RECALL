@@ -24,21 +24,25 @@ public:
 
 	UFUNCTION(BlueprintNativeEvent)
 	FVector GetViewLocation() const;
-	
-	UFUNCTION(BlueprintImplementableEvent)
-	TArray<FName> GetWeaponNames();
 
 	FORCEINLINE class UWeaponComponent* GetWeaponComponent() const noexcept { return WeaponComponent; }
-	FORCEINLINE const FName& GetName() const noexcept { return Name; }
+	FORCEINLINE int32 GetKey() const noexcept { return Key; }
+	FORCEINLINE int32 GetLevel() const noexcept { return Level; }
 	FORCEINLINE bool IsDeath() const noexcept { return bIsDeath; }
 
 private:
-	void BeginPlay() override;
+#if WITH_EDITOR
+	void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
+#endif
 
+	void PostInitializeComponents() override;
+	
 	float TakeDamage(float DamageAmount, const FDamageEvent& DamageEvent,
 		AController* EventInstigator, AActor* DamageCauser) override;
 
 	void Landed(const FHitResult& Hit) override;
+
+	void Initialize();
 
 	UFUNCTION()
 	void HealHealthAndEnergy(AProjectRCharacter* Target, int32 Damage);
@@ -63,8 +67,17 @@ private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = true))
 	UWeaponComponent* WeaponComponent;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = true))
-	FName Name;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Data, meta = (AllowPrivateAccess = true))
+	int32 Key;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Data, meta = (AllowPrivateAccess = true))
+	int32 Level;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Data, meta = (AllowPrivateAccess = true))
+	TArray<int32> WeaponKeies;
+
+	UPROPERTY()
+	class UDataTable* CharacterDataTable;
 
 	uint8 bIsDeath : 1;
 };

@@ -2,49 +2,50 @@
 
 #include "AIManagerComponent.h"
 #include "Components/SkeletalMeshComponent.h"
-#include "Engine/AssetManager.h"
+#include "Engine/DataTable.h"
 #include "Engine/World.h"
 #include "Kismet/GameplayStatics.h"
+#include "UObject/ConstructorHelpers.h"
 #include "Character/ProjectRAIController.h"
 #include "Character/ProjectRCharacter.h"
-#include "Data/AIData.h"
+#include "Data/LogicData.h"
 #include "Framework/ProjectRGameInstance.h"
 #include "ProjectRStatics.h"
 
-const TArray<FName>& UAIManagerComponent::GetWeaponNames()
+UAIManagerComponent::UAIManagerComponent()
 {
-	if (!bIsInit)
-		Initialize();
+	static ConstructorHelpers::FObjectFinder<UDataTable> DataTable(TEXT("DataTable'/Game/Data/DataTable/DT_LogicData.DT_LogicData'"));
+	LogicDataTable = DataTable.Object;
+}
 
-	return WeaponNames;
+void UAIManagerComponent::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
+{
+	Super::PostEditChangeProperty(PropertyChangedEvent);
+
+	Initialize();
 }
 
 void UAIManagerComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
-	if (!bIsInit)
-		Initialize();
+	Initialize();
 }
 
 void UAIManagerComponent::Initialize()
 {
-	bIsInit = true;
-
-	const auto* GameInstance = Cast<UProjectRGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
-	const auto* DataTable = GameInstance->GetDataTable(TEXT("AIData"));
-	const auto* MyPawn = Cast<AProjectRCharacter>(GetOwner());
-	const auto& AIData = *DataTable->FindRow<FAIData>(MyPawn->GetName(), "", false);
-
-	WeaponNames = AIData.WeaponNames;
+	const auto* Data = LogicDataTable->FindRow<FLogicData>(FName{ *FString::FromInt(LogicKey) }, TEXT(""));
+	if (!Data)
+	{
+		UE_LOG(LogDataTable, Error, TEXT("Cannot found logic data %d!"), LogicKey);
+		return;
+	}
 	
-	UProjectRStatics::AsyncLoad(AIData.Mesh, [this, &MeshPtr = AIData.Mesh, &AnimClass = AIData.AnimClass]() mutable
-		{
-			auto* MeshComp = Cast<AProjectRCharacter>(GetOwner())->GetMesh();
-			MeshComp->SetSkeletalMesh(MeshPtr.Get());
-			MeshComp->SetAnimClass(AnimClass);
-		});
+	auto* MyOwner = Cast<APawn>(GetOwner());
+	if (!MyOwner) return;
 	
-	auto* Controller = MyPawn->GetController<AProjectRAIController>();
-	Controller->InitLogic(AIData.LogicData);
+	auto* Controller = MyOwner->GetController<AProjectRAIController>();
+	if (!Controller) return;
+
+	Controller->InitLogic(BehaviorTree, *Data);
 }

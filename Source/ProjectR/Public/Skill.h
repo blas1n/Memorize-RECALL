@@ -12,7 +12,10 @@ class PROJECTR_API USkill final : public UObject
 	GENERATED_BODY()
 	
 public:
-	void BeginPlay(const struct FSkillData& SkillData);
+	USkill();
+	void Initialize(const FName& KeyStr);
+
+	void BeginPlay();
 
 	UFUNCTION(BlueprintImplementableEvent)
 	void EndPlay();
@@ -31,8 +34,11 @@ public:
 	FORCEINLINE int32 GetPriority() const noexcept { return Priority; }
 
 protected:
+	UFUNCTION(BlueprintImplementableEvent, meta = (DisplayName = "Initialize"))
+	void ReceiveInitialize(class UDataAsset* SkillData);
+
 	UFUNCTION(BlueprintImplementableEvent, meta = (DisplayName = "BeginPlay"))
-	void ReceiveBeginPlay(class UDataAsset* SkillData);
+	void ReceiveBeginPlay();
 
 	UFUNCTION(BlueprintImplementableEvent, meta = (DisplayName = "Start"))
 	void ReceiveStart();
@@ -67,6 +73,9 @@ private:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Owner, meta = (AllowPrivateAccess = true))
 	UWeapon* Weapon;
+
+	UPROPERTY()
+	class UDataTable* SkillDataTable;
 
 	int32 Priority;
 	float CoolTime;

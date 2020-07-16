@@ -44,6 +44,9 @@ public:
 	UFUNCTION(BlueprintSetter)
 	void SetWalkSpeed(float Value);
 
+	UFUNCTION(BlueprintSetter)
+	void SetLockSpeed(float Value);
+
 	class UBuff* GetBuff(TSubclassOf<UBuff> BuffClass) const;
 
 	FORCEINLINE int32 GetHealth() const noexcept { return Health; }
@@ -56,6 +59,7 @@ public:
 
 	FORCEINLINE float GetRunSpeed() const noexcept { return RunSpeed; }
 	FORCEINLINE float GetWalkSpeed() const noexcept { return WalkSpeed; }
+	FORCEINLINE float GetLockSpeed() const noexcept { return LockSpeed; }
 	
 private:
 	void BeginPlay() override;
@@ -87,6 +91,12 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintSetter = SetWalkSpeed, Category = Speed, meta = (AllowPrivateAccess = true))
 	float WalkSpeed;
 
+	UPROPERTY(EditAnywhere, BlueprintSetter = SetLockSpeed, Category = Speed, meta = (AllowPrivateAccess = true))
+	float LockSpeed;
+
 	UPROPERTY()
 	mutable TArray<UBuff*> Buffs;
+
+	UPROPERTY()
+	class UDataTable* StatDataTable;
 };
