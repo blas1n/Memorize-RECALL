@@ -3,17 +3,15 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Engine/DataTable.h"
 #include "SkillData.generated.h"
 
 USTRUCT(Atomic, BlueprintType)
-struct FSkillData
+struct FSkillData : public FTableRowBase
 {
 	GENERATED_BODY()
 
 public:
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = true))
-	TSubclassOf<class USkill> SkillClass;
-
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = true))
 	int32 Priority;
 
