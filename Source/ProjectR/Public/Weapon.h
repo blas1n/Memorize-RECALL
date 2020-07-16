@@ -6,8 +6,8 @@
 #include "UObject/NoExportTypes.h"
 #include "Weapon.generated.h"
 
-DECLARE_DYNAMIC_DELEGATE(FOnAsyncLoadEndedSingle);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnAsyncLoadEnded);
+DECLARE_DELEGATE(FOnAsyncLoadEndedSingle);
+DECLARE_MULTICAST_DELEGATE(FOnAsyncLoadEnded);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnEquipped);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnUnequipped);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnExecute);
@@ -18,7 +18,10 @@ class PROJECTR_API UWeapon final : public UObject
 	GENERATED_BODY()
 	
 public:
-	void BeginPlay(const FName& InName);
+	UWeapon();
+	void Initialize(int32 Key);
+
+	void BeginPlay();
 	void EndPlay();
 
 	void Equip();
@@ -28,11 +31,7 @@ public:
 	void EndSkill(uint8 Index); 
 	bool CanUseSkill(uint8 Index) const;
 
-	UFUNCTION(BlueprintCallable)
 	void RegisterOnAsyncLoadEnded(const FOnAsyncLoadEndedSingle& Callback);
-
-	FORCEINLINE const FName& GetName() const noexcept { return Name; }
-	FORCEINLINE uint8 GetKey() const noexcept { return Key; }
 
 	FORCEINLINE class UStaticMesh* GetRightWeaponMesh() const noexcept { return RightWeaponMesh; }
 	FORCEINLINE const FTransform& GetRightWeaponTransform() const noexcept { return RightWeaponTransform; }
@@ -41,9 +40,6 @@ public:
 	FORCEINLINE const FTransform& GetLeftWeaponTransform() const noexcept { return LeftWeaponTransform; }
 
 private:
-	UFUNCTION()
-	void PlayEquipAnim();
-
 	void LoadAll(const struct FWeaponData& WeaponData);
 
 	FORCEINLINE void CheckAndCallAsyncLoadDelegate() { if (--AsyncLoadCount == 0) OnAsyncLoadEnded.Broadcast(); }
@@ -77,12 +73,13 @@ private:
 	UPROPERTY()
 	UStaticMesh* LeftWeaponMesh;
 
+	UPROPERTY()
+	class UDataTable* WeaponDataTable;
+
 	FTransform RightWeaponTransform;
 	FTransform LeftWeaponTransform;
 
 	FOnAsyncLoadEnded OnAsyncLoadEnded;
 
-	FName Name;
-	uint8 Key;
 	uint8 AsyncLoadCount;
 };
