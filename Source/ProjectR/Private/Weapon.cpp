@@ -25,7 +25,7 @@ void UWeapon::Initialize(int32 Key)
 	const auto* Data = WeaponDataTable->FindRow<FWeaponData>(FName{ *FString::FromInt(Key) }, TEXT(""));
 	if (!Data)
 	{
-		UE_LOG(LogDataTable, Error, TEXT("Cannot found %d data!"), Key);
+		UE_LOG(LogDataTable, Error, TEXT("Cannot found weapon data %d!"), Key);
 		return;
 	}
 
