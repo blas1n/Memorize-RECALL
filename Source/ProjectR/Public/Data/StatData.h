@@ -10,7 +10,7 @@ USTRUCT(Atomic, BlueprintType)
 struct FStatData : public FTableRowBase
 {
 	GENERATED_BODY()
-	
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	int32 MaxHealth;
 
@@ -28,4 +28,7 @@ struct FStatData : public FTableRowBase
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float WalkSpeed;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float LockSpeed;
 };

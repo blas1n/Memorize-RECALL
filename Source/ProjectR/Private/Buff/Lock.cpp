@@ -5,6 +5,7 @@
 #include "GameFramework/Controller.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Character/ProjectRCharacter.h"
+#include "Character/ProjectRPlayerState.h"
 
 void ULock::Lock(AActor* InLockedTarget)
 {
@@ -31,6 +32,10 @@ void ULock::OnApply()
 {
 	GetTarget()->GetCharacterMovement()->bUseControllerDesiredRotation = LockedTarget != nullptr;
 	GetTarget()->GetCharacterMovement()->bOrientRotationToMovement = false;
+
+	if (auto* PlayerState = GetTarget()->GetPlayerState<AProjectRPlayerState>())
+		GetTarget()->GetCharacterMovement()->MaxWalkSpeed = PlayerState->GetLockSpeed();
+	
 	bIsLocked = true;
 }
 
@@ -38,6 +43,10 @@ void ULock::OnRelease()
 {
 	GetTarget()->GetCharacterMovement()->bUseControllerDesiredRotation = false;
 	GetTarget()->GetCharacterMovement()->bOrientRotationToMovement = true;
+
+	if (auto* PlayerState = GetTarget()->GetPlayerState<AProjectRPlayerState>())
+		GetTarget()->GetCharacterMovement()->MaxWalkSpeed = PlayerState->GetWalkSpeed();
+
 	bIsLocked = false;
 }
 

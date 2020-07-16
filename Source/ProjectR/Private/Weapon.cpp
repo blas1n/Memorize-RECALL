@@ -4,41 +4,57 @@
 #include "Animation/AnimInstance.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "Engine/StaticMesh.h"
-#include "Components/ActorComponent.h"
-#include "Kismet/GameplayStatics.h"
+#include "UObject/ConstructorHelpers.h"
 #include "Character/ProjectRCharacter.h"
-#include "Data/SkillData.h"
 #include "Data/WeaponData.h"
-#include "Framework/ProjectRGameInstance.h"
 #include "ProjectRStatics.h"
 #include "Skill.h"
-#include "WeaponComponent.h"
 
-void UWeapon::BeginPlay(const FName& InName)
+UWeapon::UWeapon()
+	: Super()
 {
-	User = Cast<AProjectRCharacter>(GetOuter());
-	Name = InName;
+	static ConstructorHelpers::FObjectFinder<UDataTable> DataTable(TEXT("DataTable'/Game/Data/DataTable/DT_WeaponData.DT_WeaponData'"));
+	WeaponDataTable = DataTable.Object;
+}
 
-	const auto* GameInstance = Cast<UProjectRGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
-	const auto* DataTable = GameInstance->GetDataTable(TEXT("WeaponData"));
-	const auto& WeaponData = *DataTable->FindRow<FWeaponData>(Name, "", false);
+void UWeapon::Initialize(int32 Key)
+{
+	User = GetTypedOuter<AProjectRCharacter>();
+	if (!User) return;
 
-	Key = WeaponData.Key;
-	UpperAnimInstance = WeaponData.UpperAnimInstance;
-	RightWeaponTransform = WeaponData.RightTransform;
-	LeftWeaponTransform = WeaponData.LeftTransform;
-	
-	LoadAll(WeaponData);
+	const auto* Data = WeaponDataTable->FindRow<FWeaponData>(FName{ *FString::FromInt(Key) }, TEXT(""));
+	if (!Data)
+	{
+		UE_LOG(LogDataTable, Error, TEXT("Cannot found weapon data %d!"), Key);
+		return;
+	}
 
-	const int32 SkillNum = WeaponData.SkillsData.Num();
-	Skills.Init(nullptr, SkillNum);
+	const int32 SkillNum = Data->SkillClasses.Num();
+	Skills.SetNum(SkillNum);
+
 	for (int32 Index = 0; Index < SkillNum; ++Index)
 	{
-		const FSkillData& SkillData = WeaponData.SkillsData[Index];
-		TSubclassOf<USkill> SkillClass = SkillData.SkillClass;
+		TSubclassOf<USkill> SkillClass = Data->SkillClasses[Index];
 		Skills[Index] = NewObject<USkill>(this, SkillClass);
-		Skills[Index]->BeginPlay(SkillData);
+
+		FString KeyStr = FString::FromInt(Key);
+		KeyStr += FString::FromInt(Index);
+		KeyStr += FString::FromInt(User->GetLevel());
+
+		Skills[Index]->Initialize(FName{ *KeyStr });
 	}
+
+	UpperAnimInstance = Data->UpperAnimInstance;
+	RightWeaponTransform = Data->RightTransform;
+	LeftWeaponTransform = Data->LeftTransform;
+
+	LoadAll(*Data);
+}
+
+void UWeapon::BeginPlay()
+{
+	for (USkill* Skill : Skills)
+		Skill->BeginPlay();
 }
 
 void UWeapon::EndPlay()
@@ -49,19 +65,23 @@ void UWeapon::EndPlay()
 
 void UWeapon::Equip()
 {
-	auto* AnimInstance = User->GetMesh()->GetAnimInstance();
-	AnimInstance->LinkAnimClassLayers(UpperAnimInstance);
+	if (auto* AnimInstance = User->GetMesh()->GetAnimInstance())
+		AnimInstance->LinkAnimClassLayers(UpperAnimInstance);
+
 	OnEquipped.Broadcast();
 
-	FOnAsyncLoadEndedSingle Callback;
-	Callback.BindDynamic(this, &UWeapon::PlayEquipAnim);
-	RegisterOnAsyncLoadEnded(Callback);
+	RegisterOnAsyncLoadEnded(FOnAsyncLoadEndedSingle::CreateLambda([this]
+	{
+		if (EquipAnim)
+			User->PlayAnimMontage(EquipAnim);
+	}));
 }
 
 void UWeapon::Unequip()
 {
-	auto* AnimInstance = User->GetMesh()->GetAnimInstance();
-	AnimInstance->UnlinkAnimClassLayers(UpperAnimInstance);
+	if (auto* AnimInstance = User->GetMesh()->GetAnimInstance())
+		AnimInstance->UnlinkAnimClassLayers(UpperAnimInstance);
+
 	OnUnequipped.Broadcast();
 }
 
@@ -88,12 +108,6 @@ void UWeapon::RegisterOnAsyncLoadEnded(const FOnAsyncLoadEndedSingle& Callback)
 	check(Callback.IsBound());
 	if (AsyncLoadCount) OnAsyncLoadEnded.Add(Callback);
 	else Callback.Execute();
-}
-
-void UWeapon::PlayEquipAnim()
-{
-	if (EquipAnim)
-		User->PlayAnimMontage(EquipAnim);
 }
 
 void UWeapon::LoadAll(const FWeaponData& WeaponData)

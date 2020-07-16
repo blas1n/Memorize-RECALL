@@ -14,6 +14,8 @@ class PROJECTR_API UWeaponComponent final : public UActorComponent
 public:	
 	UWeaponComponent();
 
+	void Initialize(const TArray<int32>& Keies);
+
 	UFUNCTION(BlueprintCallable)
 	void StartSkill(uint8 Index);
 
@@ -27,7 +29,7 @@ public:
 	void SwapWeapon(uint8 Index);
 
 	UFUNCTION(BlueprintCallable)
-	void CreateNewWeapon(FName Name, uint8 Index);
+	void CreateNewWeapon(int32 Key, uint8 Index);
 
 	FORCEINLINE class UStaticMeshComponent* GetRightWeapon() const noexcept { return RightWeapon; }
 	FORCEINLINE UStaticMeshComponent* GetLeftWeapon() const noexcept { return LeftWeapon; }
@@ -44,9 +46,6 @@ private:
 
 	UStaticMeshComponent* CreateWeaponComponent(const FName& Name, const FName& SocketName);
 	void EquipWeapon(UWeapon* NewWeapon, bool bNeedUnequip);
-
-	UFUNCTION()
-	void SetWeaponMesh();
 
 	UFUNCTION()
 	void Detach(AController* Instigator);
