@@ -12,16 +12,23 @@ class PROJECTR_API UAIManagerComponent final : public UActorComponent
 	GENERATED_BODY()
 
 public:
-	UFUNCTION(BlueprintCallable)
-	const TArray<FName>& GetWeaponNames();
+	UAIManagerComponent();
 
 private:
-	void BeginPlay() override;
+#if WITH_EDITOR
+	void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
+#endif
 
+	void BeginPlay() override;
 	void Initialize();
 
 private:
-	TArray<FName> WeaponNames;
+	UPROPERTY(EditAnywhere, Category = AI, meta = (AllowPrivateAccess = true))
+	TAssetPtr<class UBehaviorTree> BehaviorTree;
 
-	uint8 bIsInit : 1;
+	UPROPERTY(EditAnywhere, Category = AI, meta = (AllowPrivateAccess = true))
+	int32 LogicKey;
+
+	UPROPERTY()
+	class UDataTable* LogicDataTable;
 };

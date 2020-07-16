@@ -3,10 +3,10 @@
 #include "Character/ProjectRAIController.h"
 #include "BehaviorTree/BehaviorTree.h"
 #include "BehaviorTree/BlackboardComponent.h"
-#include "Engine/AssetManager.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Perception/AIPerceptionComponent.h"
 #include "Perception/AISenseConfig_Sight.h"
+#include "AIManagerComponent.h"
 #include "Buff/Lock.h"
 #include "Character/ProjectRCharacter.h"
 #include "Data/LogicData.h"
@@ -29,13 +29,13 @@ AProjectRAIController::AProjectRAIController()
 	GetPerceptionComponent()->OnPerceptionUpdated.AddDynamic(this, &AProjectRAIController::OnPerceptionUpdated);
 }
 
-void AProjectRAIController::InitLogic(const FLogicData& LogicData)
+void AProjectRAIController::InitLogic(const TAssetPtr<UBehaviorTree>& BehaviorTree, const FLogicData& LogicData)
 {
-	UProjectRStatics::AsyncLoad(LogicData.BehaviorTree, [this, &LogicData]() mutable
-		{
-			RunBehaviorTree(LogicData.BehaviorTree.Get());
-			InitBlackboard(LogicData);
-		});
+	UProjectRStatics::AsyncLoad(BehaviorTree, [this, BehaviorTree, LogicData]() mutable
+	{
+		RunBehaviorTree(BehaviorTree.Get());
+		InitBlackboard(LogicData);
+	});
 
 	DetectionIncrease = LogicData.DetectionIncrease;
 	DetectionDecrease = LogicData.DetectionDecrease;

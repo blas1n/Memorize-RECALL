@@ -20,7 +20,7 @@ class PROJECTR_API AProjectRAIController final : public AAIController
 public:
 	AProjectRAIController();
 
-	void InitLogic(const struct FLogicData& LogicData);
+	void InitLogic(const TAssetPtr<UBehaviorTree>& BehaviorTree, const struct FLogicData& LogicData);
 
 	UFUNCTION(BlueprintCallable)
 	void SetAIState(EAIState NewAIState);
