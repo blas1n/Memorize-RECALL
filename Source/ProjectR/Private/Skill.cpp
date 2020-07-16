@@ -1,7 +1,9 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "Skill.h"
+#include "Engine/DataTable.h"
 #include "Engine/World.h"
+#include "UObject/ConstructorHelpers.h"
 #include "Buff/Cast.h"
 #include "Character/ProjectRCharacter.h"
 #include "Character/ProjectRPlayerState.h"
@@ -9,16 +11,38 @@
 #include "BuffLibrary.h"
 #include "Weapon.h"
 
-void USkill::BeginPlay(const FSkillData& SkillData)
+USkill::USkill()
+	: Super()
 {
-	Weapon = Cast<UWeapon>(GetOuter());
+	static ConstructorHelpers::FObjectFinder<UDataTable> DataTable(TEXT("DataTable'/Game/Data/DataTable/DT_SkillData.DT_SkillData'"));
+	SkillDataTable = DataTable.Object;
+}
+
+void USkill::Initialize(const FName& KeyStr)
+{
+	Weapon = GetTypedOuter<UWeapon>();
+	if (!Weapon) return;
+
 	User = Cast<AProjectRCharacter>(Weapon->GetOuter());
+	if (!User) return;
 
-	Priority = SkillData.Priority;
-	CoolTime = SkillData.CoolTime;
-	UseEnergy = SkillData.UseEnergy;
+	const auto* Data = SkillDataTable->FindRow<FSkillData>(KeyStr, TEXT(""));
+	if (!Data)
+	{
+		UE_LOG(LogDataTable, Error, TEXT("Cannot found skill data %s!"), *KeyStr.ToString());
+		return;
+	}
 
-	ReceiveBeginPlay(SkillData.AdditionalData);
+	Priority = Data->Priority;
+	CoolTime = Data->CoolTime;
+	UseEnergy = Data->UseEnergy;
+
+	ReceiveInitialize(Data->AdditionalData);
+}
+
+void USkill::BeginPlay()
+{
+	ReceiveBeginPlay();
 }
 
 void USkill::Start()
