@@ -30,5 +30,5 @@ struct FStatData : public FTableRowBase
 	float WalkSpeed;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	float LookSpeed;
+	float LockSpeed;
 };
