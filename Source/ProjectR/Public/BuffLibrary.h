@@ -27,7 +27,7 @@ public:
 	{
 		return Cast<T>(GetBuff(Character, T::StaticClass()));
 	}
-
+	
 	UFUNCTION(BlueprintCallable)
 	static void ApplyBuff(AProjectRCharacter* Character, TSubclassOf<UBuff> BuffClass);
 
