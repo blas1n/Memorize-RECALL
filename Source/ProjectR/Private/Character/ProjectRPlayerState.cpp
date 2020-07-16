@@ -80,6 +80,15 @@ void AProjectRPlayerState::SetWalkSpeed(float Value)
 		User->GetCharacterMovement()->MaxWalkSpeed = WalkSpeed;
 }
 
+void AProjectRPlayerState::SetLookSpeed(float Value)
+{
+	LookSpeed = Value;
+
+	auto* User = GetPawn<AProjectRCharacter>();
+	if (User && !UBuffLibrary::IsActivate<URun>(User))
+		User->GetCharacterMovement()->MaxWalkSpeed = LookSpeed;
+}
+
 UBuff* AProjectRPlayerState::GetBuff(TSubclassOf<UBuff> BuffClass) const
 {
 	UBuff* Ret = nullptr;
