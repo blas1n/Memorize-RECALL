@@ -107,7 +107,7 @@ void AProjectRCharacter::Initialize()
 	const auto* Data = CharacterDataTable->FindRow<FCharacterData>(FName{ *FString::FromInt(Key) }, TEXT(""));
 	if (!Data)
 	{
-		UE_LOG(LogDataTable, Error, TEXT("Cannot found %d data!"), Key);
+		UE_LOG(LogDataTable, Error, TEXT("Cannot found character data %d!"), Key);
 		return;
 	}
 
