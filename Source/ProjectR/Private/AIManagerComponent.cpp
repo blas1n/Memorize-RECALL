@@ -16,6 +16,7 @@ UAIManagerComponent::UAIManagerComponent()
 {
 	static ConstructorHelpers::FObjectFinder<UDataTable> DataTable(TEXT("DataTable'/Game/Data/DataTable/DT_LogicData.DT_LogicData'"));
 	LogicDataTable = DataTable.Object;
+	Initialize();
 }
 
 void UAIManagerComponent::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)

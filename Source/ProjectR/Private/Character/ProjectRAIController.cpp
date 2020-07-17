@@ -55,25 +55,24 @@ void AProjectRAIController::SetAIState(EAIState NewAIState)
 	if (auto* MyBlackboard = GetBlackboardComponent())
 		MyBlackboard->SetValueAsEnum(TEXT("AIState"), static_cast<uint8>(AIState));
 
-	if (AIState == EAIState::Patrol || AIState == EAIState::Quest)
-	{
-		if (AIState == EAIState::Quest)
-			DetectionValue = 0.0f;
-
-		UBuffLibrary::ReleaseBuff<ULock>(GetPawn<AProjectRCharacter>());
-		return;
-	}
-
-	if (auto* Lock = UBuffLibrary::GetBuff<ULock>(GetPawn<AProjectRCharacter>()))
-		Lock->Lock(TargetActor);
+	if (AIState == EAIState::Patrol)
+		DetectionValue = 0.0f;
 }
 
 void AProjectRAIController::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
 
-	if (AIState == EAIState::Chase)
+	if (TargetActor)
+	{
 		SetFloorLocation(TargetActor->GetActorLocation());
+
+		if (Cast<AProjectRCharacter>(TargetActor)->IsDeath())
+		{
+			SetAIState(EAIState::Patrol);
+			TargetActor = nullptr;
+		}
+	}
 
 	if (AIState != EAIState::Detection)
 		return;
@@ -91,10 +90,7 @@ void AProjectRAIController::Tick(float DeltaSeconds)
 	{
 		DetectionValue -= DetectionDecrease * DeltaSeconds;
 		if (DetectionValue <= 0.0f)
-		{
 			SetAIState(EAIState::Patrol);
-			DetectionValue = 0.0f;
-		}
 	}
 }
 
@@ -122,6 +118,8 @@ void AProjectRAIController::InitBlackboard(const FLogicData& LogicData)
 	auto* MyBlackboard = GetBlackboardComponent();
 	MyBlackboard->SetValueAsVector(TEXT("HomeLocation"), GetPawn()->GetActorLocation());
 	MyBlackboard->SetValueAsFloat(TEXT("PatrolRadius"), LogicData.PatrolRadius);
+	MyBlackboard->SetValueAsFloat(TEXT("QuestRadius"), LogicData.QuestRadius);
+	MyBlackboard->SetValueAsFloat(TEXT("LockRadius"), LogicData.LockRadius);
 }
 
 void AProjectRAIController::OnPerceptionUpdated(const TArray<AActor*>& UpdatedActors)
@@ -139,28 +137,33 @@ void AProjectRAIController::OnPerceptionUpdated(const TArray<AActor*>& UpdatedAc
 
 void AProjectRAIController::OnSightUpdated(AActor* Actor, const FAIStimulus& Stimulus)
 {
+	if (Cast<AProjectRCharacter>(Actor)->IsDeath())
+		return;
+
 	bIsSeePlayer = Stimulus.IsActive();
-	if (auto* MyBlackboard = GetBlackboardComponent())
+
+	auto* MyBlackboard = GetBlackboardComponent();
+	if (MyBlackboard)
 		MyBlackboard->SetValueAsBool(TEXT("IsSeePlayer"), bIsSeePlayer);
 
 	if (bIsSeePlayer)
 	{
 		TargetActor = Actor;
+		
+		if (auto* Lock = UBuffLibrary::GetBuff<ULock>(GetPawn<AProjectRCharacter>()))
+		{
+			Lock->Lock(TargetActor);
+			Lock->Release();
+		}
 
 		if (AIState == EAIState::Patrol)
 			SetAIState(EAIState::Detection);
-		else if (AIState == EAIState::Quest)
-			SetAIState(EAIState::Chase);
 	}
 	else
-	{
 		TargetActor = nullptr;
 
-		if (AIState == EAIState::Detection)
-			SetFloorLocation(Stimulus.StimulusLocation);
-		else if (AIState == EAIState::Chase)
-			SetAIState(EAIState::Quest);
-	}
+	if (MyBlackboard)
+		MyBlackboard->SetValueAsObject(TEXT("TargetActor"), TargetActor);
 }
 
 void AProjectRAIController::SetFloorLocation(const FVector& BaseLocation)
