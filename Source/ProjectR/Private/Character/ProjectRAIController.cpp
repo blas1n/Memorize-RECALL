@@ -63,8 +63,16 @@ void AProjectRAIController::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
 
-	if (AIState == EAIState::Chase)
+	if (TargetActor)
+	{
 		SetFloorLocation(TargetActor->GetActorLocation());
+
+		if (Cast<AProjectRCharacter>(TargetActor)->IsDeath())
+		{
+			SetAIState(EAIState::Patrol);
+			TargetActor = nullptr;
+		}
+	}
 
 	if (AIState != EAIState::Detection)
 		return;
@@ -129,6 +137,9 @@ void AProjectRAIController::OnPerceptionUpdated(const TArray<AActor*>& UpdatedAc
 
 void AProjectRAIController::OnSightUpdated(AActor* Actor, const FAIStimulus& Stimulus)
 {
+	if (Cast<AProjectRCharacter>(Actor)->IsDeath())
+		return;
+
 	bIsSeePlayer = Stimulus.IsActive();
 
 	auto* MyBlackboard = GetBlackboardComponent();
