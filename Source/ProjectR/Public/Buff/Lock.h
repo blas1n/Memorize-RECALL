@@ -12,6 +12,7 @@ class PROJECTR_API ULock final : public UBuff
 	GENERATED_BODY()
 
 public:
+	UFUNCTION(BlueprintCallable)
 	void Lock(AActor* InLockedTarget);
 	
 	FORCEINLINE AActor* GetLockedTarget()

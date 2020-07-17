@@ -42,10 +42,14 @@ AProjectRCharacter::AProjectRCharacter()
 	bIsDeath = false;
 
 	OnAttack.AddDynamic(this, &AProjectRCharacter::HealHealthAndEnergy);
+	Initialize();
 }
 
 void AProjectRCharacter::Attack(AProjectRCharacter* Target, int32 Damage)
 {
+	if (Target->IsPlayerControlled() == IsPlayerControlled())
+		return;
+
 	auto TakingDamage = static_cast<int32>(Target->
 		TakeDamage(Damage, FDamageEvent{}, GetController(), this));
 

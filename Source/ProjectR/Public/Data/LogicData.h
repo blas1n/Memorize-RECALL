@@ -15,6 +15,12 @@ struct FLogicData : public FTableRowBase
 	float PatrolRadius;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float QuestRadius;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float LockRadius;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float DetectionIncrease;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
