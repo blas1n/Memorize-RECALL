@@ -9,7 +9,7 @@
 UENUM(BlueprintType)
 enum class EAIState : uint8
 {
-	Patrol, Detection, Chase, Quest,
+	Patrol, Detection, Chase,
 };
 
 UCLASS()
