@@ -122,6 +122,8 @@ void AProjectRAIController::InitBlackboard(const FLogicData& LogicData)
 	auto* MyBlackboard = GetBlackboardComponent();
 	MyBlackboard->SetValueAsVector(TEXT("HomeLocation"), GetPawn()->GetActorLocation());
 	MyBlackboard->SetValueAsFloat(TEXT("PatrolRadius"), LogicData.PatrolRadius);
+	MyBlackboard->SetValueAsFloat(TEXT("QuestRadius"), LogicData.QuestRadius);
+	MyBlackboard->SetValueAsFloat(TEXT("LockRadius"), LogicData.LockRadius);
 }
 
 void AProjectRAIController::OnPerceptionUpdated(const TArray<AActor*>& UpdatedActors)
