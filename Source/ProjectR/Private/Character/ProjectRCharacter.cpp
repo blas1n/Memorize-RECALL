@@ -42,6 +42,7 @@ AProjectRCharacter::AProjectRCharacter()
 	bIsDeath = false;
 
 	OnAttack.AddDynamic(this, &AProjectRCharacter::HealHealthAndEnergy);
+	Initialize();
 }
 
 void AProjectRCharacter::Attack(AProjectRCharacter* Target, int32 Damage)
