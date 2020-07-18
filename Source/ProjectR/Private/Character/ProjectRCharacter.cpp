@@ -162,6 +162,7 @@ void AProjectRCharacter::Death()
 	UBuffLibrary::GetBuff<UCast>(this)->StopCast();
 
 	bIsDeath = true;
+	StopAnimMontage();
 	OnDeath.Broadcast(LastHitBy);
 
 	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
