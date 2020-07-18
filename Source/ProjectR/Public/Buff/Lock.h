@@ -13,7 +13,7 @@ class PROJECTR_API ULock final : public UBuff
 
 public:
 	UFUNCTION(BlueprintCallable)
-	void Lock(AActor* InLockedTarget);
+	void SetLockTarget(AActor* InLockedTarget);
 	
 	FORCEINLINE AActor* GetLockedTarget()
 		const noexcept { return LockedTarget; }

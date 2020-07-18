@@ -7,12 +7,9 @@
 #include "Character/ProjectRCharacter.h"
 #include "Character/ProjectRPlayerState.h"
 
-void ULock::Lock(AActor* InLockedTarget)
+void ULock::SetLockTarget(AActor* InLockedTarget)
 {
-	if (IsBlocked()) return;
-
 	LockedTarget = InLockedTarget;
-	Apply();
 }
 
 void ULock::Tick(float DeltaSeconds)
