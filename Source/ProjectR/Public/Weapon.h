@@ -28,14 +28,6 @@ public:
 	void EndSkill(uint8 Index); 
 	bool CanUseSkill(uint8 Index) const;
 
-	void RegisterOnAsyncLoadEnded(const FOnAsyncLoadEndedSingle& Callback);
-
-	FORCEINLINE class UStaticMesh* GetRightWeaponMesh() const noexcept { return RightWeaponMesh; }
-	FORCEINLINE const FTransform& GetRightWeaponTransform() const noexcept { return RightWeaponTransform; }
-
-	FORCEINLINE UStaticMesh* GetLeftWeaponMesh() const noexcept { return LeftWeaponMesh; }
-	FORCEINLINE const FTransform& GetLeftWeaponTransform() const noexcept { return LeftWeaponTransform; }
-
 private:
 	void LoadAll(const struct FWeaponData& WeaponData);
 

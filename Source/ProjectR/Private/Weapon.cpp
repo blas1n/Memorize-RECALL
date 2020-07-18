@@ -9,6 +9,7 @@
 #include "Data/WeaponData.h"
 #include "ProjectRStatics.h"
 #include "Skill.h"
+#include "WeaponComponent.h"
 
 UWeapon::UWeapon()
 	: Super()
@@ -69,8 +70,6 @@ void UWeapon::Equip()
 		AnimInstance->LinkAnimClassLayers(UpperAnimInstance);
 
 	const auto Callback = FOnAsyncLoadEndedSingle::CreateLambda([this]
-
-	RegisterOnAsyncLoadEnded(FOnAsyncLoadEndedSingle::CreateLambda([this]
 	{
 		auto* WeaponComponent = User->GetWeaponComponent();
 		
@@ -82,14 +81,16 @@ void UWeapon::Equip()
 
 		if (EquipAnim)
 			User->PlayAnimMontage(EquipAnim);
-	}));
+	});
+
+	if (AsyncLoadCount) OnAsyncLoadEnded.Add(Callback);
+	else Callback.Execute();
 }
 
 void UWeapon::Unequip()
 {
 	if (auto* AnimInstance = User->GetMesh()->GetAnimInstance())
 		AnimInstance->UnlinkAnimClassLayers(UpperAnimInstance);
-
 }
 
 void UWeapon::StartSkill(uint8 Index)
@@ -108,13 +109,6 @@ bool UWeapon::CanUseSkill(uint8 Index) const
 {
 	if (Skills.Num() <= Index) return false;
 	return Skills[Index]->CanUse();
-}
-
-void UWeapon::RegisterOnAsyncLoadEnded(const FOnAsyncLoadEndedSingle& Callback)
-{
-	check(Callback.IsBound());
-	if (AsyncLoadCount) OnAsyncLoadEnded.Add(Callback);
-	else Callback.Execute();
 }
 
 void UWeapon::LoadAll(const FWeaponData& WeaponData)
