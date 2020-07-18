@@ -68,7 +68,7 @@ void UWeapon::Equip()
 	if (auto* AnimInstance = User->GetMesh()->GetAnimInstance())
 		AnimInstance->LinkAnimClassLayers(UpperAnimInstance);
 
-	OnEquipped.Broadcast();
+	const auto Callback = FOnAsyncLoadEndedSingle::CreateLambda([this]
 
 	RegisterOnAsyncLoadEnded(FOnAsyncLoadEndedSingle::CreateLambda([this]
 	{
@@ -82,7 +82,6 @@ void UWeapon::Unequip()
 	if (auto* AnimInstance = User->GetMesh()->GetAnimInstance())
 		AnimInstance->UnlinkAnimClassLayers(UpperAnimInstance);
 
-	OnUnequipped.Broadcast();
 }
 
 void UWeapon::StartSkill(uint8 Index)
