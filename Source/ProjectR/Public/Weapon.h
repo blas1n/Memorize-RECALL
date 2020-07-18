@@ -8,9 +8,6 @@
 
 DECLARE_DELEGATE(FOnAsyncLoadEndedSingle);
 DECLARE_MULTICAST_DELEGATE(FOnAsyncLoadEnded);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnEquipped);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnUnequipped);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnExecute);
 
 UCLASS(BlueprintType)
 class PROJECTR_API UWeapon final : public UObject
@@ -43,16 +40,6 @@ private:
 	void LoadAll(const struct FWeaponData& WeaponData);
 
 	FORCEINLINE void CheckAndCallAsyncLoadDelegate() { if (--AsyncLoadCount == 0) OnAsyncLoadEnded.Broadcast(); }
-
-public:
-	UPROPERTY(BlueprintAssignable)
-	FOnEquipped OnEquipped;
-
-	UPROPERTY(BlueprintAssignable)
-	FOnUnequipped OnUnequipped;
-
-	UPROPERTY(BlueprintAssignable)
-	FOnExecute OnExecute;
 
 private:
 	UPROPERTY()
