@@ -72,6 +72,14 @@ void UWeapon::Equip()
 
 	RegisterOnAsyncLoadEnded(FOnAsyncLoadEndedSingle::CreateLambda([this]
 	{
+		auto* WeaponComponent = User->GetWeaponComponent();
+		
+		WeaponComponent->GetRightWeapon()->SetStaticMesh(RightWeaponMesh);
+		WeaponComponent->GetRightWeapon()->SetRelativeTransform(RightWeaponTransform);
+
+		WeaponComponent->GetLeftWeapon()->SetStaticMesh(LeftWeaponMesh);
+		WeaponComponent->GetLeftWeapon()->SetRelativeTransform(LeftWeaponTransform);
+
 		if (EquipAnim)
 			User->PlayAnimMontage(EquipAnim);
 	}));
