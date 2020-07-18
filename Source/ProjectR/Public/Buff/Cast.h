@@ -15,7 +15,7 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void StopCast();
 
-	void CastSkill(class USkill* NewSkill);
+	void SetCastSkill(class USkill* NewSkill);
 	bool CanUseSkill(const USkill* NewSkill) const;
 
 	FORCEINLINE USkill* GetSkill() const { return Skill; }

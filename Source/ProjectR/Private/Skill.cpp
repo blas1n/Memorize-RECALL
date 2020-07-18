@@ -48,7 +48,11 @@ void USkill::BeginPlay()
 void USkill::Start()
 {
 	if (GetPriority() >= 0)
-		UBuffLibrary::GetBuff<UCast>(User)->CastSkill(this);
+	{
+		auto* Cast = UBuffLibrary::GetBuff<UCast>(User);
+		Cast->SetCastSkill(this);
+		Cast->Apply();
+	}
 
 	ReceiveStart();
 }

@@ -8,9 +8,6 @@
 
 DECLARE_DELEGATE(FOnAsyncLoadEndedSingle);
 DECLARE_MULTICAST_DELEGATE(FOnAsyncLoadEnded);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnEquipped);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnUnequipped);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnExecute);
 
 UCLASS(BlueprintType)
 class PROJECTR_API UWeapon final : public UObject
@@ -31,28 +28,10 @@ public:
 	void EndSkill(uint8 Index); 
 	bool CanUseSkill(uint8 Index) const;
 
-	void RegisterOnAsyncLoadEnded(const FOnAsyncLoadEndedSingle& Callback);
-
-	FORCEINLINE class UStaticMesh* GetRightWeaponMesh() const noexcept { return RightWeaponMesh; }
-	FORCEINLINE const FTransform& GetRightWeaponTransform() const noexcept { return RightWeaponTransform; }
-
-	FORCEINLINE UStaticMesh* GetLeftWeaponMesh() const noexcept { return LeftWeaponMesh; }
-	FORCEINLINE const FTransform& GetLeftWeaponTransform() const noexcept { return LeftWeaponTransform; }
-
 private:
 	void LoadAll(const struct FWeaponData& WeaponData);
 
 	FORCEINLINE void CheckAndCallAsyncLoadDelegate() { if (--AsyncLoadCount == 0) OnAsyncLoadEnded.Broadcast(); }
-
-public:
-	UPROPERTY(BlueprintAssignable)
-	FOnEquipped OnEquipped;
-
-	UPROPERTY(BlueprintAssignable)
-	FOnUnequipped OnUnequipped;
-
-	UPROPERTY(BlueprintAssignable)
-	FOnExecute OnExecute;
 
 private:
 	UPROPERTY()

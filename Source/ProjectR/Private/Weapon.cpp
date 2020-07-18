@@ -9,6 +9,7 @@
 #include "Data/WeaponData.h"
 #include "ProjectRStatics.h"
 #include "Skill.h"
+#include "WeaponComponent.h"
 
 UWeapon::UWeapon()
 	: Super()
@@ -68,21 +69,28 @@ void UWeapon::Equip()
 	if (auto* AnimInstance = User->GetMesh()->GetAnimInstance())
 		AnimInstance->LinkAnimClassLayers(UpperAnimInstance);
 
-	OnEquipped.Broadcast();
-
-	RegisterOnAsyncLoadEnded(FOnAsyncLoadEndedSingle::CreateLambda([this]
+	const auto Callback = FOnAsyncLoadEndedSingle::CreateLambda([this]
 	{
+		auto* WeaponComponent = User->GetWeaponComponent();
+		
+		WeaponComponent->GetRightWeapon()->SetStaticMesh(RightWeaponMesh);
+		WeaponComponent->GetRightWeapon()->SetRelativeTransform(RightWeaponTransform);
+
+		WeaponComponent->GetLeftWeapon()->SetStaticMesh(LeftWeaponMesh);
+		WeaponComponent->GetLeftWeapon()->SetRelativeTransform(LeftWeaponTransform);
+
 		if (EquipAnim)
 			User->PlayAnimMontage(EquipAnim);
-	}));
+	});
+
+	if (AsyncLoadCount) OnAsyncLoadEnded.Add(Callback);
+	else Callback.Execute();
 }
 
 void UWeapon::Unequip()
 {
 	if (auto* AnimInstance = User->GetMesh()->GetAnimInstance())
 		AnimInstance->UnlinkAnimClassLayers(UpperAnimInstance);
-
-	OnUnequipped.Broadcast();
 }
 
 void UWeapon::StartSkill(uint8 Index)
@@ -101,13 +109,6 @@ bool UWeapon::CanUseSkill(uint8 Index) const
 {
 	if (Skills.Num() <= Index) return false;
 	return Skills[Index]->CanUse();
-}
-
-void UWeapon::RegisterOnAsyncLoadEnded(const FOnAsyncLoadEndedSingle& Callback)
-{
-	check(Callback.IsBound());
-	if (AsyncLoadCount) OnAsyncLoadEnded.Add(Callback);
-	else Callback.Execute();
 }
 
 void UWeapon::LoadAll(const FWeaponData& WeaponData)
