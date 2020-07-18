@@ -178,8 +178,11 @@ void AProjectRPlayerController::LockOn()
 		if (CheckLockOn(Enemy, Angle, Distance))
 			LockTarget = Cast<AProjectRCharacter>(Enemy);
 
-	auto* LockBuff = UBuffLibrary::GetBuff<ULock>(User);
-	LockBuff->Lock(LockTarget);
+	if (auto* Lock = UBuffLibrary::GetBuff<ULock>(User))
+	{
+		Lock->SetLockTarget(LockTarget);
+		Lock->Apply();
+	}
 
 	if (!LockTarget)
 	{
