@@ -122,15 +122,6 @@ void UWeaponComponent::EquipWeapon(UWeapon* NewWeapon, bool bNeedUnequip)
 		Weapons[CurIndex]->Unequip();
 
 	NewWeapon->Equip();
-
-	NewWeapon->RegisterOnAsyncLoadEnded(FOnAsyncLoadEndedSingle::CreateLambda([this]
-	{
-		RightWeapon->SetStaticMesh(Weapons[CurIndex]->GetRightWeaponMesh());
-		RightWeapon->SetRelativeTransform(Weapons[CurIndex]->GetRightWeaponTransform());
-	
-		LeftWeapon->SetStaticMesh(Weapons[CurIndex]->GetLeftWeaponMesh());
-		LeftWeapon->SetRelativeTransform(Weapons[CurIndex]->GetLeftWeaponTransform());
-	}));
 }
 
 void UWeaponComponent::Detach(AController* Instigator)
