@@ -144,11 +144,7 @@ void AProjectRAIController::UpdateDetection(float DeltaSeconds)
 			Distance
 		);
 
-		const float Y = DetectionCurve->GetFloatValue(CurveValue);
-		DetectionValue += Y * DeltaSeconds;
-		UE_LOG(LogTemp, Log, TEXT("X : %f, Y : %f, Value : %f, Distance : %f, Immediate : %f, Max : %f"),
-			CurveValue, Y, DetectionValue, Distance,
-			ImmediateDetectionRadius, SightRadius);
+		DetectionValue += DetectionCurve->GetFloatValue(CurveValue) * DeltaSeconds;
 		if (DetectionValue >= 1.0f)
 			SetAIState(EAIState::Chase);
 	}
