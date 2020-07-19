@@ -5,8 +5,11 @@
 
 void UCast::StopCast()
 {
-	if (IsActivate())
-		Skill->End();
+	if (!IsActivate())
+		return;
+	
+	Skill->End();
+	Release();
 }
 
 void UCast::SetCastSkill(USkill* NewSkill)
