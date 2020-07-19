@@ -31,4 +31,6 @@ private:
 	AActor* LockedTarget;
 
 	uint8 bIsLocked : 1;
+	uint8 bWasOrientMovement : 1;
+	uint8 bWasDesiredRotation : 1;	
 };
