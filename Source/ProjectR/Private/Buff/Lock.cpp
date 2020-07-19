@@ -10,6 +10,12 @@
 void ULock::SetLockTarget(AActor* InLockedTarget)
 {
 	LockedTarget = InLockedTarget;
+	
+	if (IsActivate())
+	{
+		GetTarget()->GetCharacterMovement()->
+			bUseControllerDesiredRotation = LockedTarget != nullptr;
+	}
 }
 
 void ULock::Tick(float DeltaSeconds)
