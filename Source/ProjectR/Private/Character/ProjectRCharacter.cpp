@@ -58,6 +58,22 @@ void AProjectRCharacter::Attack(AProjectRCharacter* Target, int32 Damage)
 		OnAttack.Broadcast(Target, TakingDamage);
 }
 
+FVector AProjectRCharacter::GetViewLocation() const
+{
+	FVector Loc;
+	FRotator Rot;
+	GetViewLocationAndRotation(Loc, Rot);
+	return Loc;
+}
+
+FRotator AProjectRCharacter::GetViewRotation() const
+{
+	FVector Loc;
+	FRotator Rot;
+	GetViewLocationAndRotation(Loc, Rot);
+	return Rot;
+}
+
 #if WITH_EDITOR
 
 void AProjectRCharacter::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
@@ -150,12 +166,9 @@ void AProjectRCharacter::HealHealthAndEnergy(AProjectRCharacter* Target, int32 D
 	MyPlayerState->HealEnergyByDamage(Damage);
 }
 
-FVector AProjectRCharacter::GetViewLocation_Implementation() const
+void AProjectRCharacter::GetViewLocationAndRotation_Implementation(FVector& Location, FRotator& Rotation) const
 {
-	FVector Vec;
-	FRotator Rot;
-	GetActorEyesViewPoint(Vec, Rot);
-	return Vec;
+	GetActorEyesViewPoint(Location, Rotation);
 }
 
 void AProjectRCharacter::Death()
