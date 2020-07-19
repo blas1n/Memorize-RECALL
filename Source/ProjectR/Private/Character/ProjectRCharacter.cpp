@@ -31,7 +31,7 @@ AProjectRCharacter::AProjectRCharacter()
 
 	GetCharacterMovement()->JumpZVelocity = 600.f;
 	GetCharacterMovement()->AirControl = 0.1f;
-	GetCharacterMovement()->RotationRate = FRotator(0.0f, 270.0f, 0.0f);
+	GetCharacterMovement()->RotationRate = FRotator(0.0f, 540.0f, 0.0f);
 	GetCharacterMovement()->bOrientRotationToMovement = true;
 	GetCharacterMovement()->bAllowPhysicsRotationDuringAnimRootMotion = true;
 
