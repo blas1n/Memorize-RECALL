@@ -33,6 +33,9 @@ private:
 
 	void InitBlackboard(const FLogicData& LogicData);
 
+	void UpdateDetection(float DeltaSeconds);
+	void UpdateChase();
+
 	UFUNCTION()
 	void OnPerceptionUpdated(const TArray<AActor*>& UpdatedActors);
 
@@ -45,10 +48,15 @@ private:
 private:
 	UPROPERTY()
 	AActor* TargetActor;
-	
+
+	UPROPERTY()
+	class UCurveFloat* DetectionCurve;
+
 	float DetectionValue;
-	float DetectionIncrease;
-	float DetectionDecrease;
+	float ImmediateDetectionRadius;
+
+	float SightRadius;
+	float LockRadiusSquared;
 
 	EAIState AIState;
 	uint8 bIsSeePlayer : 1;

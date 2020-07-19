@@ -7,12 +7,15 @@
 #include "Character/ProjectRCharacter.h"
 #include "Character/ProjectRPlayerState.h"
 
-void ULock::Lock(AActor* InLockedTarget)
+void ULock::SetLockTarget(AActor* InLockedTarget)
 {
-	if (IsBlocked()) return;
-
 	LockedTarget = InLockedTarget;
-	Apply();
+	
+	if (IsActivate())
+	{
+		GetTarget()->GetCharacterMovement()->
+			bUseControllerDesiredRotation = LockedTarget != nullptr;
+	}
 }
 
 void ULock::Tick(float DeltaSeconds)
@@ -22,7 +25,7 @@ void ULock::Tick(float DeltaSeconds)
 	const FVector TargetLocation = LockedTarget->GetActorLocation();
 
 	const FRotator ControlLookAt = UKismetMathLibrary::
-		FindLookAtRotation(GetTarget()->GetViewLocation(), TargetLocation);
+		FindLookAtRotation(GetTarget()->GetLookLocation(), TargetLocation);
 
 	if (AController* Controller = GetTarget()->GetController())
 		Controller->SetControlRotation(ControlLookAt);
@@ -30,8 +33,13 @@ void ULock::Tick(float DeltaSeconds)
 
 void ULock::OnApply()
 {
-	GetTarget()->GetCharacterMovement()->bUseControllerDesiredRotation = LockedTarget != nullptr;
-	GetTarget()->GetCharacterMovement()->bOrientRotationToMovement = false;
+	bIsLocked = true;
+
+	auto* Movement = GetTarget()->GetCharacterMovement();
+	bWasOrientMovement = Movement->bOrientRotationToMovement;
+	bWasDesiredRotation = Movement->bUseControllerDesiredRotation;
+	Movement->bOrientRotationToMovement = false;
+	Movement->bUseControllerDesiredRotation = LockedTarget != nullptr;
 
 	if (auto* PlayerState = GetTarget()->GetPlayerState<AProjectRPlayerState>())
 		GetTarget()->GetCharacterMovement()->MaxWalkSpeed = PlayerState->GetLockSpeed();
@@ -41,8 +49,9 @@ void ULock::OnApply()
 
 void ULock::OnRelease()
 {
-	GetTarget()->GetCharacterMovement()->bUseControllerDesiredRotation = false;
-	GetTarget()->GetCharacterMovement()->bOrientRotationToMovement = true;
+	auto* Movement = GetTarget()->GetCharacterMovement();
+	Movement->bOrientRotationToMovement = bWasOrientMovement;
+	Movement->bUseControllerDesiredRotation = bWasDesiredRotation;
 
 	if (auto* PlayerState = GetTarget()->GetPlayerState<AProjectRPlayerState>())
 		GetTarget()->GetCharacterMovement()->MaxWalkSpeed = PlayerState->GetWalkSpeed();

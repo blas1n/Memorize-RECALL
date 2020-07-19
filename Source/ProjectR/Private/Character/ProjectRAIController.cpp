@@ -3,11 +3,12 @@
 #include "Character/ProjectRAIController.h"
 #include "BehaviorTree/BehaviorTree.h"
 #include "BehaviorTree/BlackboardComponent.h"
-#include "Kismet/KismetMathLibrary.h"
+#include "Curves/CurveFloat.h"
 #include "Perception/AIPerceptionComponent.h"
 #include "Perception/AISenseConfig_Sight.h"
 #include "AIManagerComponent.h"
 #include "Buff/Lock.h"
+#include "Buff/Run.h"
 #include "Character/ProjectRCharacter.h"
 #include "Data/LogicData.h"
 #include "BuffLibrary.h"
@@ -17,6 +18,7 @@ AProjectRAIController::AProjectRAIController()
 	: Super()
 {
 	bWantsPlayerState = true;
+	bSetControlRotationFromPawnOrientation = false;
 
 	SetPerceptionComponent(*CreateDefaultSubobject<UAIPerceptionComponent>(TEXT("AI Perception")));
 	
@@ -37,8 +39,11 @@ void AProjectRAIController::InitLogic(const TAssetPtr<UBehaviorTree>& BehaviorTr
 		InitBlackboard(LogicData);
 	});
 
-	DetectionIncrease = LogicData.DetectionIncrease;
-	DetectionDecrease = LogicData.DetectionDecrease;
+	DetectionCurve = LogicData.DetectionCurve;
+	ImmediateDetectionRadius = LogicData.ImmediateDetectionRadius;
+
+	SightRadius = LogicData.SightRadius;
+	LockRadiusSquared = FMath::Square(LogicData.LockRadius);
 
 	auto* SightConfig = Cast<UAISenseConfig_Sight>(GetPerceptionComponent()
 		->GetSenseConfig(UAISense::GetSenseID<UAISense_Sight>()));
@@ -55,8 +60,15 @@ void AProjectRAIController::SetAIState(EAIState NewAIState)
 	if (auto* MyBlackboard = GetBlackboardComponent())
 		MyBlackboard->SetValueAsEnum(TEXT("AIState"), static_cast<uint8>(AIState));
 
+	DetectionValue = 0.0f;
+
+	auto* MyPawn = GetPawn<AProjectRCharacter>();
+	UBuffLibrary::ReleaseBuff<URun>(MyPawn);
+
 	if (AIState == EAIState::Patrol)
-		DetectionValue = 0.0f;
+		UBuffLibrary::ReleaseBuff<ULock>(MyPawn);
+	else
+		UBuffLibrary::ApplyBuff<ULock>(MyPawn);
 }
 
 void AProjectRAIController::Tick(float DeltaSeconds)
@@ -65,33 +77,21 @@ void AProjectRAIController::Tick(float DeltaSeconds)
 
 	if (TargetActor)
 	{
-		SetFloorLocation(TargetActor->GetActorLocation());
-
 		if (Cast<AProjectRCharacter>(TargetActor)->IsDeath())
 		{
 			SetAIState(EAIState::Patrol);
 			TargetActor = nullptr;
 		}
-	}
-
-	if (AIState != EAIState::Detection)
-		return;
-	
-	if (bIsSeePlayer)
-	{
-		DetectionValue += DetectionIncrease * DeltaSeconds;
-		if (DetectionValue >= 1.0f)
+		else
 		{
-			SetAIState(EAIState::Chase);
-			DetectionValue = 1.0f;
+			SetFloorLocation(TargetActor->GetActorLocation());
 		}
 	}
-	else
-	{
-		DetectionValue -= DetectionDecrease * DeltaSeconds;
-		if (DetectionValue <= 0.0f)
-			SetAIState(EAIState::Patrol);
-	}
+
+	if (AIState == EAIState::Detection)
+		UpdateDetection(DeltaSeconds);
+	else if (AIState == EAIState::Chase)
+		UpdateChase();
 }
 
 void AProjectRAIController::OnPossess(APawn* InPawn)
@@ -115,11 +115,67 @@ void AProjectRAIController::OnUnPossess()
 
 void AProjectRAIController::InitBlackboard(const FLogicData& LogicData)
 {
-	auto* MyBlackboard = GetBlackboardComponent();
-	MyBlackboard->SetValueAsVector(TEXT("HomeLocation"), GetPawn()->GetActorLocation());
-	MyBlackboard->SetValueAsFloat(TEXT("PatrolRadius"), LogicData.PatrolRadius);
-	MyBlackboard->SetValueAsFloat(TEXT("QuestRadius"), LogicData.QuestRadius);
-	MyBlackboard->SetValueAsFloat(TEXT("LockRadius"), LogicData.LockRadius);
+	if (auto* MyBlackboard = GetBlackboardComponent())
+	{
+		MyBlackboard->SetValueAsVector(TEXT("HomeLocation"), GetPawn()->GetActorLocation());
+		MyBlackboard->SetValueAsFloat(TEXT("PatrolRadius"), LogicData.PatrolRadius);
+		MyBlackboard->SetValueAsFloat(TEXT("QuestRadius"), LogicData.QuestRadius);
+	}
+}
+
+void AProjectRAIController::UpdateDetection(float DeltaSeconds)
+{
+	if (!bIsSeePlayer)
+		return;
+
+	auto* MyPawn = GetPawn<AProjectRCharacter>();
+	const FVector PawnLocation = MyPawn->GetActorLocation();
+	const FVector TargetLocation = TargetActor->GetActorLocation();
+	const float Distance = (PawnLocation - TargetLocation).Size();
+
+	if (Distance <= ImmediateDetectionRadius)
+	{
+		SetAIState(EAIState::Chase);
+		return;
+	}
+
+	const float CurveValue = FMath::GetMappedRangeValueUnclamped(
+		FVector2D{ ImmediateDetectionRadius, SightRadius },
+		FVector2D{ 0.0f, 1.0f },
+		Distance
+	);
+
+	DetectionValue += DetectionCurve->GetFloatValue(CurveValue) * DeltaSeconds;
+	if (DetectionValue >= 1.0f)
+		SetAIState(EAIState::Chase);
+}
+
+void AProjectRAIController::UpdateChase()
+{
+	auto* MyPawn = GetPawn<AProjectRCharacter>();
+
+	if (!TargetActor)
+	{
+		UBuffLibrary::ReleaseBuff<ULock>(MyPawn);
+		UBuffLibrary::ApplyBuff<URun>(MyPawn);
+	}
+	else
+	{
+		const FVector PawnLocation = MyPawn->GetActorLocation();
+		const FVector TargetLocation = TargetActor->GetActorLocation();
+		const float DistanceSquared = (PawnLocation - TargetLocation).SizeSquared();
+
+		if (DistanceSquared <= LockRadiusSquared)
+		{
+			UBuffLibrary::ReleaseBuff<URun>(MyPawn);
+			UBuffLibrary::ApplyBuff<ULock>(MyPawn);
+		}
+		else
+		{
+			UBuffLibrary::ReleaseBuff<ULock>(MyPawn);
+			UBuffLibrary::ApplyBuff<URun>(MyPawn);
+		}
+	}
 }
 
 void AProjectRAIController::OnPerceptionUpdated(const TArray<AActor*>& UpdatedActors)
@@ -141,29 +197,19 @@ void AProjectRAIController::OnSightUpdated(AActor* Actor, const FAIStimulus& Sti
 		return;
 
 	bIsSeePlayer = Stimulus.IsActive();
-
-	auto* MyBlackboard = GetBlackboardComponent();
-	if (MyBlackboard)
+	if (auto* MyBlackboard = GetBlackboardComponent())
 		MyBlackboard->SetValueAsBool(TEXT("IsSeePlayer"), bIsSeePlayer);
 
 	if (bIsSeePlayer)
 	{
 		TargetActor = Actor;
-		
-		if (auto* Lock = UBuffLibrary::GetBuff<ULock>(GetPawn<AProjectRCharacter>()))
-		{
-			Lock->Lock(TargetActor);
-			Lock->Release();
-		}
-
 		if (AIState == EAIState::Patrol)
 			SetAIState(EAIState::Detection);
 	}
-	else
-		TargetActor = nullptr;
+	else TargetActor = nullptr;
 
-	if (MyBlackboard)
-		MyBlackboard->SetValueAsObject(TEXT("TargetActor"), TargetActor);
+	if (auto* Lock = UBuffLibrary::GetBuff<ULock>(GetPawn<AProjectRCharacter>()))
+		Lock->SetLockTarget(TargetActor);
 }
 
 void AProjectRAIController::SetFloorLocation(const FVector& BaseLocation)
