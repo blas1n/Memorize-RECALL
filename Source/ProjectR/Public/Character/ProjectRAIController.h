@@ -54,7 +54,6 @@ private:
 
 	float DetectionValue;
 	float ImmediateDetectionRadius;
-	float DetectionDecreaseValue;
 
 	float SightRadius;
 	float LockRadiusSquared;

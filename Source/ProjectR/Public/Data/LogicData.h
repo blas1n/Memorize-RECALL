@@ -27,9 +27,6 @@ struct FLogicData : public FTableRowBase
 	float ImmediateDetectionRadius;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	float DetectionDecreaseValue;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float SightRadius;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
