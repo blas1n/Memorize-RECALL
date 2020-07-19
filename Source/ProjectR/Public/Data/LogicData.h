@@ -21,10 +21,10 @@ struct FLogicData : public FTableRowBase
 	float LockRadius;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	float DetectionIncrease;
+	class UCurveFloat* DetectionCurve;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	float DetectionDecrease;
+	float ImmediateDetectionRadius;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float SightRadius;
