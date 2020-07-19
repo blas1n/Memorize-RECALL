@@ -18,6 +18,7 @@ AProjectRAIController::AProjectRAIController()
 	: Super()
 {
 	bWantsPlayerState = true;
+	bSetControlRotationFromPawnOrientation = false;
 
 	SetPerceptionComponent(*CreateDefaultSubobject<UAIPerceptionComponent>(TEXT("AI Perception")));
 	
@@ -124,35 +125,29 @@ void AProjectRAIController::InitBlackboard(const FLogicData& LogicData)
 
 void AProjectRAIController::UpdateDetection(float DeltaSeconds)
 {
-	if (bIsSeePlayer)
-	{
-		auto* MyPawn = GetPawn<AProjectRCharacter>();
-		const FVector PawnLocation = MyPawn->GetActorLocation();
-		const FVector TargetLocation = TargetActor->GetActorLocation();
-		const float Distance = (PawnLocation - TargetLocation).Size();
+	if (!bIsSeePlayer)
+		return;
 
-		if (Distance <= ImmediateDetectionRadius)
-		{
-			SetAIState(EAIState::Chase);
-			return;
-		}
-		
-		const float CurveValue = FMath::GetMappedRangeValueUnclamped(
-			FVector2D{ ImmediateDetectionRadius, SightRadius },
-			FVector2D{ 0.0f, 1.0f },
-			Distance
-		);
+	auto* MyPawn = GetPawn<AProjectRCharacter>();
+	const FVector PawnLocation = MyPawn->GetActorLocation();
+	const FVector TargetLocation = TargetActor->GetActorLocation();
+	const float Distance = (PawnLocation - TargetLocation).Size();
 
-		DetectionValue += DetectionCurve->GetFloatValue(CurveValue) * DeltaSeconds;
-		if (DetectionValue >= 1.0f)
-			SetAIState(EAIState::Chase);
-	}
-	else
+	if (Distance <= ImmediateDetectionRadius)
 	{
-		DetectionValue -= DetectionDecreaseValue * DeltaSeconds;
-		if (DetectionValue <= 0.0f)
-			SetAIState(EAIState::Patrol);
+		SetAIState(EAIState::Chase);
+		return;
 	}
+
+	const float CurveValue = FMath::GetMappedRangeValueUnclamped(
+		FVector2D{ ImmediateDetectionRadius, SightRadius },
+		FVector2D{ 0.0f, 1.0f },
+		Distance
+	);
+
+	DetectionValue += DetectionCurve->GetFloatValue(CurveValue) * DeltaSeconds;
+	if (DetectionValue >= 1.0f)
+		SetAIState(EAIState::Chase);
 }
 
 void AProjectRAIController::UpdateChase()
@@ -202,26 +197,19 @@ void AProjectRAIController::OnSightUpdated(AActor* Actor, const FAIStimulus& Sti
 		return;
 
 	bIsSeePlayer = Stimulus.IsActive();
-
-	auto* MyBlackboard = GetBlackboardComponent();
-	if (MyBlackboard)
+	if (auto* MyBlackboard = GetBlackboardComponent())
 		MyBlackboard->SetValueAsBool(TEXT("IsSeePlayer"), bIsSeePlayer);
 
 	if (bIsSeePlayer)
 	{
 		TargetActor = Actor;
-		
-		if (auto* Lock = UBuffLibrary::GetBuff<ULock>(GetPawn<AProjectRCharacter>()))
-			Lock->SetLockTarget(TargetActor);
-
 		if (AIState == EAIState::Patrol)
 			SetAIState(EAIState::Detection);
 	}
-	else
-		TargetActor = nullptr;
+	else TargetActor = nullptr;
 
-	if (MyBlackboard)
-		MyBlackboard->SetValueAsObject(TEXT("TargetActor"), TargetActor);
+	if (auto* Lock = UBuffLibrary::GetBuff<ULock>(GetPawn<AProjectRCharacter>()))
+		Lock->SetLockTarget(TargetActor);
 }
 
 void AProjectRAIController::SetFloorLocation(const FVector& BaseLocation)
