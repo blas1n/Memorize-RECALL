@@ -23,7 +23,10 @@ public:
 	void Attack(AProjectRCharacter* Target, int32 Damage);
 
 	UFUNCTION(BlueprintNativeEvent)
+	void GetViewLocationAndRotation(FVector& Location, FRotator& Rotation) const;
+
 	FVector GetViewLocation() const;
+	FRotator GetViewRotation() const;
 
 	FORCEINLINE class UWeaponComponent* GetWeaponComponent() const noexcept { return WeaponComponent; }
 	FORCEINLINE int32 GetKey() const noexcept { return Key; }
@@ -47,7 +50,7 @@ private:
 	UFUNCTION()
 	void HealHealthAndEnergy(AProjectRCharacter* Target, int32 Damage);
 
-	FVector GetViewLocation_Implementation() const;
+	void GetViewLocationAndRotation_Implementation(FVector& Location, FRotator& Rotation) const;
 	void Death();
 
 public:
