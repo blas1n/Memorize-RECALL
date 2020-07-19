@@ -40,7 +40,6 @@ void AProjectRAIController::InitLogic(const TAssetPtr<UBehaviorTree>& BehaviorTr
 
 	DetectionCurve = LogicData.DetectionCurve;
 	ImmediateDetectionRadius = LogicData.ImmediateDetectionRadius;
-	DetectionDecreaseValue = LogicData.DetectionDecreaseValue;
 
 	SightRadius = LogicData.SightRadius;
 	LockRadiusSquared = FMath::Square(LogicData.LockRadius);
