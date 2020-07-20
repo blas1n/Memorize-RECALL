@@ -27,7 +27,7 @@ AProjectRCharacter::AProjectRCharacter()
 	bUseControllerRotationRoll = false;
 
 	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
-	GetCapsuleComponent()->SetCollisionProfileName(TEXT("Hitable"));
+	GetCapsuleComponent()->SetCollisionProfileName(TEXT("Pawn"));
 
 	GetCharacterMovement()->JumpZVelocity = 600.f;
 	GetCharacterMovement()->AirControl = 0.1f;
