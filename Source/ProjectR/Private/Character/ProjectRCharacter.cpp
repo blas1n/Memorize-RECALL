@@ -46,9 +46,10 @@ AProjectRCharacter::AProjectRCharacter()
 	Initialize();
 }
 
-void AProjectRCharacter::Attack(AProjectRCharacter* Target, int32 Damage)
+void AProjectRCharacter::Attack(AActor* Target, int32 Damage)
 {
-	if (Target->IsPlayerControlled() == IsPlayerControlled())
+	auto* TargetPawn = Cast<APawn>(Target);
+	if (TargetPawn && TargetPawn->IsPlayerControlled() == IsPlayerControlled())
 		return;
 
 	auto TakingDamage = static_cast<int32>(Target->
@@ -157,7 +158,7 @@ void AProjectRCharacter::Initialize()
 	WeaponComponent->Initialize(WeaponKeies);
 }
 
-void AProjectRCharacter::HealHealthAndEnergy(AProjectRCharacter* Target, int32 Damage)
+void AProjectRCharacter::HealHealthAndEnergy(AActor* Target, int32 Damage)
 {
 	auto* MyPlayerState = GetPlayerState<AProjectRPlayerState>();
 	if (!MyPlayerState) return;

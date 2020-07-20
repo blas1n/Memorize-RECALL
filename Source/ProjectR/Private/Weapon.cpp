@@ -111,6 +111,23 @@ bool UWeapon::CanUseSkill(uint8 Index) const
 	return Skills[Index]->CanUse();
 }
 
+void UWeapon::SetWeaponCollision(bool IsEnableRight, bool IsEnableLeft)
+{
+	User->GetWeaponComponent()->SetWeaponCollision(IsEnableRight, IsEnableLeft);
+}
+
+void UWeapon::RegisterOnWeaponOverlapped(const FOnWeaponOverlappedSingle& Callback)
+{
+	check(Callback.IsBound());
+	User->GetWeaponComponent()->OnWeaponOverlapped.AddUnique(Callback);
+}
+
+void UWeapon::UnregisterOnWeaponOverlapped(const FOnWeaponOverlappedSingle& Callback)
+{
+	check(Callback.IsBound());
+	User->GetWeaponComponent()->OnWeaponOverlapped.Remove(Callback);
+}
+
 void UWeapon::LoadAll(const FWeaponData& WeaponData)
 {
 	if (!WeaponData.RightMesh.IsNull())

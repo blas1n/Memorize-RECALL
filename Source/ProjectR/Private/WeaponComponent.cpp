@@ -13,6 +13,7 @@ UWeaponComponent::UWeaponComponent()
 
 	RightWeapon = CreateWeaponComponent(TEXT("RightWeapon"), TEXT("weapon_r"));
 	LeftWeapon = CreateWeaponComponent(TEXT("LeftWeapon"), TEXT("weapon_l"));
+	SetWeaponCollision(false, false);
 
 	User = nullptr;
 	WeaponNum = 0;
@@ -73,10 +74,19 @@ void UWeaponComponent::CreateNewWeapon(int32 Key, uint8 Index)
 	Weapons[Index] = NewWeapon;
 }
 
+void UWeaponComponent::SetWeaponCollision(bool bEnableRight, bool bEnableLeft)
+{
+	RightWeapon->SetCollisionEnabled(bEnableRight ? ECollisionEnabled::QueryOnly : ECollisionEnabled::NoCollision);
+	LeftWeapon->SetCollisionEnabled(bEnableLeft ? ECollisionEnabled::QueryOnly : ECollisionEnabled::NoCollision);
+}
+
 void UWeaponComponent::BeginPlay()
 {
 	User = Cast<AProjectRCharacter>(GetOwner());
 	User->OnDeath.AddDynamic(this, &UWeaponComponent::Detach);
+
+	RightWeapon->OnComponentBeginOverlap.AddDynamic(this, &UWeaponComponent::OnWeaponOverlap);
+	LeftWeapon->OnComponentBeginOverlap.AddDynamic(this, &UWeaponComponent::OnWeaponOverlap);
 
 	Super::BeginPlay();
 
@@ -100,7 +110,7 @@ UStaticMeshComponent* UWeaponComponent::CreateWeaponComponent(const FName& Name,
 	Component->CanCharacterStepUpOn = ECanBeCharacterBase::ECB_No;
 	Component->SetMobility(EComponentMobility::Movable);
 	Component->SetCollisionProfileName(TEXT("Weapon"));
-	Component->SetGenerateOverlapEvents(false);
+	Component->SetGenerateOverlapEvents(true);
 
 	auto* Character = Cast<ACharacter>(GetOwner());
 	if (Character)
@@ -122,6 +132,12 @@ void UWeaponComponent::EquipWeapon(UWeapon* NewWeapon, bool bNeedUnequip)
 		Weapons[CurIndex]->Unequip();
 
 	NewWeapon->Equip();
+}
+
+void UWeaponComponent::OnWeaponOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
+	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+	OnWeaponOverlapped.Broadcast(OtherActor);
 }
 
 void UWeaponComponent::Detach(AController* Instigator)

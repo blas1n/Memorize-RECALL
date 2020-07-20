@@ -8,6 +8,7 @@
 
 DECLARE_DELEGATE(FOnAsyncLoadEndedSingle);
 DECLARE_MULTICAST_DELEGATE(FOnAsyncLoadEnded);
+DECLARE_DYNAMIC_DELEGATE_OneParam(FOnWeaponOverlappedSingle, AActor*, Target);
 
 UCLASS(BlueprintType)
 class PROJECTR_API UWeapon final : public UObject
@@ -27,6 +28,15 @@ public:
 	void StartSkill(uint8 Index);
 	void EndSkill(uint8 Index); 
 	bool CanUseSkill(uint8 Index) const;
+
+	UFUNCTION(BlueprintCallable)
+	void SetWeaponCollision(bool IsEnableRight, bool IsEnableLeft);
+
+	UFUNCTION(BlueprintCallable)
+	void RegisterOnWeaponOverlapped(const FOnWeaponOverlappedSingle& Callback);
+
+	UFUNCTION(BlueprintCallable)
+	void UnregisterOnWeaponOverlapped(const FOnWeaponOverlappedSingle& Callback);
 
 private:
 	void LoadAll(const struct FWeaponData& WeaponData);
