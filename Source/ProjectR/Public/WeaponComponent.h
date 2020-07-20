@@ -6,6 +6,8 @@
 #include "Components/ActorComponent.h"
 #include "WeaponComponent.generated.h"
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnWeaponOverlapped, AActor*, Target);
+
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
 class PROJECTR_API UWeaponComponent final : public UActorComponent
 {
@@ -31,6 +33,8 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void CreateNewWeapon(int32 Key, uint8 Index);
 
+	void SetWeaponCollision(bool bEnableRight, bool bEnableLeft);
+
 	FORCEINLINE class UStaticMeshComponent* GetRightWeapon() const noexcept { return RightWeapon; }
 	FORCEINLINE UStaticMeshComponent* GetLeftWeapon() const noexcept { return LeftWeapon; }
 
@@ -48,9 +52,17 @@ private:
 	void EquipWeapon(UWeapon* NewWeapon, bool bNeedUnequip);
 
 	UFUNCTION()
+	void OnWeaponOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
+		UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+
+	UFUNCTION()
 	void Detach(AController* Instigator);
 
 	void DetachOnce(class UStaticMeshComponent* Weapon);
+
+public:
+	UPROPERTY(BlueprintAssignable)
+	FOnWeaponOverlapped OnWeaponOverlapped;
 
 private:
 	UPROPERTY()
