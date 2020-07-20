@@ -75,6 +75,8 @@ void AProjectRAIController::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
 
+	if (!GetPawn()) return;
+
 	if (TargetActor)
 	{
 		if (Cast<AProjectRCharacter>(TargetActor)->IsDeath())
