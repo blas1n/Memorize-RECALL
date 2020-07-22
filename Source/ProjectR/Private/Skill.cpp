@@ -1,24 +1,58 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "Skill.h"
+#include "Engine/DataTable.h"
 #include "Engine/World.h"
+#include "UObject/ConstructorHelpers.h"
 #include "Buff/Cast.h"
 #include "Character/ProjectRCharacter.h"
 #include "Character/ProjectRPlayerState.h"
+#include "Data/SkillData.h"
 #include "BuffLibrary.h"
 #include "Weapon.h"
 
+USkill::USkill()
+	: Super()
+{
+	static ConstructorHelpers::FObjectFinder<UDataTable> DataTable(TEXT("DataTable'/Game/Data/DataTable/DT_SkillData.DT_SkillData'"));
+	SkillDataTable = DataTable.Object;
+}
+
+void USkill::Initialize(const FName& KeyStr)
+{
+	Weapon = GetTypedOuter<UWeapon>();
+	if (!Weapon) return;
+
+	User = Cast<AProjectRCharacter>(Weapon->GetOuter());
+	if (!User) return;
+
+	const auto* Data = SkillDataTable->FindRow<FSkillData>(KeyStr, TEXT(""));
+	if (!Data)
+	{
+		UE_LOG(LogDataTable, Error, TEXT("Cannot found skill data %s!"), *KeyStr.ToString());
+		return;
+	}
+
+	Priority = Data->Priority;
+	CoolTime = Data->CoolTime;
+	UseEnergy = Data->UseEnergy;
+
+	ReceiveInitialize(Data->AdditionalData);
+}
+
 void USkill::BeginPlay()
 {
-	Weapon = Cast<UWeapon>(GetOuter());
-	User = Cast<AProjectRCharacter>(Weapon->GetOuter());
 	ReceiveBeginPlay();
 }
 
 void USkill::Start()
 {
 	if (GetPriority() >= 0)
-		UBuffLibrary::GetBuff<UCast>(User)->CastSkill(this);
+	{
+		auto* Cast = UBuffLibrary::GetBuff<UCast>(User);
+		Cast->SetCastSkill(this);
+		Cast->Apply();
+	}
 
 	ReceiveStart();
 }

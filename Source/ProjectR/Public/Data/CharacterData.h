@@ -4,20 +4,12 @@
 
 #include "CoreMinimal.h"
 #include "Engine/DataTable.h"
-#include "Templates/SubclassOf.h"
-#include "LogicData.h"
-#include "AIData.generated.h"
+#include "CharacterData.generated.h"
 
 USTRUCT(Atomic, BlueprintType)
-struct FAIData : public FTableRowBase
+struct FCharacterData : public FTableRowBase
 {
 	GENERATED_BODY()
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	int Key;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	TArray<FName> WeaponNames;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TAssetPtr<class USkeletalMesh> Mesh;
@@ -26,5 +18,14 @@ struct FAIData : public FTableRowBase
 	TSubclassOf<class UAnimInstance> AnimClass;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	FLogicData LogicData;
+	float CapsuleHalfHeight;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float CapsuleRadius;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float MeshZ;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float MeshYaw;
 };

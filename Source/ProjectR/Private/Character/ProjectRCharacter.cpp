@@ -3,16 +3,18 @@
 #include "Character/ProjectRCharacter.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/SkeletalMeshComponent.h"
+#include "Engine/DataTable.h"
 #include "GameFramework/CharacterMovementComponent.h"
-#include "GameFramework/Controller.h"
-#include "Kismet/KismetMathLibrary.h"
-#include "TimerManager.h"
+#include "UObject/ConstructorHelpers.h"
+#include "Buff/Cast.h"
 #include "Buff/Lock.h"
 #include "Buff/Parry.h"
 #include "Buff/Run.h"
 #include "Character/ProjectRPlayerState.h"
+#include "Data/CharacterData.h"
 #include "BuffLibrary.h"
 #include "Parryable.h"
+#include "ProjectRStatics.h"
 #include "WeaponComponent.h"
 
 AProjectRCharacter::AProjectRCharacter()
@@ -29,16 +31,26 @@ AProjectRCharacter::AProjectRCharacter()
 
 	GetCharacterMovement()->JumpZVelocity = 600.f;
 	GetCharacterMovement()->AirControl = 0.1f;
-	GetCharacterMovement()->RotationRate = FRotator(0.0f, 270.0f, 0.0f);
+	GetCharacterMovement()->RotationRate = FRotator(0.0f, 540.0f, 0.0f);
+	GetCharacterMovement()->bUseControllerDesiredRotation = false;
 	GetCharacterMovement()->bOrientRotationToMovement = true;
 	GetCharacterMovement()->bAllowPhysicsRotationDuringAnimRootMotion = true;
 
+	static ConstructorHelpers::FObjectFinder<UDataTable> DataTable(TEXT("DataTable'/Game/Data/DataTable/DT_CharacterData.DT_CharacterData'"));
+	CharacterDataTable = DataTable.Object;
+
 	WeaponComponent = CreateDefaultSubobject<UWeaponComponent>(TEXT("Weapon"));
 	bIsDeath = false;
+
+	OnAttack.AddDynamic(this, &AProjectRCharacter::HealHealthAndEnergy);
+	Initialize();
 }
 
 void AProjectRCharacter::Attack(AProjectRCharacter* Target, int32 Damage)
 {
+	if (Target->IsPlayerControlled() == IsPlayerControlled())
+		return;
+
 	auto TakingDamage = static_cast<int32>(Target->
 		TakeDamage(Damage, FDamageEvent{}, GetController(), this));
 
@@ -46,11 +58,44 @@ void AProjectRCharacter::Attack(AProjectRCharacter* Target, int32 Damage)
 		OnAttack.Broadcast(Target, TakingDamage);
 }
 
-void AProjectRCharacter::BeginPlay()
+FVector AProjectRCharacter::GetLookLocation() const
 {
-	Super::BeginPlay();
+	FVector Loc;
+	FRotator Rot;
+	GetLookLocationAndRotation(Loc, Rot);
+	return Loc;
+}
 
-	OnAttack.AddDynamic(this, &AProjectRCharacter::HealHealthAndEnergy);
+FRotator AProjectRCharacter::GetLookRotation() const
+{
+	FVector Loc;
+	FRotator Rot;
+	GetLookLocationAndRotation(Loc, Rot);
+	return Rot;
+}
+
+#if WITH_EDITOR
+
+void AProjectRCharacter::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
+{
+	Super::PostEditChangeProperty(PropertyChangedEvent);
+
+	if (!PropertyChangedEvent.Property) return;
+
+	const FName& Name = PropertyChangedEvent.GetPropertyName();
+	if (Name == TEXT("Level") || Name == TEXT("WeaponKeies"))
+		WeaponComponent->Initialize(WeaponKeies);
+	else
+		Initialize();
+}
+
+#endif
+
+void AProjectRCharacter::PostInitializeComponents()
+{
+	Super::PostInitializeComponents();
+
+	Initialize();
 }
 
 float AProjectRCharacter::TakeDamage(float DamageAmount, const FDamageEvent& DamageEvent,
@@ -78,24 +123,60 @@ void AProjectRCharacter::Landed(const FHitResult& Hit)
 	OnLand.Broadcast(Hit);
 }
 
+void AProjectRCharacter::Initialize()
+{
+	const auto* Data = CharacterDataTable->FindRow<FCharacterData>(FName{ *FString::FromInt(Key) }, TEXT(""));
+	if (!Data)
+	{
+		UE_LOG(LogDataTable, Error, TEXT("Cannot found character data %d!"), Key);
+		return;
+	}
+
+	UProjectRStatics::AsyncLoad(Data->Mesh, [this, Data]() mutable
+	{
+		static const auto Rules = FAttachmentTransformRules::KeepRelativeTransform;
+
+		GetCapsuleComponent()->SetCapsuleHalfHeight(Data->CapsuleHalfHeight);
+		GetCapsuleComponent()->SetCapsuleRadius(Data->CapsuleRadius);
+
+		GetMesh()->SetSkeletalMesh(Data->Mesh.Get());
+		GetMesh()->SetAnimClass(Data->AnimClass);
+
+		if (GetMesh()->DoesSocketExist(TEXT("weapon_r")))
+			WeaponComponent->GetRightWeapon()->AttachToComponent(GetMesh(), Rules, TEXT("weapon_r"));
+		if (GetMesh()->DoesSocketExist(TEXT("weapon_l")))
+			WeaponComponent->GetLeftWeapon()->AttachToComponent(GetMesh(), Rules, TEXT("weapon_l"));
+
+		const FVector& Location = GetMesh()->GetRelativeLocation();
+		GetMesh()->SetRelativeLocation(FVector{ Location.X, Location.Y, Data->MeshZ });
+
+		const FRotator& Rotation = GetMesh()->GetRelativeRotation();
+		GetMesh()->SetRelativeRotation(FRotator{ Rotation.Pitch, Data->MeshYaw, Rotation.Roll });
+	});
+
+	WeaponComponent->Initialize(WeaponKeies);
+}
+
 void AProjectRCharacter::HealHealthAndEnergy(AProjectRCharacter* Target, int32 Damage)
 {
 	auto* MyPlayerState = GetPlayerState<AProjectRPlayerState>();
+	if (!MyPlayerState) return;
+
 	MyPlayerState->HealHealthByDamage(Damage);
 	MyPlayerState->HealEnergyByDamage(Damage);
 }
 
-FVector AProjectRCharacter::GetViewLocation_Implementation() const
+void AProjectRCharacter::GetLookLocationAndRotation_Implementation(FVector& Location, FRotator& Rotation) const
 {
-	FVector Vec;
-	FRotator Rot;
-	GetActorEyesViewPoint(Vec, Rot);
-	return Vec;
+	GetActorEyesViewPoint(Location, Rotation);
 }
 
 void AProjectRCharacter::Death()
 {
+	UBuffLibrary::GetBuff<UCast>(this)->StopCast();
+
 	bIsDeath = true;
+	StopAnimMontage();
 	OnDeath.Broadcast(LastHitBy);
 
 	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);

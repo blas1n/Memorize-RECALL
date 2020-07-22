@@ -18,11 +18,21 @@ void AProjectRPlayerController::OnPossess(APawn* InPawn)
 {
 	Super::OnPossess(InPawn);
 	User = Cast<AProjectRCharacter>(InPawn);
+
+	Cast<AProjectRCharacter>(InPawn)->OnDeath
+		.AddDynamic(this, &AProjectRPlayerController::OnDeath);
 }
 
 void AProjectRPlayerController::OnUnPossess()
 {
 	User = nullptr;
+
+	if (GetPawn() != nullptr)
+	{
+		Cast<AProjectRCharacter>(GetPawn())->OnDeath
+			.RemoveDynamic(this, &AProjectRPlayerController::OnDeath);
+	}
+
 	Super::OnUnPossess();
 }
 
@@ -49,6 +59,7 @@ void AProjectRPlayerController::SetupInputComponent()
 
 	InputComponent->BindAction(TEXT("Dodge"), IE_Pressed, this, &AProjectRPlayerController::PressDodge);
 	InputComponent->BindAction(TEXT("Dodge"), IE_Released, this, &AProjectRPlayerController::ReleaseDodge);
+	InputComponent->BindAction(TEXT("OnlyDodge"), IE_Released, this, &AProjectRPlayerController::Dodge);
 
 	InputComponent->BindAction(TEXT("Run"), IE_Pressed, this, &AProjectRPlayerController::Run);
 	InputComponent->BindAction(TEXT("Run"), IE_Released, this, &AProjectRPlayerController::Walk);
@@ -69,13 +80,13 @@ void AProjectRPlayerController::SetupInputComponent()
 
 void AProjectRPlayerController::MoveForward(float Value)
 {
-	if (!UBuffLibrary::IsActivate<URoot>(User))
+	if (User && !UBuffLibrary::IsActivate<URoot>(User))
 		User->AddMovementInput(GetDirectionVector(EAxis::X), Value);
 }
 
 void AProjectRPlayerController::MoveRight(float Value)
 {
-	if (!UBuffLibrary::IsActivate<URoot>(User))
+	if (User && !UBuffLibrary::IsActivate<URoot>(User))
 		User->AddMovementInput(GetDirectionVector(EAxis::Y), Value);
 }
 
@@ -106,14 +117,27 @@ void AProjectRPlayerController::ReleaseDodge()
 		User->StopJumping();
 }
 
+void AProjectRPlayerController::Dodge()
+{
+	if (User && !UBuffLibrary::IsActivate<URoot>(User) && UBuffLibrary::IsActivate<ULock>(User))
+		User->GetWeaponComponent()->StartSkill(4);
+}
+
 void AProjectRPlayerController::Run()
 {
 	UBuffLibrary::ApplyBuff<URun>(User);
+	bIsRunned = true;
+
+	auto Temp = bIsLocked;
+	if (Temp) LockOff();
+	bIsLocked = MoveTemp(Temp);
 }
 
 void AProjectRPlayerController::Walk()
 {
 	UBuffLibrary::ReleaseBuff<URun>(User);
+	bIsRunned = false;
+	if (bIsLocked) LockOn();
 }
 
 void AProjectRPlayerController::SwapWeapon(uint8 Index)
@@ -142,7 +166,7 @@ void AProjectRPlayerController::UseSkill(uint8 Index)
 
 void AProjectRPlayerController::LockOn()
 {
-	if (!User) return;
+	if (!User || UBuffLibrary::IsBlocked<ULock>(User)) return;
 
 	TArray<AActor*> Enemys;
 	UGameplayStatics::GetAllActorsOfClass(GetWorld(), AProjectRCharacter::StaticClass(), Enemys);
@@ -154,19 +178,30 @@ void AProjectRPlayerController::LockOn()
 		if (CheckLockOn(Enemy, Angle, Distance))
 			LockTarget = Cast<AProjectRCharacter>(Enemy);
 
-	auto* LockBuff = UBuffLibrary::GetBuff<ULock>(User);
-	LockBuff->Lock(LockTarget);
+	if (auto* Lock = UBuffLibrary::GetBuff<ULock>(User))
+	{
+		Lock->SetLockTarget(LockTarget);
+		Lock->Apply();
+	}
 
 	if (!LockTarget)
 	{
 		TurnRotation.Yaw = User->GetActorRotation().Yaw;
 		bIsTurning = true;
 	}
+
+	bIsLocked = true;
+
+	auto Temp = bIsRunned;
+	if (Temp) Walk();
+	bIsRunned = MoveTemp(Temp);
 }
 
 void AProjectRPlayerController::LockOff()
 {
 	UBuffLibrary::ReleaseBuff<ULock>(User);
+	bIsLocked = false;
+	if (bIsRunned) Run();
 }
 
 bool AProjectRPlayerController::CheckLockOn(const AActor* Enemy, float& OutAngle, float& OutDistance) const
@@ -270,4 +305,9 @@ FVector AProjectRPlayerController::GetDirectionVector(EAxis::Type Axis) const
 	const FRotator Rotation = GetControlRotation();
 	const FRotator YawRotation(0, Rotation.Yaw, 0);
 	return FRotationMatrix(YawRotation).GetUnitAxis(Axis);
+}
+
+void AProjectRPlayerController::OnDeath(AController* LastInstigator)
+{
+	UnPossess();
 }

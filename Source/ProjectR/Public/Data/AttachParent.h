@@ -3,7 +3,6 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "UObject/ObjectMacros.h"
 #include "AttachParent.generated.h"
 
 UENUM(BlueprintType)
