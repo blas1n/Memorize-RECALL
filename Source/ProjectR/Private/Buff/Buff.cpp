@@ -22,7 +22,7 @@ void UBuff::Tick(float DeltaSeconds)
 
 void UBuff::Apply()
 {
-	bIsActivateBeforeBlock = true;
+	bIsActivateWithoutBlock = true;
 	if (IsBlocked()) return;
 
 	OnApply();
@@ -31,7 +31,7 @@ void UBuff::Apply()
 
 void UBuff::Release()
 {
-	bIsActivateBeforeBlock = false;
+	bIsActivateWithoutBlock = false;
 	if (IsBlocked()) return;
 
 	OnRelease();
@@ -40,23 +40,27 @@ void UBuff::Release()
 
 void UBuff::Block()
 {
-	if (++BlockCount > 1)
-		return;
+	const bool bWasBlock = bIsBlock;
+	bIsBlock = true;
 
-	bIsActivateBeforeBlock = IsActivate();
-	if (!bIsActivateBeforeBlock) return;
+	if (!bWasBlock)
+	{
+		bIsActivateWithoutBlock = IsActivate();
+		if (!bIsActivateWithoutBlock) return;
 
-	OnRelease();
-	RecieveOnRelease();
+		OnRelease();
+		RecieveOnRelease();
+	}
 }
 
 void UBuff::Unblock()
 {
-	if (--BlockCount == 0 && bIsActivateBeforeBlock)
+	bIsBlock = false;
+	if (bIsActivateWithoutBlock)
 		Apply();
 }
 
 bool UBuff::IsBlocked() const
 {
-	return BlockCount > 0;
+	return bIsBlock;
 }

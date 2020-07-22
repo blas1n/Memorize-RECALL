@@ -1,19 +1,24 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "Character/ProjectRPlayerState.h"
+#include "Engine/DataTable.h"
 #include "Engine/World.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
+#include "UObject/ConstructorHelpers.h"
+#include "Buff/Lock.h"
 #include "Buff/Run.h"
 #include "Character/ProjectRCharacter.h"
 #include "Data/StatData.h"
-#include "Framework/ProjectRGameInstance.h"
 #include "BuffLibrary.h"
 
 AProjectRPlayerState::AProjectRPlayerState()
 	: Super()
 {
 	PrimaryActorTick.bCanEverTick = true;
+
+	static ConstructorHelpers::FObjectFinder<UDataTable> DataTable(TEXT("DataTable'/Game/Data/DataTable/DT_StatData.DT_StatData'"));
+	StatDataTable = DataTable.Object;
 }
 
 void AProjectRPlayerState::HealHealth(int32 Value) noexcept
@@ -80,6 +85,15 @@ void AProjectRPlayerState::SetWalkSpeed(float Value)
 		User->GetCharacterMovement()->MaxWalkSpeed = WalkSpeed;
 }
 
+void AProjectRPlayerState::SetLockSpeed(float Value)
+{
+	LockSpeed = Value;
+
+	auto* User = GetPawn<AProjectRCharacter>();
+	if (User && UBuffLibrary::IsActivate<ULock>(User))
+		User->GetCharacterMovement()->MaxWalkSpeed = LockSpeed;
+}
+
 UBuff* AProjectRPlayerState::GetBuff(TSubclassOf<UBuff> BuffClass) const
 {
 	UBuff* Ret = nullptr;
@@ -110,18 +124,24 @@ void AProjectRPlayerState::BeginPlay()
 	auto* MyPawn = GetPawn<AProjectRCharacter>();
 	if (!MyPawn) return;
 
-	const auto* GameInstance = Cast<UProjectRGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
-	const auto* DataTable = GameInstance->GetDataTable(TEXT("StatData"));
-	const auto& StatData = *DataTable->FindRow<FStatData>(MyPawn->GetName(), "", false);
+	const FString Key = FString::FromInt(MyPawn->GetKey()) + FString::FromInt(MyPawn->GetLevel());
 
-	SetMaxHealth(StatData.MaxHealth);
-	SetHealthHeal(StatData.HealthHeal);
+	const auto* Data = StatDataTable->FindRow<FStatData>(FName{ *Key }, TEXT(""));
+	if (!Data)
+	{
+		UE_LOG(LogDataTable, Error, TEXT("Cannot found stat data %s!"), *Key);
+		return;
+	}
 
-	SetMaxEnergy(StatData.MaxEnergy);
-	SetEnergyHeal(StatData.EnergyHeal);
+	SetMaxHealth(Data->MaxHealth);
+	SetHealthHeal(Data->HealthHeal);
 
-	SetRunSpeed(StatData.RunSpeed);
-	SetWalkSpeed(StatData.WalkSpeed);
+	SetMaxEnergy(Data->MaxEnergy);
+	SetEnergyHeal(Data->EnergyHeal);
+
+	SetRunSpeed(Data->RunSpeed);
+	SetWalkSpeed(Data->WalkSpeed);
+	SetLockSpeed(Data->LockSpeed);
 }
 
 void AProjectRPlayerState::EndPlay(EEndPlayReason::Type EndPlayReason)

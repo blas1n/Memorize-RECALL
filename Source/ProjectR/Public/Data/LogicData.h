@@ -3,24 +3,28 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Engine/DataTable.h"
 #include "LogicData.generated.h"
 
 USTRUCT(Atomic, BlueprintType)
-struct FLogicData
+struct FLogicData : public FTableRowBase
 {
 	GENERATED_BODY()
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	TAssetPtr<class UBehaviorTree> BehaviorTree;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float PatrolRadius;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	float DetectionIncrease;
+	float QuestRadius;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	float DetectionDecrease;
+	float LockRadius;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	class UCurveFloat* DetectionCurve;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float ImmediateDetectionRadius;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float SightRadius;

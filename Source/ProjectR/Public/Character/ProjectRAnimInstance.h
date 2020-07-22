@@ -17,26 +17,6 @@ public:
 private:
 	void NativeUpdateAnimation(float DeltaSeconds) override;
 
-	UFUNCTION()
-	void AnimNotify_BeginAttack();
-
-	UFUNCTION()
-	void AnimNotify_EndAttack();
-
-	UFUNCTION()
-	void AnimNotify_Shoot();
-
-	UFUNCTION()
-	void AnimNotify_Execute();
-
-	UFUNCTION()
-	void AnimNotify_EnableMove();
-
-	UFUNCTION()
-	void AnimNotify_DisableMove();
-
-	class UWeapon* GetWeapon() const;
-
 private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Pawn, meta = (AllowPrivateAccess = true))
 	FVector Velocity;

@@ -5,15 +5,17 @@
 
 void UCast::StopCast()
 {
-	if (IsActivate())
-		Skill->End();
+	if (!IsActivate())
+		return;
+	
+	Skill->End();
+	Release();
 }
 
-void UCast::CastSkill(USkill* NewSkill)
+void UCast::SetCastSkill(USkill* NewSkill)
 {
 	StopCast();
 	Skill = NewSkill;
-	Apply();
 }
 
 bool UCast::CanUseSkill(const USkill* NewSkill) const

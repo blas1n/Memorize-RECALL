@@ -5,11 +5,17 @@
 #include "GameFramework/Controller.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Character/ProjectRCharacter.h"
+#include "Character/ProjectRPlayerState.h"
 
-void ULock::Lock(AActor* InLockedTarget)
+void ULock::SetLockTarget(AActor* InLockedTarget)
 {
 	LockedTarget = InLockedTarget;
-	Apply();
+	
+	if (IsActivate())
+	{
+		GetTarget()->GetCharacterMovement()->
+			bUseControllerDesiredRotation = LockedTarget != nullptr;
+	}
 }
 
 void ULock::Tick(float DeltaSeconds)
@@ -19,34 +25,37 @@ void ULock::Tick(float DeltaSeconds)
 	const FVector TargetLocation = LockedTarget->GetActorLocation();
 
 	const FRotator ControlLookAt = UKismetMathLibrary::
-		FindLookAtRotation(GetTarget()->GetViewLocation(), TargetLocation);
+		FindLookAtRotation(GetTarget()->GetLookLocation(), TargetLocation);
 
-	GetTarget()->GetController()->SetControlRotation(ControlLookAt);
-
-	if (GetTarget()->GetCharacterMovement()->Velocity.SizeSquared2D() <= 10000.0f)
-		return;
-
-	const FVector ActorLocation = GetTarget()->GetActorLocation();
-	
-	FRotator ActorLookAt = UKismetMathLibrary::
-		FindLookAtRotation(GetTarget()->GetActorLocation(), TargetLocation);
-	
-	ActorLookAt.Pitch = 0.0f;
-
-	const FRotator ActorRotation = GetTarget()->GetActorRotation();
-	ActorLookAt = FMath::Lerp(ActorRotation, ActorLookAt, DeltaSeconds * 5.0f);
-	GetTarget()->SetActorRotation(ActorLookAt);
+	if (AController* Controller = GetTarget()->GetController())
+		Controller->SetControlRotation(ControlLookAt);
 }
 
 void ULock::OnApply()
 {
-	GetTarget()->GetCharacterMovement()->bOrientRotationToMovement = false;
+	bIsLocked = true;
+
+	auto* Movement = GetTarget()->GetCharacterMovement();
+	bWasOrientMovement = Movement->bOrientRotationToMovement;
+	bWasDesiredRotation = Movement->bUseControllerDesiredRotation;
+	Movement->bOrientRotationToMovement = false;
+	Movement->bUseControllerDesiredRotation = LockedTarget != nullptr;
+
+	if (auto* PlayerState = GetTarget()->GetPlayerState<AProjectRPlayerState>())
+		GetTarget()->GetCharacterMovement()->MaxWalkSpeed = PlayerState->GetLockSpeed();
+	
 	bIsLocked = true;
 }
 
 void ULock::OnRelease()
 {
-	GetTarget()->GetCharacterMovement()->bOrientRotationToMovement = true;
+	auto* Movement = GetTarget()->GetCharacterMovement();
+	Movement->bOrientRotationToMovement = bWasOrientMovement;
+	Movement->bUseControllerDesiredRotation = bWasDesiredRotation;
+
+	if (auto* PlayerState = GetTarget()->GetPlayerState<AProjectRPlayerState>())
+		GetTarget()->GetCharacterMovement()->MaxWalkSpeed = PlayerState->GetWalkSpeed();
+
 	bIsLocked = false;
 }
 

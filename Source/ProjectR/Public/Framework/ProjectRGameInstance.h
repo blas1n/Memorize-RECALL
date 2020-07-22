@@ -10,12 +10,4 @@ UCLASS(Abstract, Blueprintable)
 class PROJECTR_API UProjectRGameInstance final : public UGameInstance
 {
 	GENERATED_BODY()
-	
-public:
-	UFUNCTION(BlueprintCallable)
-	class UDataTable* GetDataTable(FName Name) const;
-
-private:
-	UPROPERTY(EditDefaultsOnly, Category = Data, meta = (AllowPrivateAccess = true))
-	TMap<FName, UDataTable*> DataTables;
 };

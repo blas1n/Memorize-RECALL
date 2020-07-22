@@ -26,6 +26,7 @@ private:
 	
 	void PressDodge();
 	void ReleaseDodge();
+	void Dodge();
 
 	void Run();
 	void Walk();
@@ -43,6 +44,9 @@ private:
 	void Turn(float DeltaSeconds);
 
 	FVector GetDirectionVector(EAxis::Type Axis) const;
+
+	UFUNCTION()
+	void OnDeath(AController* LastInstigator);
 
 private:
 	UPROPERTY()
@@ -65,4 +69,6 @@ private:
 
 	FRotator TurnRotation;
 	uint8 bIsTurning : 1;
+	uint8 bIsRunned : 1;
+	uint8 bIsLocked : 1;
 };

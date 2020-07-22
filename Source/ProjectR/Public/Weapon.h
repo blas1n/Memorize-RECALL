@@ -6,15 +6,8 @@
 #include "UObject/NoExportTypes.h"
 #include "Weapon.generated.h"
 
-DECLARE_DYNAMIC_DELEGATE(FOnAsyncLoadEndedSingle);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnAsyncLoadEnded);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnEquipped);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnUnequipped);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnBeginAttack);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnEndAttack);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnShoot);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnExecute);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnWeaponHitted, class AProjectRCharacter*, Target);
+DECLARE_DELEGATE(FOnAsyncLoadEndedSingle);
+DECLARE_MULTICAST_DELEGATE(FOnAsyncLoadEnded);
 
 UCLASS(BlueprintType)
 class PROJECTR_API UWeapon final : public UObject
@@ -22,7 +15,10 @@ class PROJECTR_API UWeapon final : public UObject
 	GENERATED_BODY()
 	
 public:
-	void BeginPlay(const FName& InName);
+	UWeapon();
+	void Initialize(int32 Key);
+
+	void BeginPlay();
 	void EndPlay();
 
 	void Equip();
@@ -32,60 +28,17 @@ public:
 	void EndSkill(uint8 Index); 
 	bool CanUseSkill(uint8 Index) const;
 
+private:
 	void LoadAll(const struct FWeaponData& WeaponData);
 
-	UFUNCTION(BlueprintCallable)
-	void SetWeaponCollision(bool bRightWeaponEnable, bool bLeftWeaponEnable);
-
-	UFUNCTION(BlueprintCallable)
-	void RegisterOnAsyncLoadEnded(const FOnAsyncLoadEndedSingle& Callback);
-
-	FORCEINLINE const FName& GetName() const noexcept { return Name; }
-	FORCEINLINE uint8 GetKey() const noexcept { return Key; }
-
-	FORCEINLINE class UStaticMesh* GetRightWeaponMesh() const noexcept { return RightWeaponMesh; }
-	FORCEINLINE const FTransform& GetRightWeaponTransform() const noexcept { return RightWeaponTransform; }
-
-	FORCEINLINE UStaticMesh* GetLeftWeaponMesh() const noexcept { return LeftWeaponMesh; }
-	FORCEINLINE const FTransform& GetLeftWeaponTransform() const noexcept { return LeftWeaponTransform; }
-
-private:
-	UFUNCTION()
-	void PlayEquipAnim();
-	void AddComponents(class USkill* Skill);
 	FORCEINLINE void CheckAndCallAsyncLoadDelegate() { if (--AsyncLoadCount == 0) OnAsyncLoadEnded.Broadcast(); }
-
-public:
-	UPROPERTY(BlueprintAssignable)
-	FOnEquipped OnEquipped;
-
-	UPROPERTY(BlueprintAssignable)
-	FOnUnequipped OnUnequipped;
-
-	UPROPERTY(BlueprintAssignable)
-	FOnBeginAttack OnBeginAttack;
-
-	UPROPERTY(BlueprintAssignable)
-	FOnEndAttack OnEndAttack;
-
-	UPROPERTY(BlueprintAssignable)
-	FOnShoot OnShoot;
-
-	UPROPERTY(BlueprintAssignable)
-	FOnExecute OnExecute;
-
-	UPROPERTY(BlueprintAssignable)
-	FOnWeaponHitted OnWeaponHitted;
 
 private:
 	UPROPERTY()
 	class AProjectRCharacter* User;
 
 	UPROPERTY()
-	TArray<USkill*> Skills;
-
-	UPROPERTY()
-	TMap<FName, UActorComponent*> Components;
+	TArray<class USkill*> Skills;
 
 	UPROPERTY()
 	TSubclassOf<class UAnimInstance> UpperAnimInstance;
@@ -99,12 +52,13 @@ private:
 	UPROPERTY()
 	UStaticMesh* LeftWeaponMesh;
 
+	UPROPERTY()
+	class UDataTable* WeaponDataTable;
+
 	FTransform RightWeaponTransform;
 	FTransform LeftWeaponTransform;
 
 	FOnAsyncLoadEnded OnAsyncLoadEnded;
 
-	FName Name;
-	uint8 Key;
 	uint8 AsyncLoadCount;
 };

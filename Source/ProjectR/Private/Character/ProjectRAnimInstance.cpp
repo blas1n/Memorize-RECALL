@@ -2,14 +2,10 @@
 
 #include "Character/ProjectRAnimInstance.h"
 #include "GameFramework/CharacterMovementComponent.h"
-#include "Kismet/KismetMathLibrary.h"
 #include "Buff/Stun.h"
 #include "Buff/Lock.h"
-#include "Buff/Root.h"
 #include "Character/ProjectRCharacter.h"
 #include "BuffLibrary.h"
-#include "Weapon.h"
-#include "WeaponComponent.h"
 
 UProjectRAnimInstance::UProjectRAnimInstance()
 	: Super()
@@ -34,42 +30,4 @@ void UProjectRAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 	bIsLooking = UBuffLibrary::IsActivate<ULock>(User);
 	bIsStuned = UBuffLibrary::IsActivate<UStun>(User);
 	bIsInAir = Movement->IsFalling();
-}
-
-void UProjectRAnimInstance::AnimNotify_BeginAttack()
-{
-	GetWeapon()->OnBeginAttack.Broadcast();
-}
-
-void UProjectRAnimInstance::AnimNotify_EndAttack()
-{
-	GetWeapon()->OnEndAttack.Broadcast();
-}
-
-void UProjectRAnimInstance::AnimNotify_Shoot()
-{
-	GetWeapon()->OnShoot.Broadcast();
-}
-
-void UProjectRAnimInstance::AnimNotify_Execute()
-{
-	GetWeapon()->OnExecute.Broadcast();
-}
-
-void UProjectRAnimInstance::AnimNotify_EnableMove()
-{
-	if (auto* User = Cast<AProjectRCharacter>(TryGetPawnOwner()))
-		UBuffLibrary::ReleaseBuff<URoot>(User);
-}
-
-void UProjectRAnimInstance::AnimNotify_DisableMove()
-{
-	if (auto* User = Cast<AProjectRCharacter>(TryGetPawnOwner()))
-		UBuffLibrary::ApplyBuff<URoot>(User);
-}
-
-UWeapon* UProjectRAnimInstance::GetWeapon() const
-{
-	const auto* User = Cast<AProjectRCharacter>(TryGetPawnOwner());
-	return User ? User->GetWeaponComponent()->GetWeapon() : nullptr;
 }
