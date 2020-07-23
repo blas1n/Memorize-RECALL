@@ -4,10 +4,11 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/PlayerController.h"
+#include "GenericTeamAgentInterface.h"
 #include "ProjectRPlayerController.generated.h"
 
 UCLASS(Abstract, Blueprintable)
-class PROJECTR_API AProjectRPlayerController final : public APlayerController
+class PROJECTR_API AProjectRPlayerController final : public APlayerController, public IGenericTeamAgentInterface
 {
 	GENERATED_BODY()
 
@@ -17,6 +18,8 @@ private:
 
 	void Tick(float DeltaSeconds) override;
 	void SetupInputComponent() override;
+
+	FGenericTeamId GetGenericTeamId() const { return FGenericTeamId{ 0 }; }
 
 	void MoveForward(float Value);
 	void MoveRight(float Value);

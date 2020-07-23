@@ -19,6 +19,14 @@ UAIManagerComponent::UAIManagerComponent()
 	Initialize();
 }
 
+void UAIManagerComponent::SetTeamID(const FGenericTeamId& NewTeamID)
+{
+	if (TeamID == NewTeamID) return;
+
+	TeamID = NewTeamID;
+	ApplyTeamID();
+}
+
 void UAIManagerComponent::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
 {
 	Super::PostEditChangeProperty(PropertyChangedEvent);
@@ -31,6 +39,7 @@ void UAIManagerComponent::BeginPlay()
 	Super::BeginPlay();
 
 	Initialize();
+	ApplyTeamID();
 }
 
 void UAIManagerComponent::Initialize()
@@ -49,4 +58,15 @@ void UAIManagerComponent::Initialize()
 	if (!Controller) return;
 
 	Controller->InitLogic(BehaviorTree, *Data);
+}
+
+void UAIManagerComponent::ApplyTeamID()
+{
+	auto* MyOwner = Cast<APawn>(GetOwner());
+	if (!MyOwner) return;
+
+	auto* Controller = MyOwner->GetController<IGenericTeamAgentInterface>();
+	if (!Controller) return;
+
+	Controller->SetGenericTeamId(TeamID);
 }
