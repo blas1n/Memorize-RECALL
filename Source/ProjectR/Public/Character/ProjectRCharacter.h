@@ -22,16 +22,16 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void Attack(AProjectRCharacter* Target, int32 Damage);
 
-	UFUNCTION(BlueprintNativeEvent)
-	void GetLookLocationAndRotation(FVector& Location, FRotator& Rotation) const;
-
-	FVector GetLookLocation() const;
-	FRotator GetLookRotation() const;
+	void GetActorEyesViewPoint(FVector& Location, FRotator& Rotation) const override;
 
 	FORCEINLINE class UWeaponComponent* GetWeaponComponent() const noexcept { return WeaponComponent; }
 	FORCEINLINE int32 GetKey() const noexcept { return Key; }
 	FORCEINLINE int32 GetLevel() const noexcept { return Level; }
 	FORCEINLINE bool IsDeath() const noexcept { return bIsDeath; }
+
+protected:
+	UFUNCTION(BlueprintNativeEvent)
+	void GetLookLocationAndRotation(FVector& Location, FRotator& Rotation) const;
 
 private:
 #if WITH_EDITOR
