@@ -28,7 +28,7 @@ AProjectRAIController::AProjectRAIController()
 	SightConfig->DetectionByAffiliation.bDetectFriendlies = true;
 	GetPerceptionComponent()->ConfigureSense(*SightConfig);
 
-	GetPerceptionComponent()->OnPerceptionUpdated.AddDynamic(this, &AProjectRAIController::OnPerceptionUpdated);
+	NavigationInvoker = CreateDefaultSubobject<UNavigationInvokerComponent>(TEXT("Navigation Invoker"));
 }
 
 void AProjectRAIController::InitLogic(const TAssetPtr<UBehaviorTree>& BehaviorTree, const FLogicData& LogicData)
@@ -69,6 +69,12 @@ void AProjectRAIController::SetAIState(EAIState NewAIState)
 		UBuffLibrary::ReleaseBuff<ULock>(MyPawn);
 	else
 		UBuffLibrary::ApplyBuff<ULock>(MyPawn);
+}
+
+void AProjectRAIController::BeginPlay()
+{
+	Super::BeginPlay();
+	GetPerceptionComponent()->OnPerceptionUpdated.AddDynamic(this, &AProjectRAIController::OnPerceptionUpdated);
 }
 
 void AProjectRAIController::Tick(float DeltaSeconds)
