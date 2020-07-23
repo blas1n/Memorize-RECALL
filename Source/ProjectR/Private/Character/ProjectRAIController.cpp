@@ -133,10 +133,10 @@ void AProjectRAIController::InitBlackboard(const FLogicData& LogicData)
 
 void AProjectRAIController::UpdateDetection(float DeltaSeconds)
 {
-	if (!bIsSeePlayer)
+	auto* MyPawn = GetPawn<AProjectRCharacter>();
+	if (MyPawn || !bIsSeePlayer)
 		return;
 
-	auto* MyPawn = GetPawn<AProjectRCharacter>();
 	const FVector PawnLocation = MyPawn->GetActorLocation();
 	const FVector TargetLocation = TargetActor->GetActorLocation();
 	const float Distance = (PawnLocation - TargetLocation).Size();
