@@ -26,6 +26,7 @@ public:
 	void SetAIState(EAIState NewAIState);
 
 private:
+	void BeginPlay() override;
 	void Tick(float DeltaSeconds) override;
 
 	void OnPossess(APawn* InPawn) override;
