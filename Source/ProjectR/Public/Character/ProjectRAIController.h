@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "AIController.h"
+#include "Perception/AIPerceptionTypes.h"
 #include "ProjectRAIController.generated.h"
 
 UENUM(BlueprintType)
@@ -38,7 +39,7 @@ private:
 	void UpdateChase();
 
 	UFUNCTION()
-	void OnPerceptionUpdated(const TArray<AActor*>& UpdatedActors);
+	void OnPerceptionUpdated(AActor* Actor, FAIStimulus Stimulus);
 
 	void OnSightUpdated(AActor* Actor, const struct FAIStimulus& Stimulus);
 	void SetFloorLocation(const FVector& BaseLocation);
