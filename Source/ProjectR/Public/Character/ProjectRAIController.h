@@ -23,26 +23,16 @@ public:
 
 	void InitLogic(const TAssetPtr<UBehaviorTree>& BehaviorTree, const struct FLogicData& LogicData);
 
-	UFUNCTION(BlueprintCallable)
-	void SetAIState(EAIState NewAIState);
-
 private:
 	void BeginPlay() override;
-	void Tick(float DeltaSeconds) override;
 
 	void OnPossess(APawn* InPawn) override;
 	void OnUnPossess() override;
 
 	void InitBlackboard(const FLogicData& LogicData);
 
-	void UpdateDetection(float DeltaSeconds);
-	void UpdateChase();
-
 	UFUNCTION()
 	void OnPerceptionUpdated(AActor* Actor, FAIStimulus Stimulus);
-
-	void OnSightUpdated(AActor* Actor, const struct FAIStimulus& Stimulus);
-	void SetFloorLocation(const FVector& BaseLocation);
 
 	UFUNCTION()
 	void OnDeath(AController* LastInstigator);
@@ -50,9 +40,6 @@ private:
 private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = true))
 	class UNavigationInvokerComponent* NavigationInvoker;
-
-	UPROPERTY()
-	AActor* TargetActor;
 
 	UPROPERTY()
 	class UCurveFloat* DetectionCurve;
