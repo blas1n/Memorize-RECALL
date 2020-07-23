@@ -58,22 +58,6 @@ void AProjectRCharacter::Attack(AProjectRCharacter* Target, int32 Damage)
 		OnAttack.Broadcast(Target, TakingDamage);
 }
 
-FVector AProjectRCharacter::GetLookLocation() const
-{
-	FVector Loc;
-	FRotator Rot;
-	GetLookLocationAndRotation(Loc, Rot);
-	return Loc;
-}
-
-FRotator AProjectRCharacter::GetLookRotation() const
-{
-	FVector Loc;
-	FRotator Rot;
-	GetLookLocationAndRotation(Loc, Rot);
-	return Rot;
-}
-
 #if WITH_EDITOR
 
 void AProjectRCharacter::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
@@ -116,6 +100,11 @@ float AProjectRCharacter::TakeDamage(float DamageAmount, const FDamageEvent& Dam
 	else OnDamaged.Broadcast(EventInstigator, Damage);
 
 	return Damage;
+}
+
+void AProjectRCharacter::GetActorEyesViewPoint(FVector& Location, FRotator& Rotation) const
+{
+	GetLookLocationAndRotation(Location, Rotation);
 }
 
 void AProjectRCharacter::Landed(const FHitResult& Hit)
