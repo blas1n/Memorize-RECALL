@@ -76,7 +76,7 @@ void AProjectRAIController::SetAIState(EAIState NewAIState)
 void AProjectRAIController::BeginPlay()
 {
 	Super::BeginPlay();
-	GetPerceptionComponent()->OnPerceptionUpdated.AddDynamic(this, &AProjectRAIController::OnPerceptionUpdated);
+	GetPerceptionComponent()->OnTargetPerceptionUpdated.AddDynamic(this, &AProjectRAIController::OnPerceptionUpdated);
 }
 
 void AProjectRAIController::Tick(float DeltaSeconds)
@@ -186,17 +186,10 @@ void AProjectRAIController::UpdateChase()
 	}
 }
 
-void AProjectRAIController::OnPerceptionUpdated(const TArray<AActor*>& UpdatedActors)
+void AProjectRAIController::OnPerceptionUpdated(AActor* Actor, FAIStimulus Stimulus)
 {
-	for (AActor* Actor : UpdatedActors)
-	{
-		FActorPerceptionBlueprintInfo Info;
-		PerceptionComponent->GetActorsPerception(Actor, Info);
-		
-		for (const auto& Stimulus : Info.LastSensedStimuli)
-			if (Stimulus.Type == UAISense::GetSenseID<UAISense_Sight>())
-				OnSightUpdated(Actor, Stimulus);
-	}
+	if (Stimulus.Type == UAISense::GetSenseID<UAISense_Sight>())
+		OnSightUpdated(Actor, Stimulus);
 }
 
 void AProjectRAIController::OnSightUpdated(AActor* Actor, const FAIStimulus& Stimulus)
