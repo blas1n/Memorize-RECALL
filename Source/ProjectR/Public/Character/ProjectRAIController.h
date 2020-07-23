@@ -47,6 +47,9 @@ private:
 	void OnDeath(AController* LastInstigator);
 
 private:
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = true))
+	class UNavigationInvokerComponent* NavigationInvoker;
+
 	UPROPERTY()
 	AActor* TargetActor;
 

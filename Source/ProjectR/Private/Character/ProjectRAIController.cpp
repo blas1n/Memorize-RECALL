@@ -4,6 +4,7 @@
 #include "BehaviorTree/BehaviorTree.h"
 #include "BehaviorTree/BlackboardComponent.h"
 #include "Curves/CurveFloat.h"
+#include "NavigationInvokerComponent.h"
 #include "Perception/AIPerceptionComponent.h"
 #include "Perception/AISenseConfig_Sight.h"
 #include "AIManagerComponent.h"
@@ -29,6 +30,7 @@ AProjectRAIController::AProjectRAIController()
 	GetPerceptionComponent()->ConfigureSense(*SightConfig);
 
 	NavigationInvoker = CreateDefaultSubobject<UNavigationInvokerComponent>(TEXT("Navigation Invoker"));
+	NavigationInvoker->SetGenerationRadii(7000.0f, 8000.0f);
 }
 
 void AProjectRAIController::InitLogic(const TAssetPtr<UBehaviorTree>& BehaviorTree, const FLogicData& LogicData)
