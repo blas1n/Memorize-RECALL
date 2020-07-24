@@ -7,13 +7,13 @@
 #include "NavigationInvokerComponent.h"
 #include "Perception/AIPerceptionComponent.h"
 #include "Perception/AISenseConfig_Sight.h"
-#include "AIManagerComponent.h"
 #include "Buff/Lock.h"
 #include "Buff/Run.h"
 #include "Character/ProjectRCharacter.h"
+#include "Component/AIManagerComponent.h"
 #include "Data/LogicData.h"
-#include "BuffLibrary.h"
-#include "ProjectRStatics.h"
+#include "Library/BuffLibrary.h"
+#include "Library/ProjectRStatics.h"
 
 AProjectRAIController::AProjectRAIController()
 	: Super()

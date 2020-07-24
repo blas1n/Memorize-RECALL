@@ -7,7 +7,7 @@
 #include "NiagaraSystem.h"
 #include "NiagaraFunctionLibrary.h"
 #include "Character/ProjectRCharacter.h"
-#include "WeaponComponent.h"
+#include "Component/WeaponComponent.h"
 
 #if WITH_EDITOR
 

@@ -6,10 +6,10 @@
 #include "Engine/StaticMesh.h"
 #include "UObject/ConstructorHelpers.h"
 #include "Character/ProjectRCharacter.h"
+#include "Component/WeaponComponent.h"
 #include "Data/WeaponData.h"
-#include "ProjectRStatics.h"
+#include "Library/ProjectRStatics.h"
 #include "Skill.h"
-#include "WeaponComponent.h"
 
 UWeapon::UWeapon()
 	: Super()

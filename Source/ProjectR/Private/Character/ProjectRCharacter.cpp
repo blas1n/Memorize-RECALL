@@ -11,11 +11,11 @@
 #include "Buff/Parry.h"
 #include "Buff/Run.h"
 #include "Character/ProjectRPlayerState.h"
+#include "Component/WeaponComponent.h"
 #include "Data/CharacterData.h"
-#include "BuffLibrary.h"
+#include "Library/BuffLibrary.h"
+#include "Library/ProjectRStatics.h"
 #include "Parryable.h"
-#include "ProjectRStatics.h"
-#include "WeaponComponent.h"
 
 AProjectRCharacter::AProjectRCharacter()
 	: Super()

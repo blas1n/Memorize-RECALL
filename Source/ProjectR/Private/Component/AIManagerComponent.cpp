@@ -1,6 +1,6 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-#include "AIManagerComponent.h"
+#include "Component/AIManagerComponent.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "Engine/DataTable.h"
 #include "Engine/World.h"
@@ -10,7 +10,7 @@
 #include "Character/ProjectRCharacter.h"
 #include "Data/LogicData.h"
 #include "Framework/ProjectRGameInstance.h"
-#include "ProjectRStatics.h"
+#include "Library/ProjectRStatics.h"
 
 UAIManagerComponent::UAIManagerComponent()
 {
