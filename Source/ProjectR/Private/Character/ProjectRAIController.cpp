@@ -35,18 +35,6 @@ AProjectRAIController::AProjectRAIController()
 
 void AProjectRAIController::InitLogic(const TAssetPtr<UBehaviorTree>& BehaviorTree, const FLogicData& LogicData)
 {
-	UProjectRStatics::AsyncLoad(BehaviorTree, [this, BehaviorTree, LogicData]() mutable
-	{
-		RunBehaviorTree(BehaviorTree.Get());
-		InitBlackboard(LogicData);
-	});
-
-	DetectionCurve = LogicData.DetectionCurve;
-	ImmediateDetectionRadius = LogicData.ImmediateDetectionRadius;
-
-	SightRadius = LogicData.SightRadius;
-	LockRadiusSquared = FMath::Square(LogicData.LockRadius);
-
 	auto* SightConfig = Cast<UAISenseConfig_Sight>(GetPerceptionComponent()
 		->GetSenseConfig(UAISense::GetSenseID<UAISense_Sight>()));
 
@@ -54,12 +42,15 @@ void AProjectRAIController::InitLogic(const TAssetPtr<UBehaviorTree>& BehaviorTr
 	SightConfig->LoseSightRadius = LogicData.LoseSightRadius;
 	SightConfig->PeripheralVisionAngleDegrees = LogicData.FOV;
 	GetPerceptionComponent()->RequestStimuliListenerUpdate();
-}
 
-void AProjectRAIController::BeginPlay()
-{
-	Super::BeginPlay();
-	GetPerceptionComponent()->OnTargetPerceptionUpdated.AddDynamic(this, &AProjectRAIController::OnPerceptionUpdated);
+	UProjectRStatics::AsyncLoad(BehaviorTree, [this, BehaviorTree, LogicData]() mutable
+	{
+		RunBehaviorTree(BehaviorTree.Get());
+		InitBlackboard(LogicData);
+		
+		InitializeLogic(LogicData.AdditionalData);
+		ReceiveInitializeLogic(LogicData.AdditionalData);
+	});
 }
 
 void AProjectRAIController::OnPossess(APawn* InPawn)
@@ -86,14 +77,8 @@ void AProjectRAIController::InitBlackboard(const FLogicData& LogicData)
 	if (auto* MyBlackboard = GetBlackboardComponent())
 	{
 		MyBlackboard->SetValueAsVector(TEXT("HomeLocation"), GetPawn()->GetActorLocation());
-		MyBlackboard->SetValueAsFloat(TEXT("PatrolRadius"), LogicData.PatrolRadius);
-		MyBlackboard->SetValueAsFloat(TEXT("QuestRadius"), LogicData.QuestRadius);
+		MyBlackboard->SetValueAsFloat(TEXT("RunRadiusSquared"), FMath::Square(LogicData.RunRadius));
 	}
-}
-
-void AProjectRAIController::OnPerceptionUpdated(AActor* Actor, FAIStimulus Stimulus)
-{
-
 }
 
 void AProjectRAIController::OnDeath(AController* LastInstigator)

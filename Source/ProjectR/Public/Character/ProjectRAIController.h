@@ -4,16 +4,9 @@
 
 #include "CoreMinimal.h"
 #include "AIController.h"
-#include "Perception/AIPerceptionTypes.h"
 #include "ProjectRAIController.generated.h"
 
-UENUM(BlueprintType)
-enum class EAIState : uint8
-{
-	Patrol, Detection, Chase,
-};
-
-UCLASS()
+UCLASS(Blueprintable)
 class PROJECTR_API AProjectRAIController final : public AAIController
 {
 	GENERATED_BODY()
@@ -23,16 +16,17 @@ public:
 
 	void InitLogic(const TAssetPtr<UBehaviorTree>& BehaviorTree, const struct FLogicData& LogicData);
 
-private:
-	void BeginPlay() override;
+protected:
+	virtual void InitializeLogic(class UDataAsset* LogicData) {}
 
+	UFUNCTION(BlueprintImplementableEvent, meta = (DisplayName = InitLogic))
+	void ReceiveInitializeLogic(class UDataAsset* LogicData);
+
+private:
 	void OnPossess(APawn* InPawn) override;
 	void OnUnPossess() override;
 
 	void InitBlackboard(const FLogicData& LogicData);
-
-	UFUNCTION()
-	void OnPerceptionUpdated(AActor* Actor, FAIStimulus Stimulus);
 
 	UFUNCTION()
 	void OnDeath(AController* LastInstigator);
@@ -40,16 +34,4 @@ private:
 private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = true))
 	class UNavigationInvokerComponent* NavigationInvoker;
-
-	UPROPERTY()
-	class UCurveFloat* DetectionCurve;
-
-	float DetectionValue;
-	float ImmediateDetectionRadius;
-
-	float SightRadius;
-	float LockRadiusSquared;
-
-	EAIState AIState;
-	uint8 bIsSeePlayer : 1;
 };
