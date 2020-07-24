@@ -8,7 +8,7 @@
 #include "Character/ProjectRCharacter.h"
 #include "Character/ProjectRPlayerState.h"
 #include "Data/SkillData.h"
-#include "BuffLibrary.h"
+#include "Library/BuffLibrary.h"
 #include "Weapon.h"
 
 USkill::USkill()

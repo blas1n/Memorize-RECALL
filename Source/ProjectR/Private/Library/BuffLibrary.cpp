@@ -1,6 +1,6 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-#include "BuffLibrary.h"
+#include "Library/BuffLibrary.h"
 #include "Engine/World.h"
 #include "TimerManager.h"
 #include "Buff/Buff.h"
