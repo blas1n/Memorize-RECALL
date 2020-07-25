@@ -10,7 +10,7 @@
 #include "Buff/Run.h"
 #include "Character/ProjectRCharacter.h"
 #include "Data/StatData.h"
-#include "BuffLibrary.h"
+#include "Library/BuffLibrary.h"
 
 AProjectRPlayerState::AProjectRPlayerState()
 	: Super()

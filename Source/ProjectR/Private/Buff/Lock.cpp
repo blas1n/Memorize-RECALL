@@ -24,8 +24,11 @@ void ULock::Tick(float DeltaSeconds)
 
 	const FVector TargetLocation = LockedTarget->GetActorLocation();
 
+	FVector Loc; FRotator Rot;
+	GetTarget()->GetActorEyesViewPoint(Loc, Rot);
+
 	const FRotator ControlLookAt = UKismetMathLibrary::
-		FindLookAtRotation(GetTarget()->GetLookLocation(), TargetLocation);
+		FindLookAtRotation(Loc, TargetLocation);
 
 	if (AController* Controller = GetTarget()->GetController())
 		Controller->SetControlRotation(ControlLookAt);
