@@ -12,21 +12,6 @@ struct FLogicData : public FTableRowBase
 	GENERATED_BODY()
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	float PatrolRadius;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	float QuestRadius;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	float LockRadius;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	class UCurveFloat* DetectionCurve;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	float ImmediateDetectionRadius;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float SightRadius;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
@@ -34,4 +19,10 @@ struct FLogicData : public FTableRowBase
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float FOV;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float RunRadius;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	class UDataAsset* AdditionalData;
 };
