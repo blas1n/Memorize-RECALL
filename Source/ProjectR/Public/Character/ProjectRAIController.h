@@ -4,23 +4,24 @@
 
 #include "CoreMinimal.h"
 #include "AIController.h"
+#include "Data/LogicData.h"
 #include "ProjectRAIController.generated.h"
 
 UCLASS(Blueprintable)
-class PROJECTR_API AProjectRAIController final : public AAIController
+class PROJECTR_API AProjectRAIController  : public AAIController
 {
 	GENERATED_BODY()
 
 public:
 	AProjectRAIController();
 
-	void InitLogic(const TAssetPtr<UBehaviorTree>& BehaviorTree, const struct FLogicData& LogicData);
+	void InitLogic(const TAssetPtr<UBehaviorTree>& BehaviorTree, const FLogicData& LogicData);
 
 protected:
-	virtual void InitializeLogic(class UDataAsset* LogicData) {}
+	virtual void InitializeLogic(const FLogicData& LogicData) {}
 
 	UFUNCTION(BlueprintImplementableEvent, meta = (DisplayName = InitLogic))
-	void ReceiveInitializeLogic(class UDataAsset* LogicData);
+	void ReceiveInitializeLogic(const FLogicData& LogicData);
 
 private:
 	void OnPossess(APawn* InPawn) override;
