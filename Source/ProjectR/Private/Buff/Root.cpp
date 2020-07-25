@@ -4,7 +4,7 @@
 #include "Buff/Lock.h"
 #include "Buff/Run.h"
 #include "Character/ProjectRCharacter.h"
-#include "BuffLibrary.h"
+#include "Library/BuffLibrary.h"
 
 void URoot::OnApply()
 {

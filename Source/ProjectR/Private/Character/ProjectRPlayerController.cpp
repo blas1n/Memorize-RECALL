@@ -9,8 +9,8 @@
 #include "Buff/Root.h"
 #include "Buff/Run.h"
 #include "Character/ProjectRCharacter.h"
-#include "BuffLibrary.h"
-#include "WeaponComponent.h"
+#include "Component/WeaponComponent.h"
+#include "Library/BuffLibrary.h"
 
 DECLARE_DELEGATE_OneParam(FIndexer, uint8);
 

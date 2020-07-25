@@ -11,11 +11,11 @@
 #include "Buff/Parry.h"
 #include "Buff/Run.h"
 #include "Character/ProjectRPlayerState.h"
+#include "Component/WeaponComponent.h"
 #include "Data/CharacterData.h"
-#include "BuffLibrary.h"
+#include "Library/BuffLibrary.h"
+#include "Library/ProjectRStatics.h"
 #include "Parryable.h"
-#include "ProjectRStatics.h"
-#include "WeaponComponent.h"
 
 AProjectRCharacter::AProjectRCharacter()
 	: Super()
@@ -59,20 +59,16 @@ void AProjectRCharacter::Attack(AActor* Target, int32 Damage)
 		OnAttack.Broadcast(Target, TakingDamage);
 }
 
-FVector AProjectRCharacter::GetLookLocation() const
+FGenericTeamId AProjectRCharacter::GetGenericTeamId() const
 {
-	FVector Loc;
-	FRotator Rot;
-	GetLookLocationAndRotation(Loc, Rot);
-	return Loc;
+	auto* MyController = GetController<IGenericTeamAgentInterface>();
+	return MyController ? MyController->GetGenericTeamId() : FGenericTeamId::NoTeam;
 }
 
-FRotator AProjectRCharacter::GetLookRotation() const
+void AProjectRCharacter::SetGenericTeamId(const FGenericTeamId& NewTeamID)
 {
-	FVector Loc;
-	FRotator Rot;
-	GetLookLocationAndRotation(Loc, Rot);
-	return Rot;
+	auto* MyController = GetController<IGenericTeamAgentInterface>();
+	if (MyController) MyController->SetGenericTeamId(NewTeamID);
 }
 
 #if WITH_EDITOR
@@ -117,6 +113,11 @@ float AProjectRCharacter::TakeDamage(float DamageAmount, const FDamageEvent& Dam
 	else OnDamaged.Broadcast(EventInstigator, Damage);
 
 	return Damage;
+}
+
+void AProjectRCharacter::GetActorEyesViewPoint(FVector& Location, FRotator& Rotation) const
+{
+	GetLookLocationAndRotation(Location, Rotation);
 }
 
 void AProjectRCharacter::Landed(const FHitResult& Hit)
@@ -169,7 +170,7 @@ void AProjectRCharacter::HealHealthAndEnergy(AActor* Target, int32 Damage)
 
 void AProjectRCharacter::GetLookLocationAndRotation_Implementation(FVector& Location, FRotator& Rotation) const
 {
-	GetActorEyesViewPoint(Location, Rotation);
+	Super::GetActorEyesViewPoint(Location, Rotation);
 }
 
 void AProjectRCharacter::Death()
