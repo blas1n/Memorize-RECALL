@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
+#include "GenericTeamAgentInterface.h"
 #include "ProjectRCharacter.generated.h"
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnDeath, AController*, Instigator);
@@ -12,7 +13,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnAttack, AProjectRCharacter*, Tar
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnDamaged, AController*, Instigator, int32, Damage);
 
 UCLASS(Abstract, Blueprintable)
-class PROJECTR_API AProjectRCharacter final : public ACharacter
+class PROJECTR_API AProjectRCharacter final : public ACharacter, public IGenericTeamAgentInterface
 {
 	GENERATED_BODY()
 
@@ -23,6 +24,9 @@ public:
 	void Attack(AProjectRCharacter* Target, int32 Damage);
 
 	void GetActorEyesViewPoint(FVector& Location, FRotator& Rotation) const override;
+	
+	FGenericTeamId GetGenericTeamId() const;
+	void SetGenericTeamId(const FGenericTeamId& NewTeamID);
 
 	FORCEINLINE class UWeaponComponent* GetWeaponComponent() const noexcept { return WeaponComponent; }
 	FORCEINLINE int32 GetKey() const noexcept { return Key; }
