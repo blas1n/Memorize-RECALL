@@ -48,8 +48,8 @@ void AProjectRAIController::InitLogic(const TAssetPtr<UBehaviorTree>& BehaviorTr
 		RunBehaviorTree(BehaviorTree.Get());
 		InitBlackboard(LogicData);
 		
-		InitializeLogic(LogicData.AdditionalData);
-		ReceiveInitializeLogic(LogicData.AdditionalData);
+		InitializeLogic(LogicData);
+		ReceiveInitializeLogic(LogicData);
 	});
 }
 
