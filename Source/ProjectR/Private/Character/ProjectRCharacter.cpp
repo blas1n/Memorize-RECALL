@@ -169,7 +169,7 @@ void AProjectRCharacter::HealHealthAndEnergy(AProjectRCharacter* Target, int32 D
 
 void AProjectRCharacter::GetLookLocationAndRotation_Implementation(FVector& Location, FRotator& Rotation) const
 {
-	GetActorEyesViewPoint(Location, Rotation);
+	Super::GetActorEyesViewPoint(Location, Rotation);
 }
 
 void AProjectRCharacter::Death()
