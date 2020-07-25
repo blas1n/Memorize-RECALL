@@ -58,6 +58,18 @@ void AProjectRCharacter::Attack(AProjectRCharacter* Target, int32 Damage)
 		OnAttack.Broadcast(Target, TakingDamage);
 }
 
+FGenericTeamId AProjectRCharacter::GetGenericTeamId() const
+{
+	auto* MyController = GetController<IGenericTeamAgentInterface>();
+	return MyController ? MyController->GetGenericTeamId() : FGenericTeamId::NoTeam;
+}
+
+void AProjectRCharacter::SetGenericTeamId(const FGenericTeamId& NewTeamID)
+{
+	auto* MyController = GetController<IGenericTeamAgentInterface>();
+	if (MyController) MyController->SetGenericTeamId(NewTeamID);
+}
+
 #if WITH_EDITOR
 
 void AProjectRCharacter::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
