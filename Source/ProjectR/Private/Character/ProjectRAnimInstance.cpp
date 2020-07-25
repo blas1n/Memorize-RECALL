@@ -5,7 +5,7 @@
 #include "Buff/Stun.h"
 #include "Buff/Lock.h"
 #include "Character/ProjectRCharacter.h"
-#include "BuffLibrary.h"
+#include "Library/BuffLibrary.h"
 
 UProjectRAnimInstance::UProjectRAnimInstance()
 	: Super()
