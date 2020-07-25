@@ -9,7 +9,7 @@
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnDeath, AController*, Instigator);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnLand, const FHitResult&, Hit);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnAttack, AProjectRCharacter*, Target, int32, Damage);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnAttack, AActor*, Target, int32, Damage);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnDamaged, AController*, Instigator, int32, Damage);
 
 UCLASS(Abstract, Blueprintable)
@@ -21,7 +21,7 @@ public:
 	AProjectRCharacter();
 
 	UFUNCTION(BlueprintCallable)
-	void Attack(AProjectRCharacter* Target, int32 Damage);
+	void Attack(AActor* Target, int32 Damage);
 
 	void GetActorEyesViewPoint(FVector& Location, FRotator& Rotation) const override;
 	
@@ -52,7 +52,7 @@ private:
 	void Initialize();
 
 	UFUNCTION()
-	void HealHealthAndEnergy(AProjectRCharacter* Target, int32 Damage);
+	void HealHealthAndEnergy(AActor* Target, int32 Damage);
 
 	void GetLookLocationAndRotation_Implementation(FVector& Location, FRotator& Rotation) const;
 	void Death();
