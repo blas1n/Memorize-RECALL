@@ -27,6 +27,8 @@ void UBuff::Apply()
 
 	OnApply();
 	RecieveOnApply();
+
+	OnApplied.Broadcast();
 }
 
 void UBuff::Release()
@@ -36,6 +38,8 @@ void UBuff::Release()
 
 	OnRelease();
 	RecieveOnRelease();
+
+	OnReleased.Broadcast();
 }
 
 void UBuff::Block()
