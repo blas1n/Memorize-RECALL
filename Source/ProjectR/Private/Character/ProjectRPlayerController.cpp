@@ -180,7 +180,9 @@ void AProjectRPlayerController::LockOn()
 
 void AProjectRPlayerController::LockOff()
 {
-	UBuffLibrary::ReleaseBuff<ULock>(User);
+	auto* Lock = UBuffLibrary::GetBuff<ULock>(User);
+	Lock->SetLockTarget(nullptr);
+	Lock->Release();
 }
 
 TArray<FOverlapResult> AProjectRPlayerController::GetLockableEnemys() const
