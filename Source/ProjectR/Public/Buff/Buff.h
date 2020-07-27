@@ -37,6 +37,8 @@ public:
 	UFUNCTION(BlueprintCallable)
 	bool IsBlocked() const;
 
+	UWorld* GetWorld() const override;
+
 protected:
 	UFUNCTION(BlueprintImplementableEvent, meta = (DisplayName = "BeginPlay"))
 	void RecieveBeginPlay();
