@@ -126,18 +126,11 @@ void AProjectRPlayerController::Dodge()
 void AProjectRPlayerController::Run()
 {
 	UBuffLibrary::ApplyBuff<URun>(User);
-	bIsRunned = true;
-
-	auto Temp = bIsLocked;
-	if (Temp) LockOff();
-	bIsLocked = MoveTemp(Temp);
 }
 
 void AProjectRPlayerController::Walk()
 {
 	UBuffLibrary::ReleaseBuff<URun>(User);
-	bIsRunned = false;
-	if (bIsLocked) LockOn();
 }
 
 void AProjectRPlayerController::SwapWeapon(uint8 Index)
@@ -166,53 +159,57 @@ void AProjectRPlayerController::UseSkill(uint8 Index)
 
 void AProjectRPlayerController::LockOn()
 {
-	if (!User || UBuffLibrary::IsBlocked<ULock>(User)) return;
+	auto* Lock = UBuffLibrary::GetBuff<ULock>(User);
+	if (!Lock || Lock->IsActivate()) return;
 
-	TArray<AActor*> Enemys;
-	UGameplayStatics::GetAllActorsOfClass(GetWorld(), AProjectRCharacter::StaticClass(), Enemys);
+	auto Enemys = GetLockableEnemys();
 
-	AProjectRCharacter* LockTarget = nullptr;
-	float Angle = -1.0f, Distance = -1.0f;
-
-	for (AActor* Enemy : Enemys)
-		if (CheckLockOn(Enemy, Angle, Distance))
-			LockTarget = Cast<AProjectRCharacter>(Enemy);
-
-	if (auto* Lock = UBuffLibrary::GetBuff<ULock>(User))
+	if (Enemys.IsValidIndex(0))
 	{
-		Lock->SetLockTarget(LockTarget);
-		Lock->Apply();
+		Lock->SetLockTarget(Enemys[0].GetActor());
 	}
-
-	if (!LockTarget)
+	else
 	{
+		Lock->SetLockTarget(nullptr);
 		TurnRotation.Yaw = User->GetActorRotation().Yaw;
 		bIsTurning = true;
 	}
 
-	bIsLocked = true;
-
-	auto Temp = bIsRunned;
-	if (Temp) Walk();
-	bIsRunned = MoveTemp(Temp);
+	Lock->Apply();
 }
 
 void AProjectRPlayerController::LockOff()
 {
 	UBuffLibrary::ReleaseBuff<ULock>(User);
-	bIsLocked = false;
-	if (bIsRunned) Run();
 }
 
-bool AProjectRPlayerController::CheckLockOn(const AActor* Enemy, float& OutAngle, float& OutDistance) const
+TArray<FOverlapResult> AProjectRPlayerController::GetLockableEnemys() const
 {
-	if (auto* EnemyChararcter = Cast<AProjectRCharacter>(Enemy))
-		if (EnemyChararcter->IsDeath())
-			return false;
+	FCollisionShape Shape;
+	Shape.SetSphere(LockOnDistance);
+
+	FCollisionQueryParams Params;
+	Params.AddIgnoredActor(User);
+
+	TArray<FOverlapResult> Enemys;
+	GetWorld()->OverlapMultiByObjectType(Enemys, User->GetActorLocation(),
+		FQuat{}, { ECollisionChannel::ECC_Pawn }, Shape, Params);
+
+	return Enemys.FilterByPredicate([this](const FOverlapResult& Enemy)
+	{
+		return CheckLockOn(Enemy);
+	});
+}
+
+bool AProjectRPlayerController::CheckLockOn(const FOverlapResult& Enemy) const
+{
+	auto* EnemyChararcter = Cast<AProjectRCharacter>(Enemy.GetActor());
+	if (EnemyChararcter && EnemyChararcter->IsDeath())
+		return false;
 
 	const FVector UserLocation = User->GetActorLocation();
-	const FVector EnemyLocation = Enemy->GetActorLocation();
-	FVector Diff = (EnemyLocation - UserLocation);
+	const FVector EnemyLocation = EnemyChararcter->GetActorLocation();
+	FVector Diff = EnemyLocation - UserLocation;
 
 	const float SizeSquare = Diff.SizeSquared();
 	if (SizeSquare > FMath::Square(LockOnDistance)) return false;
@@ -228,43 +225,13 @@ bool AProjectRPlayerController::CheckLockOn(const AActor* Enemy, float& OutAngle
 
 	FCollisionQueryParams Params;
 	Params.AddIgnoredActor(User);
-	Params.AddIgnoredActor(Enemy);
+	Params.AddIgnoredActor(EnemyChararcter);
 
 	FHitResult Hit;
 	bool bHaveObstacle = GetWorld()->LineTraceSingleByChannel
 		(Hit, UserEye, EnemyLocation, ECollisionChannel::ECC_Visibility, Params);
 
-	if (bHaveObstacle) return false;
-	if (OutDistance <= 0.0f && OutAngle <= 0.0f)
-	{
-		OutAngle = Angle;
-		OutDistance = SizeSquare;
-		return true;
-	}
-
-	const float AllowAngle = FMath::DegreesToRadians(LockOnAngle * 0.05f);
-	const float AngleDiff = OutAngle - Angle;
-
-	if (FMath::Abs(AngleDiff) > AllowAngle)
-	{
-		if (AngleDiff > 0.0f)
-		{
-			OutAngle = Angle;
-			OutDistance = SizeSquare;
-			return true;
-		}
-
-		return false;
-	}
-
-	if (OutDistance > SizeSquare)
-	{
-		OutAngle = Angle;
-		OutDistance = SizeSquare;
-		return true;
-	}
-
-	return false;
+	return !bHaveObstacle;
 }
 
 void AProjectRPlayerController::CheckLockTarget()
@@ -274,7 +241,24 @@ void AProjectRPlayerController::CheckLockTarget()
 
 	if (LockTarget->IsDeath())
 	{
-		LockOn();
+		auto* Lock = UBuffLibrary::GetBuff<ULock>(User);
+		if (!Lock || Lock->IsActivate())
+		{
+			LockOff();
+			return;
+		}
+
+		const auto Enemys = GetLockableEnemys();
+		if (Enemys.IsValidIndex(0))
+		{
+			Lock->SetLockTarget(Enemys[0].GetActor());
+			Lock->Apply();
+		}
+		else
+		{
+			LockOff();
+		}
+
 		return;
 	}
 

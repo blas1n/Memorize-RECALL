@@ -6,6 +6,9 @@
 #include "UObject/NoExportTypes.h"
 #include "Buff.generated.h"
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnApplied);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnReleased);
+
 UCLASS(Abstract, Blueprintable)
 class PROJECTR_API UBuff : public UObject
 {
@@ -56,6 +59,10 @@ protected:
 	virtual bool IsActivate_Implementation() const { return false; }
 
 	FORCEINLINE class AProjectRCharacter* GetTarget() const noexcept { return Target; }
+
+public:
+	FOnApplied OnApplied;
+	FOnReleased OnReleased;
 
 private:
 	UPROPERTY(BlueprintReadOnly, meta = (AllowPrivateAccess = true))
