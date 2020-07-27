@@ -192,7 +192,10 @@ void AProjectRPlayerState::OnRunReleased()
 
 void AProjectRPlayerState::SetMovement()
 {
-	auto* Movement = GetPawn<ACharacter>()->GetCharacterMovement();
+	auto* Character = GetPawn<ACharacter>();
+	if (!Character) return;
+
+	auto* Movement = Character->GetCharacterMovement();
 	if (!Movement) return;
 
 	if (bIsRunned)
