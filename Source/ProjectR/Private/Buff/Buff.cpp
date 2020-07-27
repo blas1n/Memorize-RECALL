@@ -68,3 +68,8 @@ bool UBuff::IsBlocked() const
 {
 	return bIsBlock;
 }
+
+UWorld* UBuff::GetWorld() const
+{
+	return Target ? Target->GetWorld() : nullptr;
+}
