@@ -96,6 +96,8 @@ void AProjectRCharacter::PostInitializeComponents()
 float AProjectRCharacter::TakeDamage(float DamageAmount, const FDamageEvent& DamageEvent,
 	AController* EventInstigator, AActor* DamageCauser)
 {
+	if (bIsDeath) return 0.0f;
+
 	auto Damage = static_cast<int32>(DamageAmount);
 	auto* Character = Cast<AProjectRCharacter>(DamageCauser);
 
