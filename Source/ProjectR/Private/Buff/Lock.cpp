@@ -10,12 +10,6 @@
 void ULock::SetLockTarget(AActor* InLockedTarget)
 {
 	LockedTarget = InLockedTarget;
-	
-	if (IsActivate())
-	{
-		GetTarget()->GetCharacterMovement()->
-			bUseControllerDesiredRotation = LockedTarget != nullptr;
-	}
 }
 
 void ULock::Tick(float DeltaSeconds)
@@ -37,28 +31,10 @@ void ULock::Tick(float DeltaSeconds)
 void ULock::OnApply()
 {
 	bIsLocked = true;
-
-	auto* Movement = GetTarget()->GetCharacterMovement();
-	bWasOrientMovement = Movement->bOrientRotationToMovement;
-	bWasDesiredRotation = Movement->bUseControllerDesiredRotation;
-	Movement->bOrientRotationToMovement = false;
-	Movement->bUseControllerDesiredRotation = LockedTarget != nullptr;
-
-	if (auto* PlayerState = GetTarget()->GetPlayerState<AProjectRPlayerState>())
-		GetTarget()->GetCharacterMovement()->MaxWalkSpeed = PlayerState->GetLockSpeed();
-	
-	bIsLocked = true;
 }
 
 void ULock::OnRelease()
 {
-	auto* Movement = GetTarget()->GetCharacterMovement();
-	Movement->bOrientRotationToMovement = bWasOrientMovement;
-	Movement->bUseControllerDesiredRotation = bWasDesiredRotation;
-
-	if (auto* PlayerState = GetTarget()->GetPlayerState<AProjectRPlayerState>())
-		GetTarget()->GetCharacterMovement()->MaxWalkSpeed = PlayerState->GetWalkSpeed();
-
 	bIsLocked = false;
 }
 

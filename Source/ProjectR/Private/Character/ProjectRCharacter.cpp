@@ -41,9 +41,6 @@ AProjectRCharacter::AProjectRCharacter()
 
 	WeaponComponent = CreateDefaultSubobject<UWeaponComponent>(TEXT("Weapon"));
 	bIsDeath = false;
-
-	OnAttack.AddDynamic(this, &AProjectRCharacter::HealHealthAndEnergy);
-	Initialize();
 }
 
 void AProjectRCharacter::Attack(AActor* Target, int32 Damage)
@@ -93,6 +90,7 @@ void AProjectRCharacter::PostInitializeComponents()
 	Super::PostInitializeComponents();
 
 	Initialize();
+	OnAttack.AddUniqueDynamic(this, &AProjectRCharacter::HealHealthAndEnergy);
 }
 
 float AProjectRCharacter::TakeDamage(float DamageAmount, const FDamageEvent& DamageEvent,
