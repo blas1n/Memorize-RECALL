@@ -48,7 +48,6 @@ void AMobController::Tick(float DeltaSeconds)
 			DetectionValue = 0.0f;
 	}
 
-	UE_LOG(LogTemp, Log, TEXT("Value: %f"), DetectionValue);
 	MyBlackboard->SetValueAsBool(TEXT("IsDetection"), DetectionValue > 0.0f);
 }
 
