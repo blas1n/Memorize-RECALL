@@ -10,7 +10,6 @@
 #include "Buff/Run.h"
 #include "Character/ProjectRCharacter.h"
 #include "Data/StatData.h"
-#include "Library/BuffLibrary.h"
 
 AProjectRPlayerState::AProjectRPlayerState()
 	: Super()
@@ -72,7 +71,7 @@ void AProjectRPlayerState::SetRunSpeed(float Value)
 	RunSpeed = Value;
 
 	auto* User = GetPawn<AProjectRCharacter>();
-	if (User && UBuffLibrary::IsActivate<URun>(User))
+	if (User && bIsRunned)
 		User->GetCharacterMovement()->MaxWalkSpeed = RunSpeed;
 }
 
@@ -81,7 +80,7 @@ void AProjectRPlayerState::SetWalkSpeed(float Value)
 	WalkSpeed = Value;
 
 	auto* User = GetPawn<AProjectRCharacter>();
-	if (User && !UBuffLibrary::IsActivate<URun>(User))
+	if (User && !bIsRunned && !bIsLocked)
 		User->GetCharacterMovement()->MaxWalkSpeed = WalkSpeed;
 }
 
@@ -90,7 +89,7 @@ void AProjectRPlayerState::SetLockSpeed(float Value)
 	LockSpeed = Value;
 
 	auto* User = GetPawn<AProjectRCharacter>();
-	if (User && UBuffLibrary::IsActivate<ULock>(User))
+	if (User && !bIsRunned && bIsLocked)
 		User->GetCharacterMovement()->MaxWalkSpeed = LockSpeed;
 }
 
@@ -142,6 +141,12 @@ void AProjectRPlayerState::BeginPlay()
 	SetRunSpeed(Data->RunSpeed);
 	SetWalkSpeed(Data->WalkSpeed);
 	SetLockSpeed(Data->LockSpeed);
+
+	GetBuff(ULock::StaticClass())->OnApplied.AddDynamic(this, &AProjectRPlayerState::OnLockApplied);
+	GetBuff(ULock::StaticClass())->OnReleased.AddDynamic(this, &AProjectRPlayerState::OnLockReleased);
+
+	GetBuff(URun::StaticClass())->OnApplied.AddDynamic(this, &AProjectRPlayerState::OnRunApplied);
+	GetBuff(URun::StaticClass())->OnReleased.AddDynamic(this, &AProjectRPlayerState::OnRunReleased);
 }
 
 void AProjectRPlayerState::EndPlay(EEndPlayReason::Type EndPlayReason)
@@ -159,4 +164,53 @@ void AProjectRPlayerState::Tick(float DeltaSeconds)
 	for (UBuff* Buff : Buffs)
 		if (Buff->IsActivate())
 			Buff->Tick(DeltaSeconds);
+}
+
+void AProjectRPlayerState::OnLockApplied()
+{
+	bIsLocked = true;
+	SetMovement();
+}
+
+void AProjectRPlayerState::OnLockReleased()
+{
+	bIsLocked = false;
+	SetMovement();
+}
+
+void AProjectRPlayerState::OnRunApplied()
+{
+	bIsRunned = true;
+	SetMovement();
+}
+
+void AProjectRPlayerState::OnRunReleased()
+{
+	bIsRunned = false;
+	SetMovement();
+}
+
+void AProjectRPlayerState::SetMovement()
+{
+	auto* Movement = GetPawn<ACharacter>()->GetCharacterMovement();
+	if (!Movement) return;
+
+	if (bIsRunned)
+	{
+		Movement->MaxWalkSpeed = RunSpeed;
+		Movement->bOrientRotationToMovement = true;
+		Movement->bUseControllerDesiredRotation = false;
+	}
+	else if (bIsLocked)
+	{
+		Movement->MaxWalkSpeed = LockSpeed;
+		Movement->bOrientRotationToMovement = false;
+		Movement->bUseControllerDesiredRotation = true;
+	}
+	else
+	{
+		Movement->MaxWalkSpeed = WalkSpeed;
+		Movement->bOrientRotationToMovement = true;
+		Movement->bUseControllerDesiredRotation = false;
+	}
 }

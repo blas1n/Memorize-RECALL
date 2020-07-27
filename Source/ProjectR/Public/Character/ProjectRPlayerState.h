@@ -66,6 +66,20 @@ private:
 	void EndPlay(EEndPlayReason::Type EndPlayReason) override;
 	void Tick(float DeltaSeconds) override;
 
+	UFUNCTION()
+	void OnLockApplied();
+
+	UFUNCTION()
+	void OnLockReleased();
+
+	UFUNCTION()
+	void OnRunApplied();
+
+	UFUNCTION()
+	void OnRunReleased();
+
+	void SetMovement();
+
 private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Stat, meta = (AllowPrivateAccess = true))
 	int32 Health;
@@ -99,4 +113,7 @@ private:
 
 	UPROPERTY()
 	class UDataTable* StatDataTable;
+
+	uint8 bIsRunned : 1;
+	uint8 bIsLocked : 1;
 };
