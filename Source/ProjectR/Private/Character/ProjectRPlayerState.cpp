@@ -207,8 +207,12 @@ void AProjectRPlayerState::SetMovement()
 	else if (bIsLocked)
 	{
 		Movement->MaxWalkSpeed = LockSpeed;
-		Movement->bOrientRotationToMovement = false;
-		Movement->bUseControllerDesiredRotation = true;
+
+		if (Cast<ULock>(GetBuff(ULock::StaticClass()))->GetLockedTarget())
+		{
+			Movement->bOrientRotationToMovement = false;
+			Movement->bUseControllerDesiredRotation = true;
+		}
 	}
 	else
 	{
