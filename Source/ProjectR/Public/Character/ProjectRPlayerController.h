@@ -41,7 +41,9 @@ private:
 
 	void LockOn();
 	void LockOff();
-	bool CheckLockOn(const AActor* Enemy, float& OutAngle, float& OutDistance) const;
+
+	TArray<FOverlapResult> GetLockableEnemys() const;
+	bool CheckLockOn(const FOverlapResult& Enemy) const;
 
 	void CheckLockTarget();
 	void Turn(float DeltaSeconds);
@@ -72,6 +74,4 @@ private:
 
 	FRotator TurnRotation;
 	uint8 bIsTurning : 1;
-	uint8 bIsRunned : 1;
-	uint8 bIsLocked : 1;
 };
