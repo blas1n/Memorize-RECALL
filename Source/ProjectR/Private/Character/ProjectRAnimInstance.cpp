@@ -4,6 +4,7 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Buff/Stun.h"
 #include "Buff/Lock.h"
+#include "Buff/Run.h"
 #include "Character/ProjectRCharacter.h"
 #include "Library/BuffLibrary.h"
 
@@ -11,6 +12,7 @@ UProjectRAnimInstance::UProjectRAnimInstance()
 	: Super()
 {
 	Speed = 0.0f;
+	bIsRunning = false;
 	bIsLooking = false;
 	bIsStuned = false;
 	bIsInAir = false;
@@ -27,6 +29,7 @@ void UProjectRAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 	Velocity = User->GetActorRotation().UnrotateVector(Movement->Velocity);
 	Speed = Velocity.Size();
 	
+	bIsRunning = UBuffLibrary::IsActivate<URun>(User);
 	bIsLooking = UBuffLibrary::IsActivate<ULock>(User);
 	bIsStuned = UBuffLibrary::IsActivate<UStun>(User);
 	bIsInAir = Movement->IsFalling();
