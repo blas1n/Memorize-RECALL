@@ -63,7 +63,10 @@ protected:
 	FORCEINLINE class AProjectRCharacter* GetTarget() const noexcept { return Target; }
 
 public:
+	UPROPERTY(BlueprintAssignable)
 	FOnApplied OnApplied;
+
+	UPROPERTY(BlueprintAssignable)
 	FOnReleased OnReleased;
 
 private:
