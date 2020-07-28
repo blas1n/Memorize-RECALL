@@ -83,8 +83,6 @@ void AProjectRCharacter::PostInitializeComponents()
 float AProjectRCharacter::TakeDamage(float DamageAmount, const FDamageEvent& DamageEvent,
 	AController* EventInstigator, AActor* DamageCauser)
 {
-	if (bIsDeath) return 0.0f;
-
 	auto Damage = static_cast<int32>(DamageAmount);
 	auto* Character = Cast<AProjectRCharacter>(DamageCauser);
 
@@ -92,14 +90,30 @@ float AProjectRCharacter::TakeDamage(float DamageAmount, const FDamageEvent& Dam
 		return 0.0f;
 
 	Damage = Super::TakeDamage(Damage, DamageEvent, EventInstigator, DamageCauser);
+	if (Damage <= 0.0f) return Damage;
 
 	auto* MyPlayerState = GetPlayerState<AProjectRPlayerState>();
 	MyPlayerState->HealHealth(-Damage);
 
 	if (MyPlayerState->GetHealth() == 0u) Death();
-	else OnDamaged.Broadcast(EventInstigator, Damage);
+
+	if (auto* InstigatorPawn = EventInstigator->GetPawn<AProjectRCharacter>())
+	{
+		InstigatorPawn->OnAttack.Broadcast(Damage, this, DamageEvent.DamageTypeClass);
+		OnDamage.Broadcast(Damage, InstigatorPawn, DamageEvent.DamageTypeClass);
+	}
 
 	return Damage;
+}
+
+bool AProjectRCharacter::ShouldTakeDamage(float Damage, const FDamageEvent& DamageEvent,
+	AController* EventInstigator, AActor* DamageCauser) const
+{
+	return
+		Super::ShouldTakeDamage(Damage, DamageEvent, EventInstigator, DamageCauser)
+		&& GetPlayerState<AProjectRPlayerState>()
+		&& EventInstigator && DamageCauser
+		&& GetTeamAttitudeTowards(*EventInstigator) != ETeamAttitude::Friendly;
 }
 
 void AProjectRCharacter::GetActorEyesViewPoint(FVector& Location, FRotator& Rotation) const
