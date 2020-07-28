@@ -43,19 +43,6 @@ AProjectRCharacter::AProjectRCharacter()
 	bIsDeath = false;
 }
 
-void AProjectRCharacter::Attack(AActor* Target, int32 Damage)
-{
-	auto* TargetPawn = Cast<APawn>(Target);
-	if (TargetPawn && TargetPawn->IsPlayerControlled() == IsPlayerControlled())
-		return;
-
-	auto TakingDamage = static_cast<int32>(Target->
-		TakeDamage(Damage, FDamageEvent{}, GetController(), this));
-
-	if (TakingDamage > 0u)
-		OnAttack.Broadcast(Target, TakingDamage);
-}
-
 FGenericTeamId AProjectRCharacter::GetGenericTeamId() const
 {
 	auto* MyController = GetController<IGenericTeamAgentInterface>();

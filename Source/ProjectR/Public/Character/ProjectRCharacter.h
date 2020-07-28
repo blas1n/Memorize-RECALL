@@ -20,9 +20,6 @@ class PROJECTR_API AProjectRCharacter final : public ACharacter, public IGeneric
 public:
 	AProjectRCharacter();
 
-	UFUNCTION(BlueprintCallable)
-	void Attack(AActor* Target, int32 Damage);
-
 	void GetActorEyesViewPoint(FVector& Location, FRotator& Rotation) const override;
 	
 	FGenericTeamId GetGenericTeamId() const;
