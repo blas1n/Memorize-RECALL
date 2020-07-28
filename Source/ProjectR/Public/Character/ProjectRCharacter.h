@@ -40,9 +40,12 @@ private:
 #endif
 
 	void PostInitializeComponents() override;
-	
+
 	float TakeDamage(float DamageAmount, const FDamageEvent& DamageEvent,
 		AController* EventInstigator, AActor* DamageCauser) override;
+
+	bool ShouldTakeDamage(float Damage, const FDamageEvent& DamageEvent,
+		AController* EventInstigator, AActor* DamageCauser) const override;
 
 	void Landed(const FHitResult& Hit) override;
 
