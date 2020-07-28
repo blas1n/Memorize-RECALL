@@ -5,6 +5,7 @@
 #include "Components/SkeletalMeshComponent.h"
 #include "Engine/DataTable.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "GameFramework/Controller.h"
 #include "UObject/ConstructorHelpers.h"
 #include "Buff/Cast.h"
 #include "Buff/Lock.h"
@@ -13,6 +14,7 @@
 #include "Character/ProjectRPlayerState.h"
 #include "Component/WeaponComponent.h"
 #include "Data/CharacterData.h"
+#include "Data/ProjectRDamageType.h"
 #include "Library/BuffLibrary.h"
 #include "Library/ProjectRStatics.h"
 #include "Parryable.h"
@@ -160,13 +162,16 @@ void AProjectRCharacter::Initialize()
 	WeaponComponent->Initialize(WeaponKeies);
 }
 
-void AProjectRCharacter::HealHealthAndEnergy(AActor* Target, int32 Damage)
+void AProjectRCharacter::HealHealthAndEnergy(int32 Damage, AActor* Target, TSubclassOf<class UDamageType> DamageType)
 {
-	auto* MyPlayerState = GetPlayerState<AProjectRPlayerState>();
-	if (!MyPlayerState) return;
+	auto* DamageTypeObj = Cast<UProjectRDamageType>(DamageType.GetDefaultObject());
+	if (!DamageTypeObj->CanHealByDamage()) return;
 
-	MyPlayerState->HealHealthByDamage(Damage);
-	MyPlayerState->HealEnergyByDamage(Damage);
+	if (auto* MyPlayerState = GetPlayerState<AProjectRPlayerState>())
+	{
+		MyPlayerState->HealHealthByDamage(Damage);
+		MyPlayerState->HealEnergyByDamage(Damage);
+	}
 }
 
 void AProjectRCharacter::GetLookLocationAndRotation_Implementation(FVector& Location, FRotator& Rotation) const
