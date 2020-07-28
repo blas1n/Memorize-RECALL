@@ -53,7 +53,7 @@ private:
 	FVector GetDirectionVector(EAxis::Type Axis) const;
 
 	UFUNCTION()
-	void OnDeath(AController* LastInstigator);
+	void OnDeath();
 
 private:
 	UPROPERTY()

@@ -302,7 +302,7 @@ FVector AProjectRPlayerController::GetDirectionVector(EAxis::Type Axis) const
 	return FRotationMatrix(YawRotation).GetUnitAxis(Axis);
 }
 
-void AProjectRPlayerController::OnDeath(AController* LastInstigator)
+void AProjectRPlayerController::OnDeath()
 {
 	UnPossess();
 }

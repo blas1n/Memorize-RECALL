@@ -30,7 +30,7 @@ private:
 	void InitBlackboard(const FLogicData& LogicData);
 
 	UFUNCTION()
-	void OnDeath(AController* LastInstigator);
+	void OnDeath();
 
 private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = true))
