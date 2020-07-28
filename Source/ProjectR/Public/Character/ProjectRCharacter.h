@@ -52,7 +52,7 @@ private:
 	void Initialize();
 
 	UFUNCTION()
-	void HealHealthAndEnergy(AActor* Target, int32 Damage);
+	void HealHealthAndEnergy(int32 Damage, AActor* Target, TSubclassOf<UDamageType> DamageType);
 
 	void GetLookLocationAndRotation_Implementation(FVector& Location, FRotator& Rotation) const;
 	void Death();
@@ -68,7 +68,7 @@ public:
 	FOnAttack OnAttack;
 
 	UPROPERTY(BlueprintAssignable)
-	FOnDamaged OnDamaged;
+	FOnDamage OnDamage;
 
 private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = true))

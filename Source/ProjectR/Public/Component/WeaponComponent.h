@@ -56,7 +56,7 @@ private:
 		UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
 	UFUNCTION()
-	void Detach(AController* Instigator);
+	void Detach();
 
 	void DetachOnce(class UStaticMeshComponent* Weapon);
 

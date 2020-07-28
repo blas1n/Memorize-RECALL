@@ -140,7 +140,7 @@ void UWeaponComponent::OnWeaponOverlap(UPrimitiveComponent* OverlappedComponent,
 	OnWeaponOverlapped.Broadcast(OtherActor);
 }
 
-void UWeaponComponent::Detach(AController* Instigator)
+void UWeaponComponent::Detach()
 {
 	DetachOnce(RightWeapon);
 	DetachOnce(LeftWeapon);
