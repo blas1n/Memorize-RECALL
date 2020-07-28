@@ -29,6 +29,12 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
 	bool CanUse() const;
 
+	UFUNCTION(BlueprintCallable)
+	void RecoverCoolTime(float Value);
+
+	UFUNCTION(BlueprintCallable)
+	void RecoverEnergy(float Ratio);
+
 	UWorld* GetWorld() const override;
 
 	FORCEINLINE int32 GetPriority() const noexcept { return Priority; }

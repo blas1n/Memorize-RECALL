@@ -25,10 +25,13 @@ void UBuff::Apply()
 	bIsActivateWithoutBlock = true;
 	if (IsBlocked()) return;
 
+	const bool bIsAlreadActive = IsActivate();
+
 	OnApply();
 	RecieveOnApply();
 
-	OnApplied.Broadcast();
+	if (!bIsAlreadActive && IsActivate())
+		OnApplied.Broadcast();
 }
 
 void UBuff::Release()
@@ -36,10 +39,13 @@ void UBuff::Release()
 	bIsActivateWithoutBlock = false;
 	if (IsBlocked()) return;
 
+	const bool bIsAlreadActive = IsActivate();
+
 	OnRelease();
 	RecieveOnRelease();
 
-	OnReleased.Broadcast();
+	if (bIsAlreadActive && !IsActivate())
+		OnReleased.Broadcast();
 }
 
 void UBuff::Block()
@@ -67,4 +73,9 @@ void UBuff::Unblock()
 bool UBuff::IsBlocked() const
 {
 	return bIsBlock;
+}
+
+UWorld* UBuff::GetWorld() const
+{
+	return Target ? Target->GetWorld() : nullptr;
 }

@@ -5,6 +5,7 @@
 #include "Components/SkeletalMeshComponent.h"
 #include "Engine/DataTable.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "GameFramework/Controller.h"
 #include "UObject/ConstructorHelpers.h"
 #include "Buff/Cast.h"
 #include "Buff/Lock.h"
@@ -13,6 +14,7 @@
 #include "Character/ProjectRPlayerState.h"
 #include "Component/WeaponComponent.h"
 #include "Data/CharacterData.h"
+#include "Data/ProjectRDamageType.h"
 #include "Library/BuffLibrary.h"
 #include "Library/ProjectRStatics.h"
 #include "Parryable.h"
@@ -41,19 +43,6 @@ AProjectRCharacter::AProjectRCharacter()
 
 	WeaponComponent = CreateDefaultSubobject<UWeaponComponent>(TEXT("Weapon"));
 	bIsDeath = false;
-}
-
-void AProjectRCharacter::Attack(AActor* Target, int32 Damage)
-{
-	auto* TargetPawn = Cast<APawn>(Target);
-	if (TargetPawn && TargetPawn->IsPlayerControlled() == IsPlayerControlled())
-		return;
-
-	auto TakingDamage = static_cast<int32>(Target->
-		TakeDamage(Damage, FDamageEvent{}, GetController(), this));
-
-	if (TakingDamage > 0u)
-		OnAttack.Broadcast(Target, TakingDamage);
 }
 
 FGenericTeamId AProjectRCharacter::GetGenericTeamId() const
@@ -103,14 +92,30 @@ float AProjectRCharacter::TakeDamage(float DamageAmount, const FDamageEvent& Dam
 		return 0.0f;
 
 	Damage = Super::TakeDamage(Damage, DamageEvent, EventInstigator, DamageCauser);
+	if (Damage <= 0.0f) return Damage;
 
 	auto* MyPlayerState = GetPlayerState<AProjectRPlayerState>();
 	MyPlayerState->HealHealth(-Damage);
 
 	if (MyPlayerState->GetHealth() == 0u) Death();
-	else OnDamaged.Broadcast(EventInstigator, Damage);
+
+	if (auto* InstigatorPawn = EventInstigator->GetPawn<AProjectRCharacter>())
+	{
+		InstigatorPawn->OnAttack.Broadcast(Damage, this, DamageEvent.DamageTypeClass);
+		OnDamage.Broadcast(Damage, InstigatorPawn, DamageEvent.DamageTypeClass);
+	}
 
 	return Damage;
+}
+
+bool AProjectRCharacter::ShouldTakeDamage(float Damage, const FDamageEvent& DamageEvent,
+	AController* EventInstigator, AActor* DamageCauser) const
+{
+	return
+		Super::ShouldTakeDamage(Damage, DamageEvent, EventInstigator, DamageCauser)
+		&& GetPlayerState<AProjectRPlayerState>()
+		&& EventInstigator && DamageCauser
+		&& GetTeamAttitudeTowards(*EventInstigator) != ETeamAttitude::Friendly;
 }
 
 void AProjectRCharacter::GetActorEyesViewPoint(FVector& Location, FRotator& Rotation) const
@@ -157,13 +162,16 @@ void AProjectRCharacter::Initialize()
 	WeaponComponent->Initialize(WeaponKeies);
 }
 
-void AProjectRCharacter::HealHealthAndEnergy(AActor* Target, int32 Damage)
+void AProjectRCharacter::HealHealthAndEnergy(int32 Damage, AActor* Target, TSubclassOf<class UDamageType> DamageType)
 {
-	auto* MyPlayerState = GetPlayerState<AProjectRPlayerState>();
-	if (!MyPlayerState) return;
+	auto* DamageTypeObj = Cast<UProjectRDamageType>(DamageType.GetDefaultObject());
+	if (!DamageTypeObj->CanHealByDamage()) return;
 
-	MyPlayerState->HealHealthByDamage(Damage);
-	MyPlayerState->HealEnergyByDamage(Damage);
+	if (auto* MyPlayerState = GetPlayerState<AProjectRPlayerState>())
+	{
+		MyPlayerState->HealHealthByDamage(Damage);
+		MyPlayerState->HealEnergyByDamage(Damage);
+	}
 }
 
 void AProjectRCharacter::GetLookLocationAndRotation_Implementation(FVector& Location, FRotator& Rotation) const
@@ -177,9 +185,11 @@ void AProjectRCharacter::Death()
 
 	bIsDeath = true;
 	StopAnimMontage();
-	OnDeath.Broadcast(LastHitBy);
+	SetCanBeDamaged(false);
 
 	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	GetMesh()->SetCollisionEnabled(ECollisionEnabled::PhysicsOnly);
 	GetMesh()->SetSimulatePhysics(true);
+
+	OnDeath.Broadcast();
 }

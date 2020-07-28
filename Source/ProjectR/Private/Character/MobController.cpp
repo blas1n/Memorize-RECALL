@@ -26,7 +26,7 @@ void AMobController::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
 
-	if (ChaseTarget) return;
+	if (!GetPawn() || ChaseTarget) return;
 
 	auto* MyBlackboard = GetBlackboardComponent();
 	if (!MyBlackboard) return;

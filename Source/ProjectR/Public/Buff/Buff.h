@@ -37,6 +37,8 @@ public:
 	UFUNCTION(BlueprintCallable)
 	bool IsBlocked() const;
 
+	UWorld* GetWorld() const override;
+
 protected:
 	UFUNCTION(BlueprintImplementableEvent, meta = (DisplayName = "BeginPlay"))
 	void RecieveBeginPlay();
@@ -61,7 +63,10 @@ protected:
 	FORCEINLINE class AProjectRCharacter* GetTarget() const noexcept { return Target; }
 
 public:
+	UPROPERTY(BlueprintAssignable)
 	FOnApplied OnApplied;
+
+	UPROPERTY(BlueprintAssignable)
 	FOnReleased OnReleased;
 
 private:
