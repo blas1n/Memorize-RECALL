@@ -65,6 +65,17 @@ void USkill::End()
 	ReceiveEnd();
 }
 
+void USkill::RecoverCoolTime(float Value)
+{
+	NextUseTime -= Value;
+}
+
+void USkill::RecoverEnergy(float Ratio)
+{
+	if (auto* PlayerState = User->GetPlayerState<AProjectRPlayerState>())
+		PlayerState->HealEnergy(static_cast<int32>(static_cast<float>(UseEnergy) * Ratio));
+}
+
 UWorld* USkill::GetWorld() const
 {
 	return User ? User->GetWorld() : nullptr;
