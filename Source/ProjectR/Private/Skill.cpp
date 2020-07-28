@@ -43,6 +43,7 @@ void USkill::Initialize(const FName& KeyStr)
 void USkill::BeginPlay()
 {
 	ReceiveBeginPlay();
+	NextUseTime = GetWorld()->GetTimeSeconds();
 }
 
 void USkill::Start()
@@ -83,7 +84,7 @@ UWorld* USkill::GetWorld() const
 
 bool USkill::IsNotCoolTime() const
 {
-	return FMath::IsNearlyEqual(NextUseTime, 0.0f) || NextUseTime <= GetWorld()->GetTimeSeconds();
+	return NextUseTime <= GetWorld()->GetTimeSeconds();
 }
 
 void USkill::ApplyCooltime()
