@@ -7,10 +7,10 @@
 #include "GenericTeamAgentInterface.h"
 #include "ProjectRCharacter.generated.h"
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnDeath, AController*, Instigator);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnDeath);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnLand, const FHitResult&, Hit);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnAttack, AActor*, Target, int32, Damage);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnDamaged, AController*, Instigator, int32, Damage);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FOnAttack, int32, Damage, AActor*, Target, TSubclassOf<UDamageType>, DamageType);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FOnDamage, int32, Damage, AActor*, Target, TSubclassOf<UDamageType>, DamageType);
 
 UCLASS(Abstract, Blueprintable)
 class PROJECTR_API AProjectRCharacter final : public ACharacter, public IGenericTeamAgentInterface
