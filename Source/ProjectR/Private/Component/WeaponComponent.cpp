@@ -3,7 +3,9 @@
 #include "Component/WeaponComponent.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "Components/StaticMeshComponent.h"
+#include "Buff/Cast.h"
 #include "Character/ProjectRCharacter.h"
+#include "Library/BuffLibrary.h"
 #include "Weapon.h"
 
 UWeaponComponent::UWeaponComponent()
@@ -55,7 +57,7 @@ bool UWeaponComponent::CanUseSkill(uint8 Index) const
 
 void UWeaponComponent::SwapWeapon(uint8 Index)
 {
-	if (Index >= Weapons.Num() || CurIndex == Index)
+	if (Index >= Weapons.Num() || CurIndex == Index || UBuffLibrary::IsActivate<UCast>(User))
 		return;
 	
 	EquipWeapon(Weapons[Index], true);
