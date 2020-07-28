@@ -180,9 +180,11 @@ void AProjectRCharacter::Death()
 
 	bIsDeath = true;
 	StopAnimMontage();
-	OnDeath.Broadcast(LastHitBy);
+	SetCanBeDamaged(false);
 
 	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	GetMesh()->SetCollisionEnabled(ECollisionEnabled::PhysicsOnly);
 	GetMesh()->SetSimulatePhysics(true);
+
+	OnDeath.Broadcast();
 }
