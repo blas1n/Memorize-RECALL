@@ -7,10 +7,10 @@
 #include "GenericTeamAgentInterface.h"
 #include "ProjectRCharacter.generated.h"
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnDeath, AController*, Instigator);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnDeath);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnLand, const FHitResult&, Hit);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnAttack, AActor*, Target, int32, Damage);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnDamaged, AController*, Instigator, int32, Damage);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FOnAttack, int32, Damage, AActor*, Target, TSubclassOf<UDamageType>, DamageType);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FOnDamage, int32, Damage, AActor*, Target, TSubclassOf<UDamageType>, DamageType);
 
 UCLASS(Abstract, Blueprintable)
 class PROJECTR_API AProjectRCharacter final : public ACharacter, public IGenericTeamAgentInterface
@@ -19,9 +19,6 @@ class PROJECTR_API AProjectRCharacter final : public ACharacter, public IGeneric
 
 public:
 	AProjectRCharacter();
-
-	UFUNCTION(BlueprintCallable)
-	void Attack(AActor* Target, int32 Damage);
 
 	void GetActorEyesViewPoint(FVector& Location, FRotator& Rotation) const override;
 	
@@ -43,16 +40,19 @@ private:
 #endif
 
 	void PostInitializeComponents() override;
-	
+
 	float TakeDamage(float DamageAmount, const FDamageEvent& DamageEvent,
 		AController* EventInstigator, AActor* DamageCauser) override;
+
+	bool ShouldTakeDamage(float Damage, const FDamageEvent& DamageEvent,
+		AController* EventInstigator, AActor* DamageCauser) const override;
 
 	void Landed(const FHitResult& Hit) override;
 
 	void Initialize();
 
 	UFUNCTION()
-	void HealHealthAndEnergy(AActor* Target, int32 Damage);
+	void HealHealthAndEnergy(int32 Damage, AActor* Target, TSubclassOf<UDamageType> DamageType);
 
 	void GetLookLocationAndRotation_Implementation(FVector& Location, FRotator& Rotation) const;
 	void Death();
@@ -68,7 +68,7 @@ public:
 	FOnAttack OnAttack;
 
 	UPROPERTY(BlueprintAssignable)
-	FOnDamaged OnDamaged;
+	FOnDamage OnDamage;
 
 private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = true))

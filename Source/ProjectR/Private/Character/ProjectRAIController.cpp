@@ -81,7 +81,7 @@ void AProjectRAIController::InitBlackboard(const FLogicData& LogicData)
 	}
 }
 
-void AProjectRAIController::OnDeath(AController* LastInstigator)
+void AProjectRAIController::OnDeath()
 {
 	UnPossess();
 }

@@ -78,16 +78,25 @@ void AProjectRPlayerController::SetupInputComponent()
 	InputComponent->BindAction(TEXT("Lock"), IE_Released, this, &AProjectRPlayerController::LockOff);
 }
 
+FVector2D AProjectRPlayerController::GetDirection_Implementaion()
+{
+	return Direction.GetSafeNormal();
+}
+
 void AProjectRPlayerController::MoveForward(float Value)
 {
 	if (User && !UBuffLibrary::IsActivate<URoot>(User))
 		User->AddMovementInput(GetDirectionVector(EAxis::X), Value);
+
+	Direction.X = Value;
 }
 
 void AProjectRPlayerController::MoveRight(float Value)
 {
 	if (User && !UBuffLibrary::IsActivate<URoot>(User))
 		User->AddMovementInput(GetDirectionVector(EAxis::Y), Value);
+
+	Direction.Y = Value;
 }
 
 void AProjectRPlayerController::InputYaw(float Value)
@@ -180,7 +189,9 @@ void AProjectRPlayerController::LockOn()
 
 void AProjectRPlayerController::LockOff()
 {
-	UBuffLibrary::ReleaseBuff<ULock>(User);
+	auto* Lock = UBuffLibrary::GetBuff<ULock>(User);
+	Lock->SetLockTarget(nullptr);
+	Lock->Release();
 }
 
 TArray<FOverlapResult> AProjectRPlayerController::GetLockableEnemys() const
@@ -291,7 +302,7 @@ FVector AProjectRPlayerController::GetDirectionVector(EAxis::Type Axis) const
 	return FRotationMatrix(YawRotation).GetUnitAxis(Axis);
 }
 
-void AProjectRPlayerController::OnDeath(AController* LastInstigator)
+void AProjectRPlayerController::OnDeath()
 {
 	UnPossess();
 }

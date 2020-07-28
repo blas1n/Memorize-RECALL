@@ -56,7 +56,7 @@ private:
 		UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
 	UFUNCTION()
-	void Detach(AController* Instigator);
+	void Detach();
 
 	void DetachOnce(class UStaticMeshComponent* Weapon);
 
@@ -65,10 +65,10 @@ public:
 	FOnWeaponOverlapped OnWeaponOverlapped;
 
 private:
-	UPROPERTY()
+	UPROPERTY(BlueprintReadOnly, meta = (AllowPrivateAccess = true))
 	UStaticMeshComponent* RightWeapon;
 
-	UPROPERTY()
+	UPROPERTY(BlueprintReadOnly, meta = (AllowPrivateAccess = true))
 	UStaticMeshComponent* LeftWeapon;
 
 	UPROPERTY()
