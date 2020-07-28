@@ -95,9 +95,7 @@ void USkill::ApplyCooltime()
 bool USkill::IsEnoughEnergy() const
 {
 	auto* PlayerState = User->GetPlayerState<AProjectRPlayerState>();
-	if (!PlayerState) return true;
-
-	return PlayerState->GetEnergy() >= UseEnergy;
+	return PlayerState ? PlayerState->GetEnergy() >= UseEnergy : true;
 }
 
 void USkill::ApplyEnergy()
