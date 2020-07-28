@@ -5,10 +5,11 @@
 #include "CoreMinimal.h"
 #include "GameFramework/PlayerController.h"
 #include "GenericTeamAgentInterface.h"
+#include "Directionable.h"
 #include "ProjectRPlayerController.generated.h"
 
 UCLASS(Abstract, Blueprintable)
-class PROJECTR_API AProjectRPlayerController final : public APlayerController, public IGenericTeamAgentInterface
+class PROJECTR_API AProjectRPlayerController final : public APlayerController, public IGenericTeamAgentInterface, public IDirectionable
 {
 	GENERATED_BODY()
 
@@ -20,6 +21,7 @@ private:
 	void SetupInputComponent() override;
 
 	FGenericTeamId GetGenericTeamId() const { return FGenericTeamId{ 0 }; }
+	FVector2D GetDirection_Implementaion() override;
 
 	void MoveForward(float Value);
 	void MoveRight(float Value);
@@ -71,6 +73,8 @@ private:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Data, meta = (AllowPrivateAccess = true))
 	float LockOnAngle;
+
+	FVector2D Direction;
 
 	FRotator TurnRotation;
 	uint8 bIsTurning : 1;
