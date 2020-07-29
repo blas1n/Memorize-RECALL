@@ -57,6 +57,11 @@ void AProjectRCharacter::SetGenericTeamId(const FGenericTeamId& NewTeamID)
 	if (MyController) MyController->SetGenericTeamId(NewTeamID);
 }
 
+void AProjectRCharacter::AddWeapon(int32 WeaponKey)
+{
+	WeaponComponent->CreateNewWeapon(WeaponKey, WeaponActiveNum++);
+}
+
 #if WITH_EDITOR
 
 void AProjectRCharacter::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
