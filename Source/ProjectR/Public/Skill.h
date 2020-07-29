@@ -35,6 +35,9 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void RecoverEnergy(float Ratio);
 
+	UFUNCTION(BlueprintCallable)
+	float GetCoolTimeAsPercent() const;
+
 	UWorld* GetWorld() const override;
 
 	FORCEINLINE int32 GetPriority() const noexcept { return Priority; }
