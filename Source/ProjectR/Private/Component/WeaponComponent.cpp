@@ -70,7 +70,8 @@ void UWeaponComponent::CreateNewWeapon(int32 Key, uint8 Index)
 	NewWeapon->Initialize(Key);
 	NewWeapon->BeginPlay();
 
-	EquipWeapon(NewWeapon, CurIndex == Index);
+	if (Index == CurIndex)
+		EquipWeapon(NewWeapon, true);
 
 	Weapons[Index]->EndPlay();
 	Weapons[Index] = NewWeapon;
