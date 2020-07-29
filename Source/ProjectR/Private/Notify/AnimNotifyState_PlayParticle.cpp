@@ -32,31 +32,57 @@ void UAnimNotifyState_PlayParticle::NotifyBegin(USkeletalMeshComponent* MeshComp
 	if (!Template) return;
 
 	USceneComponent* Parent = nullptr;
-	const bool bIsRightParent = GetParentComponent(MeshComp, Parent);
+	const bool bHaveParent = GetParentComponent(MeshComp, Parent);
 
 	FName Socket = SocketName;
-	if (!bIsRightParent)
-		Socket = AttachParent == EAttachParent::RightWeapon ? TEXT("weapon_r") : TEXT("weapon_l");;
+	if (!bHaveParent)
+		Socket = AttachParent == EAttachParent::RightWeapon ? TEXT("weapon_r") : TEXT("weapon_l");
 
 	if (!Parent || !Parent->DoesSocketExist(Socket)) return;
 	
-	if (Parent)
-	{
-		FXComponent = UNiagaraFunctionLibrary::SpawnSystemAttached(Template, Parent,
-			Socket, LocationOffset, RotationOffset, EAttachLocation::KeepRelativeOffset, true);
-	}
-	else
-	{
-		const FTransform Transform = Parent ? Parent->GetSocketTransform(Socket) : MeshComp->GetSocketTransform(Socket);
-		FXComponent = UNiagaraFunctionLibrary::SpawnSystemAtLocation(MeshComp->GetWorld(), Template,
-			Transform.TransformPosition(LocationOffset), Transform.TransformRotation(FQuat{ RotationOffset }).Rotator());
-	}
+	UNiagaraFunctionLibrary::SpawnSystemAttached(Template, Parent,
+		Socket, LocationOffset, RotationOffset, EAttachLocation::KeepRelativeOffset, true);
 }
 
 void UAnimNotifyState_PlayParticle::NotifyEnd(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation)
 {
-	if (FXComponent && FXComponent->IsActive())
-		FXComponent->Deactivate();
+	USceneComponent* Parent = nullptr;
+	const bool bHaveParent = GetParentComponent(MeshComp, Parent);
+	
+	FName Socket = SocketName;
+	if (!bHaveParent)
+		Socket = AttachParent == EAttachParent::RightWeapon ? TEXT("weapon_r") : TEXT("weapon_l");
+	
+	if (!Parent || !Parent->DoesSocketExist(Socket)) return;
+
+	TArray<USceneComponent*> Children;
+	Parent->GetChildrenComponents(false, Children);
+
+	for (USceneComponent* Component : Children)
+	{
+		auto* FXSystemComponent = Cast<UFXSystemComponent>(Component);
+		if (!FXSystemComponent) continue;
+		
+		bool bSocketMatch = FXSystemComponent->GetAttachSocketName() == Socket;
+		bool bTemplateMatch = FXSystemComponent->GetFXSystemAsset() == Template;
+
+#if WITH_EDITORONLY_DATA
+		bSocketMatch |= PreviousSocketNames.Contains(FXSystemComponent->GetAttachSocketName());
+		bTemplateMatch |= PreviousTemplates.Contains(FXSystemComponent->GetFXSystemAsset());
+#endif
+
+		if (!bSocketMatch || !bTemplateMatch || !FXSystemComponent->IsActive())
+			continue;
+
+		FXSystemComponent->Deactivate();
+		FXSystemComponent->DetachFromComponent(FDetachmentTransformRules::KeepWorldTransform);
+
+#if WITH_EDITORONLY_DATA
+		PreviousTemplates.Empty();
+		PreviousSocketNames.Empty();
+#endif
+		break;
+	}
 }
 
 FString UAnimNotifyState_PlayParticle::GetNotifyName_Implementation() const
