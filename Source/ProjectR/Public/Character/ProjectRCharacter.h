@@ -25,6 +25,8 @@ public:
 	FGenericTeamId GetGenericTeamId() const;
 	void SetGenericTeamId(const FGenericTeamId& NewTeamID);
 
+	void AddWeapon(int32 WeaponKey);
+	
 	FORCEINLINE class UWeaponComponent* GetWeaponComponent() const noexcept { return WeaponComponent; }
 	FORCEINLINE int32 GetKey() const noexcept { return Key; }
 	FORCEINLINE int32 GetLevel() const noexcept { return Level; }
@@ -86,5 +88,6 @@ private:
 	UPROPERTY()
 	class UDataTable* CharacterDataTable;
 
+	uint8 WeaponActiveNum;
 	uint8 bIsDeath : 1;
 };
