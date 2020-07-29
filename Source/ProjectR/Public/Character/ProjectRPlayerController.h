@@ -5,7 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/PlayerController.h"
 #include "GenericTeamAgentInterface.h"
-#include "Directionable.h"
+#include "Interface/Directionable.h"
 #include "ProjectRPlayerController.generated.h"
 
 UCLASS(Abstract, Blueprintable)

@@ -1,7 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "Buff/Parry.h"
-#include "Parryable.h"
+#include "Interface/Parryable.h"
 
 bool UParry::ParryIfCan(int32 Damage, AController* Instigator, AProjectRCharacter* Causer)
 {

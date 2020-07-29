@@ -15,9 +15,9 @@
 #include "Component/WeaponComponent.h"
 #include "Data/CharacterData.h"
 #include "Data/ProjectRDamageType.h"
+#include "Interface/Parryable.h"
 #include "Library/BuffLibrary.h"
 #include "Library/ProjectRStatics.h"
-#include "Parryable.h"
 
 AProjectRCharacter::AProjectRCharacter()
 	: Super()
