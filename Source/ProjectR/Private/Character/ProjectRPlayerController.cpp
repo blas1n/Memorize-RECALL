@@ -170,6 +170,11 @@ void AProjectRPlayerController::UseSkill(uint8 Index)
 	if (User) User->GetWeaponComponent()->StartSkill(Index);
 }
 
+void AProjectRPlayerController::Interact()
+{
+	OnInteract.Broadcast();
+}
+
 void AProjectRPlayerController::LockOn()
 {
 	auto* Lock = UBuffLibrary::GetBuff<ULock>(User);
