@@ -4,7 +4,9 @@
 #include "AIController.h"
 #include "BrainComponent.h"
 #include "GameFramework/PlayerController.h"
+#include "Buff/Lock.h"
 #include "Character/ProjectRCharacter.h"
+#include "Library/BuffLibrary.h"
 
 void UStun::BeginPlay()
 {
@@ -19,6 +21,8 @@ void UStun::OnApply()
 	if (++Count > 1)
 		return;
 
+	UBuffLibrary::BlockBuff<ULock>(GetTarget());
+
 	if (bIsPlayer)
 		Cast<APlayerController>(Controller)->DisableInput(nullptr);
 	else
@@ -30,6 +34,8 @@ void UStun::OnRelease()
 {
 	if (--Count > 0)
 		return;
+
+	UBuffLibrary::UnblockBuff<ULock>(GetTarget());
 
 	if (bIsPlayer)
 		Cast<APlayerController>(Controller)->EnableInput(nullptr);

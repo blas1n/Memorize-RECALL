@@ -121,11 +121,12 @@ void AProjectRPlayerController::InputPitch(float Value)
 
 void AProjectRPlayerController::PressDodge()
 {
-	if (!User || UBuffLibrary::IsActivate<URoot>(User)) return;
+	if (!User) return;
 
 	if (UBuffLibrary::IsActivate<ULock>(User))
 		User->GetWeaponComponent()->StartSkill(4);
-	else User->Jump();
+	else if (!UBuffLibrary::IsActivate<URoot>(User))
+		User->Jump();
 }
 
 void AProjectRPlayerController::ReleaseDodge()
@@ -136,7 +137,7 @@ void AProjectRPlayerController::ReleaseDodge()
 
 void AProjectRPlayerController::Dodge()
 {
-	if (User && !UBuffLibrary::IsActivate<URoot>(User) && UBuffLibrary::IsActivate<ULock>(User))
+	if (User && UBuffLibrary::IsActivate<ULock>(User))
 		User->GetWeaponComponent()->StartSkill(4);
 }
 
@@ -202,9 +203,11 @@ void AProjectRPlayerController::LockOn()
 
 void AProjectRPlayerController::LockOff()
 {
-	auto* Lock = UBuffLibrary::GetBuff<ULock>(User);
-	Lock->SetLockTarget(nullptr);
-	Lock->Release();
+	if (auto* Lock = UBuffLibrary::GetBuff<ULock>(User))
+	{
+		Lock->SetLockTarget(nullptr);
+		Lock->Release();
+	}
 }
 
 TArray<FOverlapResult> AProjectRPlayerController::GetLockableEnemys() const

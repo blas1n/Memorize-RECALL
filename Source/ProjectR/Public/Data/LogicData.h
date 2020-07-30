@@ -21,6 +21,9 @@ struct FLogicData : public FTableRowBase
 	float FOV;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float AttackRadius;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float RunRadius;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
