@@ -93,7 +93,10 @@ float AProjectRCharacter::TakeDamage(float DamageAmount, const FDamageEvent& Dam
 	auto Damage = static_cast<int32>(DamageAmount);
 	auto* Character = Cast<AProjectRCharacter>(DamageCauser);
 
-	if (UBuffLibrary::GetBuff<UParry>(this)->ParryIfCan(Damage, EventInstigator, Character))
+	auto* Parry = UBuffLibrary::GetBuff<UParry>(this);
+	const auto* DamageType = Cast<UProjectRDamageType>(DamageEvent.DamageTypeClass.GetDefaultObject());
+	
+	if (DamageType->IsWeaponAttack() && Parry && Parry->ParryIfCan(Damage, EventInstigator, Character))
 		return 0.0f;
 
 	Damage = Super::TakeDamage(Damage, DamageEvent, EventInstigator, DamageCauser);
