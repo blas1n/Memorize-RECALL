@@ -8,7 +8,7 @@
 #include "ProjectRAIController.generated.h"
 
 UCLASS(Blueprintable)
-class PROJECTR_API AProjectRAIController  : public AAIController
+class PROJECTR_API AProjectRAIController : public AAIController
 {
 	GENERATED_BODY()
 
