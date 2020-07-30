@@ -4,8 +4,10 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/Controller.h"
 #include "Kismet/KismetMathLibrary.h"
+#include "Buff/Root.h"
 #include "Character/ProjectRCharacter.h"
 #include "Character/ProjectRPlayerState.h"
+#include "Library/BuffLibrary.h"
 
 void ULock::SetLockTarget(AActor* InLockedTarget)
 {
@@ -14,7 +16,7 @@ void ULock::SetLockTarget(AActor* InLockedTarget)
 
 void ULock::Tick(float DeltaSeconds)
 {
-	if (!LockedTarget) return;
+	if (!LockedTarget || UBuffLibrary::IsActivate<URoot>(GetTarget())) return;
 
 	const FVector TargetLocation = LockedTarget->GetActorLocation();
 
