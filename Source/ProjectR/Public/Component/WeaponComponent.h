@@ -35,11 +35,13 @@ public:
 
 	void SetWeaponCollision(bool bEnableRight, bool bEnableLeft);
 
-	FORCEINLINE class UStaticMeshComponent* GetRightWeapon() const noexcept { return RightWeapon; }
-	FORCEINLINE UStaticMeshComponent* GetLeftWeapon() const noexcept { return LeftWeapon; }
-
-	FORCEINLINE class UWeapon* GetWeapon() noexcept { return Weapons[CurIndex]; }
+	UFUNCTION(BlueprintCallable)
+	class UWeapon* GetWeapon() noexcept { return Weapons[CurIndex]; }
+	
 	FORCEINLINE const UWeapon* GetWeapon() const noexcept { return Weapons[CurIndex]; }
+
+	FORCEINLINE class UStaticMeshComponent* GetRightWeapon() const noexcept { return RightWeapon; }
+	FORCEINLINE UStaticMeshComponent* GetLeftWeapon() const noexcept { return LeftWeapon; }	
 
 	FORCEINLINE uint8 GetWeaponNum() const noexcept { return WeaponNum; }
 	FORCEINLINE uint8 GetWeaponIndex() const noexcept { return CurIndex; }
