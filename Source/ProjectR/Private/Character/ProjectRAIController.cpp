@@ -77,7 +77,8 @@ void AProjectRAIController::InitBlackboard(const FLogicData& LogicData)
 	if (auto* MyBlackboard = GetBlackboardComponent())
 	{
 		MyBlackboard->SetValueAsVector(TEXT("HomeLocation"), GetPawn()->GetActorLocation());
-		MyBlackboard->SetValueAsFloat(TEXT("RunRadiusSquared"), FMath::Square(LogicData.RunRadius));
+		MyBlackboard->SetValueAsFloat(TEXT("AttackRadius"), LogicData.AttackRadius);
+		MyBlackboard->SetValueAsFloat(TEXT("RunRadius"), LogicData.RunRadius);
 	}
 }
 
