@@ -47,7 +47,7 @@ private:
 	UPROPERTY()
 	class AProjectRCharacter* User;
 
-	UPROPERTY()
+	UPROPERTY(BlueprintReadOnly, meta = (AllowPrivateAccess = true))
 	TArray<class USkill*> Skills;
 
 	UPROPERTY()

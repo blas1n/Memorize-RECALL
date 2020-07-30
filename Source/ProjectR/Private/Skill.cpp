@@ -77,6 +77,12 @@ void USkill::RecoverEnergy(float Ratio)
 		PlayerState->HealEnergy(static_cast<int32>(static_cast<float>(UseEnergy) * Ratio));
 }
 
+float USkill::GetCoolTimeAsPercent() const
+{
+	if (CoolTime <= 0.0f || IsNotCoolTime()) return 1.0f;
+	return ((NextUseTime - GetWorld()->GetTimeSeconds()) / CoolTime - 1.0f) * -1.0f;
+}
+
 UWorld* USkill::GetWorld() const
 {
 	return User ? User->GetWorld() : nullptr;
