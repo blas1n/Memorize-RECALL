@@ -103,6 +103,8 @@ void AProjectRPlayerController::MoveRight(float Value)
 
 void AProjectRPlayerController::InputYaw(float Value)
 {
+	if (!User) return;
+
 	auto* Lock = UBuffLibrary::GetBuff<ULock>(User);
 	if (!bIsTurning && !(Lock->IsActivate() && Lock->GetLockedTarget()))
 		AddYawInput(Value);
@@ -110,6 +112,8 @@ void AProjectRPlayerController::InputYaw(float Value)
 
 void AProjectRPlayerController::InputPitch(float Value)
 {
+	if (!User) return;
+
 	auto* Lock = UBuffLibrary::GetBuff<ULock>(User);
 	if (!bIsTurning && !(Lock->IsActivate() && Lock->GetLockedTarget()))
 		AddPitchInput(Value);
