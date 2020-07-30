@@ -8,6 +8,8 @@
 #include "Interface/Directionable.h"
 #include "ProjectRPlayerController.generated.h"
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnInteract);
+
 UCLASS(Abstract, Blueprintable)
 class PROJECTR_API AProjectRPlayerController final : public APlayerController, public IGenericTeamAgentInterface, public IDirectionable
 {
@@ -41,6 +43,8 @@ private:
 
 	void UseSkill(uint8 Index);
 
+	void Interact();
+
 	void LockOn();
 	void LockOff();
 
@@ -54,6 +58,10 @@ private:
 
 	UFUNCTION()
 	void OnDeath();
+
+public:
+	UPROPERTY(BlueprintAssignable)
+	FOnInteract OnInteract;
 
 private:
 	UPROPERTY()

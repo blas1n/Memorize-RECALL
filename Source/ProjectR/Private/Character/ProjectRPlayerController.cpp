@@ -74,6 +74,8 @@ void AProjectRPlayerController::SetupInputComponent()
 	InputComponent->BindAction<FIndexer>(TEXT("Skill3"), IE_Pressed, this, &AProjectRPlayerController::UseSkill, static_cast<uint8>(3));
 	InputComponent->BindAction<FIndexer>(TEXT("Parrying"), IE_Pressed, this, &AProjectRPlayerController::UseSkill, static_cast<uint8>(4));
 
+	InputComponent->BindAction(TEXT("Interact"), IE_Pressed, this, &AProjectRPlayerController::Interact);
+
 	InputComponent->BindAction(TEXT("Lock"), IE_Pressed, this, &AProjectRPlayerController::LockOn);
 	InputComponent->BindAction(TEXT("Lock"), IE_Released, this, &AProjectRPlayerController::LockOff);
 }
@@ -101,6 +103,8 @@ void AProjectRPlayerController::MoveRight(float Value)
 
 void AProjectRPlayerController::InputYaw(float Value)
 {
+	if (!User) return;
+
 	auto* Lock = UBuffLibrary::GetBuff<ULock>(User);
 	if (!bIsTurning && !(Lock->IsActivate() && Lock->GetLockedTarget()))
 		AddYawInput(Value);
@@ -108,6 +112,8 @@ void AProjectRPlayerController::InputYaw(float Value)
 
 void AProjectRPlayerController::InputPitch(float Value)
 {
+	if (!User) return;
+
 	auto* Lock = UBuffLibrary::GetBuff<ULock>(User);
 	if (!bIsTurning && !(Lock->IsActivate() && Lock->GetLockedTarget()))
 		AddPitchInput(Value);
@@ -166,6 +172,11 @@ void AProjectRPlayerController::SwapWeapon(float Value)
 void AProjectRPlayerController::UseSkill(uint8 Index)
 {
 	if (User) User->GetWeaponComponent()->StartSkill(Index);
+}
+
+void AProjectRPlayerController::Interact()
+{
+	OnInteract.Broadcast();
 }
 
 void AProjectRPlayerController::LockOn()
