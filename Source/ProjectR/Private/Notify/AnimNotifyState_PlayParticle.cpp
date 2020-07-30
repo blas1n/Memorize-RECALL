@@ -75,13 +75,11 @@ void UAnimNotifyState_PlayParticle::NotifyEnd(USkeletalMeshComponent* MeshComp, 
 			continue;
 
 		FXSystemComponent->Deactivate();
-		FXSystemComponent->DetachFromComponent(FDetachmentTransformRules::KeepWorldTransform);
 
 #if WITH_EDITORONLY_DATA
 		PreviousTemplates.Empty();
 		PreviousSocketNames.Empty();
 #endif
-		break;
 	}
 }
 
