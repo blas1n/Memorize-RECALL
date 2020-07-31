@@ -27,12 +27,16 @@ void UAIManagerComponent::SetTeamID(const FGenericTeamId& NewTeamID)
 	ApplyTeamID();
 }
 
+#if WITH_EDITOR
+
 void UAIManagerComponent::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
 {
 	Super::PostEditChangeProperty(PropertyChangedEvent);
 
 	Initialize();
 }
+
+#endif
 
 void UAIManagerComponent::BeginPlay()
 {
