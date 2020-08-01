@@ -40,9 +40,6 @@ private:
 	UPROPERTY(EditAnywhere, Category = ParticleSystem, meta = (AllowPrivateAccess = true))
 	FRotator RotationOffset;
 
-	UPROPERTY()
-	class UFXSystemComponent* FXComponent;
-
 #if WITH_EDITORONLY_DATA
 
 	UPROPERTY(transient)

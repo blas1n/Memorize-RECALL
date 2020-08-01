@@ -42,13 +42,13 @@ void UAnimNotify_PlayParticle::Notify(USkeletalMeshComponent* MeshComp, UAnimSeq
 	{
 		if (!Parent->DoesSocketExist(Socket)) return;
 
-		FXComponent = UNiagaraFunctionLibrary::SpawnSystemAttached(Template, Parent,
+		UNiagaraFunctionLibrary::SpawnSystemAttached(Template, Parent,
 			Socket, LocationOffset, RotationOffset, EAttachLocation::KeepRelativeOffset, true);
 	}
 	else
 	{
 		const FTransform Transform = Parent ? Parent->GetSocketTransform(Socket) : MeshComp->GetSocketTransform(Socket);
-		FXComponent = UNiagaraFunctionLibrary::SpawnSystemAtLocation(MeshComp->GetWorld(), Template,
+		UNiagaraFunctionLibrary::SpawnSystemAtLocation(MeshComp->GetWorld(), Template,
 			Transform.TransformPosition(LocationOffset), Transform.TransformRotation(FQuat{ RotationOffset }).Rotator());
 	}
 }
