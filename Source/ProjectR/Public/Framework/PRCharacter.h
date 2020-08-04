@@ -5,31 +5,34 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "GenericTeamAgentInterface.h"
-#include "ProjectRCharacter.generated.h"
+#include "PRCharacter.generated.h"
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnDeath);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnLand, const FHitResult&, Hit);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FOnAttack, int32, Damage, AActor*, Target, TSubclassOf<UDamageType>, DamageType);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FOnDamage, int32, Damage, AActor*, Target, TSubclassOf<UDamageType>, DamageType);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FOnAttack, float, Damage, AActor*, Target, TSubclassOf<UDamageType>, DamageType);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FOnDamage, float, Damage, AActor*, Target, TSubclassOf<UDamageType>, DamageType);
 
 UCLASS(Abstract, Blueprintable)
-class PROJECTR_API AProjectRCharacter final : public ACharacter, public IGenericTeamAgentInterface
+class PROJECTR_API APRCharacter final : public ACharacter, public IGenericTeamAgentInterface
 {
 	GENERATED_BODY()
 
 public:
-	AProjectRCharacter();
+	APRCharacter();
 
-	void GetActorEyesViewPoint(FVector& Location, FRotator& Rotation) const override;
+	FORCEINLINE void GetActorEyesViewPoint(FVector& Location, FRotator& Rotation) const override
+	{
+		GetLookLocationAndRotation(Location, Rotation);
+	}
 	
-	FGenericTeamId GetGenericTeamId() const;
-	void SetGenericTeamId(const FGenericTeamId& NewTeamID);
+	FORCEINLINE FGenericTeamId GetGenericTeamId() const override { return FGenericTeamId{ TeamId }; }
+	FORCEINLINE void SetGenericTeamId(const FGenericTeamId& NewTeamId) override { SetTeamId(NewTeamId.GetId()); }
 
-	void AddWeapon(int32 WeaponKey);
+	UFUNCTION(BlueprintSetter)
+	void SetTeamId(uint8 NewTeamId);
 	
 	FORCEINLINE class UWeaponComponent* GetWeaponComponent() const noexcept { return WeaponComponent; }
-	FORCEINLINE int32 GetKey() const noexcept { return Key; }
-	FORCEINLINE int32 GetLevel() const noexcept { return Level; }
+	FORCEINLINE class UStatComponent* GetStatComponent() const noexcept { return StatComponent; }
 	FORCEINLINE bool IsDeath() const noexcept { return bIsDeath; }
 
 protected:
@@ -43,7 +46,7 @@ private:
 
 	void PostInitializeComponents() override;
 
-	float TakeDamage(float DamageAmount, const FDamageEvent& DamageEvent,
+	float TakeDamage(float Damage, const FDamageEvent& DamageEvent,
 		AController* EventInstigator, AActor* DamageCauser) override;
 
 	bool ShouldTakeDamage(float Damage, const FDamageEvent& DamageEvent,
@@ -54,7 +57,7 @@ private:
 	void Initialize();
 
 	UFUNCTION()
-	void HealHealthAndEnergy(int32 Damage, AActor* Target, TSubclassOf<UDamageType> DamageType);
+	void Heal(float Damage, AActor* Target, TSubclassOf<UDamageType> DamageType);
 
 	void GetLookLocationAndRotation_Implementation(FVector& Location, FRotator& Rotation) const;
 	void Death();
@@ -76,18 +79,17 @@ private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = true))
 	UWeaponComponent* WeaponComponent;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Data, meta = (AllowPrivateAccess = true))
-	int32 Key;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = true))
+	UStatComponent* StatComponent;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Data, meta = (AllowPrivateAccess = true))
-	int32 Level;
+	int32 CharacterKey;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Data, meta = (AllowPrivateAccess = true))
-	TArray<int32> WeaponKeies;
+	UPROPERTY(EditAnywhere, BlueprintSetter = SetTeamId, Category = Data, meta = (AllowPrivateAccess = true))
+	uint8 TeamId;
 
 	UPROPERTY()
 	class UDataTable* CharacterDataTable;
 
-	uint8 WeaponActiveNum;
 	uint8 bIsDeath : 1;
 };
