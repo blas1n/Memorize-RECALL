@@ -4,15 +4,15 @@
 
 #include "CoreMinimal.h"
 #include "Animation/AnimInstance.h"
-#include "ProjectRAnimInstance.generated.h"
+#include "PRAnimInstance.generated.h"
 
 UCLASS()
-class PROJECTR_API UProjectRAnimInstance final : public UAnimInstance
+class PROJECTR_API UPRAnimInstance final : public UAnimInstance
 {
 	GENERATED_BODY()
 
 public:
-	UProjectRAnimInstance();
+	UPRAnimInstance();
 
 private:
 	void NativeUpdateAnimation(float DeltaSeconds) override;
@@ -23,9 +23,6 @@ private:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Pawn, meta = (AllowPrivateAccess = true))
 	float Speed;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Pawn, meta = (AllowPrivateAccess = true))
-	uint8 bIsRunning : 1;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Pawn, meta = (AllowPrivateAccess = true))
 	uint8 bIsLooking : 1;

@@ -4,10 +4,10 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/GameStateBase.h"
-#include "ProjectRGameState.generated.h"
+#include "PRGameState.generated.h"
 
 UCLASS(BlueprintType)
-class PROJECTR_API AProjectRGameState final : public AGameStateBase
+class PROJECTR_API APRGameState final : public AGameStateBase
 {
 	GENERATED_BODY()
 };

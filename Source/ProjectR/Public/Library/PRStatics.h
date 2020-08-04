@@ -5,10 +5,10 @@
 #include "CoreMinimal.h"
 #include "Kismet/BlueprintFunctionLibrary.h"
 #include "Engine/AssetManager.h"
-#include "ProjectRStatics.generated.h"
+#include "PRStatics.generated.h"
 
 UCLASS()
-class PROJECTR_API UProjectRStatics final : public UBlueprintFunctionLibrary
+class PROJECTR_API UPRStatics final : public UBlueprintFunctionLibrary
 {
 	GENERATED_BODY()
 
