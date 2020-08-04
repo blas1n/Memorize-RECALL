@@ -6,8 +6,6 @@
 #include "Components/ActorComponent.h"
 #include "WeaponComponent.generated.h"
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnWeaponOverlapped, AActor*, Target);
-
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
 class PROJECTR_API UWeaponComponent final : public UActorComponent
 {
@@ -16,57 +14,78 @@ class PROJECTR_API UWeaponComponent final : public UActorComponent
 public:	
 	UWeaponComponent();
 
-	void Initialize(const TArray<int32>& Keies);
+	UFUNCTION(BlueprintCallable)
+	void Attack(bool bIsStrongAttack);
 
 	UFUNCTION(BlueprintCallable)
-	void StartSkill(uint8 Index);
+	void Parry();
 
 	UFUNCTION(BlueprintCallable)
-	void EndSkill(uint8 Index);
-
-	UFUNCTION(BlueprintCallable)
-	bool CanUseSkill(uint8 Index) const;
+	void StopSkill();
 
 	UFUNCTION(BlueprintCallable)
 	void SwapWeapon(uint8 Index);
 
 	UFUNCTION(BlueprintCallable)
-	void CreateNewWeapon(int32 Key, uint8 Index);
-
-	void SetWeaponCollision(bool bEnableRight, bool bEnableLeft);
-
-	UFUNCTION(BlueprintCallable)
-	class UWeapon* GetWeapon() noexcept { return Weapons[CurIndex]; }
-	
-	FORCEINLINE const UWeapon* GetWeapon() const noexcept { return Weapons[CurIndex]; }
+	void AddWeapon(uint8 Index, int32 Key);
 
 	FORCEINLINE class UStaticMeshComponent* GetRightWeapon() const noexcept { return RightWeapon; }
-	FORCEINLINE UStaticMeshComponent* GetLeftWeapon() const noexcept { return LeftWeapon; }	
+	FORCEINLINE UStaticMeshComponent* GetLeftWeapon() const noexcept { return LeftWeapon; }
 
-	FORCEINLINE uint8 GetWeaponNum() const noexcept { return WeaponNum; }
-	FORCEINLINE uint8 GetWeaponIndex() const noexcept { return CurIndex; }
+	FORCEINLINE int32 GetWeaponNum() const noexcept { return Weapons.Num(); }
+	FORCEINLINE uint8 GetWeaponIndex() const noexcept { return WeaponIndex; }
+	FORCEINLINE uint8 GetSkillIndex() const noexcept { return SkillIndex; }
 
 private:
+#if WITH_EDITOR
+	void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
+#endif
+
 	void BeginPlay() override;
-	void EndPlay(EEndPlayReason::Type EndPlayReason);
+
+	UFUNCTION(Server, Reliable, WithValidation)
+	void ServerAttack(bool bIsStrongAttack);
+
+	UFUNCTION(Server, Reliable, WithValidation)
+	void ServerParry();
+
+	UFUNCTION(Server, Reliable, WithValidation)
+	void ServerStopSkill();
+
+	UFUNCTION(Server, Reliable, WithValidation)
+	void ServerSwapWeapon(uint8 Index);
+
+	UFUNCTION(Server, Reliable, WithValidation)
+	void ServerAddWeapon(uint8 Index, int32 Key);
+
+	void ServerAttack_Implementation(bool bIsStrongAttack);
+	bool ServerAttack_Validate(bool bIsStrongAttack);
+
+	void ServerParry_Implementation();
+	bool ServerParry_Validate();
+
+	void ServerStopSkill_Implementation();
+	bool ServerStopSkill_Validate();
+
+	void ServerSwapWeapon_Implementation(uint8 Index);
+	bool ServerSwapWeapon_Validate(uint8 Index);
+
+	void ServerAddWeapon_Implementation(uint8 Index, int32 Key);
+	bool ServerAddWeapon_Validate(uint8 Index, int32 Key);
 
 	UStaticMeshComponent* CreateWeaponComponent(const FName& Name, const FName& SocketName);
-	void EquipWeapon(UWeapon* NewWeapon, bool bNeedUnequip);
-
-	UFUNCTION()
-	void OnWeaponOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
-		UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+	void EquipWeapon(class UWeapon* NewWeapon, bool bNeedUnequip);
+	void Initialize();
 
 	UFUNCTION()
 	void Detach();
 
 	void DetachOnce(class UStaticMeshComponent* Weapon);
 
-public:
-	UPROPERTY(BlueprintAssignable)
-	FOnWeaponOverlapped OnWeaponOverlapped;
-
 private:
+	UPROPERTY(EditAnywhere, Category = Data, meta = (AllowPrivateAccess = true))
+	TArray<int32> Keies;
+	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = true))
 	UStaticMeshComponent* RightWeapon;
 
@@ -76,9 +95,12 @@ private:
 	UPROPERTY()
 	TArray<UWeapon*> Weapons;
 
-	UPROPERTY()
-	class AProjectRCharacter* User;
+	UPROPERTY(Transient)
+	UWeapon* NoWeapon;
 
-	uint8 WeaponNum;
-	uint8 CurIndex;
+	UPROPERTY()
+	class UWeaponContext* WeaponContext;
+
+	uint8 WeaponIndex;
+	uint8 SkillIndex;
 };
