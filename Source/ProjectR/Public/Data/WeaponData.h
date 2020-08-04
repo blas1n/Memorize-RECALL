@@ -4,7 +4,6 @@
 
 #include "CoreMinimal.h"
 #include "Engine/DataTable.h"
-#include "SkillData.h"
 #include "WeaponData.generated.h"
 
 USTRUCT(Atomic, BlueprintType)
@@ -13,7 +12,19 @@ struct FWeaponData : public FTableRowBase
 	GENERATED_BODY()
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	TArray<TSubclassOf<class USkill>> SkillClasses;
+	uint8 ComboHeight;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TSubclassOf<class USkill> WeakAttackClass;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TSubclassOf<USkill> StrongAttackClass;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TSubclassOf<USkill> ParryingClass;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TMap<uint8, TSubclassOf<USkill>> Skills;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TAssetPtr<class UStaticMesh> RightMesh;
