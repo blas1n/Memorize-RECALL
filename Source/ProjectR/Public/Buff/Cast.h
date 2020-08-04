@@ -11,21 +11,12 @@ class PROJECTR_API UCast final : public UBuff
 {
 	GENERATED_BODY()
 
-public:
-	UFUNCTION(BlueprintCallable)
-	void StopCast();
-
-	void SetCastSkill(class USkill* NewSkill);
-	bool CanUseSkill(const USkill* NewSkill) const;
-
-	FORCEINLINE USkill* GetSkill() const { return Skill; }
-
 private:
+	void OnApply() override;
 	void OnRelease() override;
 
 	bool IsActivate_Implementation() const override;
 
 private:
-	UPROPERTY(BlueprintReadOnly, meta = (AllowPrivateAccess = true))
-	USkill* Skill;
+	uint8 bIsCast : 1;
 };
