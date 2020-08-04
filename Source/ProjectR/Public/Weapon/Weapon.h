@@ -8,7 +8,6 @@
 
 DECLARE_DELEGATE(FOnAsyncLoadEndedSingle);
 DECLARE_MULTICAST_DELEGATE(FOnAsyncLoadEnded);
-DECLARE_DYNAMIC_DELEGATE_OneParam(FOnWeaponOverlappedSingle, AActor*, Target);
 
 UCLASS(BlueprintType)
 class PROJECTR_API UWeapon final : public UObject
@@ -17,26 +16,21 @@ class PROJECTR_API UWeapon final : public UObject
 	
 public:
 	UWeapon();
-	void Initialize(int32 Key);
-
-	void BeginPlay();
-	void EndPlay();
+	void Initialize(class UWeaponContext* InContext, int32 Key);
 
 	void Equip();
 	void Unequip();
 
-	void StartSkill(uint8 Index);
-	void EndSkill(uint8 Index); 
-	bool CanUseSkill(uint8 Index) const;
+	void BeginSkill(uint8 Index);
+	void EndSkill(uint8 Index);
+	
+	void BeginParrying();
+	void EndParrying();
 
-	UFUNCTION(BlueprintCallable)
-	void SetWeaponCollision(bool IsEnableRight, bool IsEnableLeft);
-
-	UFUNCTION(BlueprintCallable)
-	void RegisterOnWeaponOverlapped(const FOnWeaponOverlappedSingle& Callback);
-
-	UFUNCTION(BlueprintCallable)
-	void UnregisterOnWeaponOverlapped(const FOnWeaponOverlappedSingle& Callback);
+	FORCEINLINE UWorld* GetWorld() const override
+	{
+		return GetOuter()->GetWorld();
+	}
 
 private:
 	void LoadAll(const struct FWeaponData& WeaponData);
@@ -45,21 +39,33 @@ private:
 
 private:
 	UPROPERTY()
-	class AProjectRCharacter* User;
+	class APRCharacter* User;
+	
+	UPROPERTY()
+	class USkill* WeakAttack;
+
+	UPROPERTY()
+	USkill* StrongAttack;
+
+	UPROPERTY()
+	USkill* Parrying;
 
 	UPROPERTY(BlueprintReadOnly, meta = (AllowPrivateAccess = true))
-	TArray<class USkill*> Skills;
+	TArray<USkill*> Skills;
 
-	UPROPERTY()
+	UPROPERTY(Transient)
+	UWeaponContext* Context;
+
+	UPROPERTY(Transient)
 	TSubclassOf<class UAnimInstance> UpperAnimInstance;
 
-	UPROPERTY()
+	UPROPERTY(Transient)
 	class UAnimMontage* EquipAnim;
 
-	UPROPERTY()
+	UPROPERTY(Transient)
 	class UStaticMesh* RightWeaponMesh;
 
-	UPROPERTY()
+	UPROPERTY(Transient)
 	UStaticMesh* LeftWeaponMesh;
 
 	UPROPERTY()
