@@ -2,11 +2,11 @@
 
 #include "Buff/Buff.h"
 #include "GameFramework/Controller.h"
-#include "Character/ProjectRCharacter.h"
+#include "Framework/PRCharacter.h"
 
 void UBuff::BeginPlay()
 {
-	Target = GetTypedOuter<AProjectRCharacter>();
+	Target = GetTypedOuter<APRCharacter>();
 	RecieveBeginPlay();
 }
 
@@ -22,9 +22,6 @@ void UBuff::Tick(float DeltaSeconds)
 
 void UBuff::Apply()
 {
-	bIsActivateWithoutBlock = true;
-	if (IsBlocked()) return;
-
 	const bool bIsAlreadActive = IsActivate();
 
 	OnApply();
@@ -36,9 +33,6 @@ void UBuff::Apply()
 
 void UBuff::Release()
 {
-	bIsActivateWithoutBlock = false;
-	if (IsBlocked()) return;
-
 	const bool bIsAlreadActive = IsActivate();
 
 	OnRelease();
@@ -46,33 +40,6 @@ void UBuff::Release()
 
 	if (bIsAlreadActive && !IsActivate())
 		OnReleased.Broadcast();
-}
-
-void UBuff::Block()
-{
-	const bool bWasBlock = bIsBlock;
-	bIsBlock = true;
-
-	if (!bWasBlock)
-	{
-		bIsActivateWithoutBlock = IsActivate();
-		if (!bIsActivateWithoutBlock) return;
-
-		OnRelease();
-		RecieveOnRelease();
-	}
-}
-
-void UBuff::Unblock()
-{
-	bIsBlock = false;
-	if (bIsActivateWithoutBlock)
-		Apply();
-}
-
-bool UBuff::IsBlocked() const
-{
-	return bIsBlock;
 }
 
 UWorld* UBuff::GetWorld() const

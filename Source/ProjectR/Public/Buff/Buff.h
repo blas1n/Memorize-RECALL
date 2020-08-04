@@ -25,17 +25,8 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void Release();
 
-	UFUNCTION(BlueprintCallable)
-	void Block();
-
-	UFUNCTION(BlueprintCallable)
-	void Unblock();
-
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
 	bool IsActivate() const;
-
-	UFUNCTION(BlueprintCallable)
-	bool IsBlocked() const;
 
 	UWorld* GetWorld() const override;
 
@@ -60,7 +51,7 @@ protected:
 
 	virtual bool IsActivate_Implementation() const { return false; }
 
-	FORCEINLINE class AProjectRCharacter* GetTarget() const noexcept { return Target; }
+	FORCEINLINE class APRCharacter* GetTarget() const noexcept { return Target; }
 
 public:
 	UPROPERTY(BlueprintAssignable)
@@ -70,9 +61,6 @@ public:
 	FOnReleased OnReleased;
 
 private:
-	UPROPERTY(BlueprintReadOnly, meta = (AllowPrivateAccess = true))
-	AProjectRCharacter* Target;
-
-	uint8 bIsBlock : 1;
-	uint8 bIsActivateWithoutBlock : 1;
+	UPROPERTY(Transient, BlueprintReadOnly, meta = (AllowPrivateAccess = true))
+	APRCharacter* Target;
 };
