@@ -4,9 +4,10 @@
 #include "Components/SkeletalMeshComponent.h"
 #include "Components/StaticMeshComponent.h"
 #include "Buff/Cast.h"
-#include "Character/ProjectRCharacter.h"
+#include "Framework/PRCharacter.h"
 #include "Library/BuffLibrary.h"
-#include "Weapon.h"
+#include "Weapon/Weapon.h"
+#include "Weapon/WeaponContext.h"
 
 UWeaponComponent::UWeaponComponent()
 	: Super()
@@ -15,94 +16,67 @@ UWeaponComponent::UWeaponComponent()
 
 	RightWeapon = CreateWeaponComponent(TEXT("RightWeapon"), TEXT("weapon_r"));
 	LeftWeapon = CreateWeaponComponent(TEXT("LeftWeapon"), TEXT("weapon_l"));
-	SetWeaponCollision(false, false);
 
-	User = nullptr;
-	WeaponNum = 0;
-	CurIndex = 0;
-}
+	WeaponContext = CreateDefaultSubobject<UWeaponContext>(TEXT("WeaponContext"));
+	WeaponContext->Initialize(RightWeapon, LeftWeapon);
 
-void UWeaponComponent::Initialize(const TArray<int32>& Keies)
-{
-	WeaponNum = Keies.Num();
-	Weapons.SetNum(WeaponNum);
-
-	for (int32 Idx = 0; Idx < WeaponNum; ++Idx)
+	AActor* Owner = GetOwner();
+	if (Owner && Owner->HasAuthority())
 	{
-		Weapons[Idx] = NewObject<UWeapon>(GetOwner());
-		Weapons[Idx]->Initialize(Keies[Idx]);
+		NoWeapon = CreateDefaultSubobject<UWeapon>(TEXT("NoWeapon"));
+		NoWeapon->Initialize(WeaponContext, 0u);
 	}
 
-	if (Weapons.Num() > 0)
-		EquipWeapon(Weapons[0], false);
+	WeaponIndex = 0u;
+	SkillIndex = 0u;
+
+	Initialize();
 }
 
-void UWeaponComponent::StartSkill(uint8 Index)
+void UWeaponComponent::Attack(bool bIsStrongAttack)
 {
-	if (WeaponNum > 0)
-		Weapons[CurIndex]->StartSkill(Index);
+	ServerAttack(bIsStrongAttack);
 }
 
-void UWeaponComponent::EndSkill(uint8 Index)
+void UWeaponComponent::Parry()
 {
-	if (WeaponNum > 0)
-		Weapons[CurIndex]->EndSkill(Index);
+	ServerParry();
 }
 
-bool UWeaponComponent::CanUseSkill(uint8 Index) const
+void UWeaponComponent::StopSkill()
 {
-	if (WeaponNum == 0) return false;
-	return Weapons[CurIndex]->CanUseSkill(Index);
+	ServerStopSkill();
 }
 
 void UWeaponComponent::SwapWeapon(uint8 Index)
 {
-	if (Index >= Weapons.Num() || CurIndex == Index || UBuffLibrary::IsActivate<UCast>(User))
-		return;
-	
-	EquipWeapon(Weapons[Index], true);
-	CurIndex = Index;
+	ServerSwapWeapon(Index);
 }
 
-void UWeaponComponent::CreateNewWeapon(int32 Key, uint8 Index)
+void UWeaponComponent::AddWeapon(uint8 Index, int32 Key)
 {
-	auto* NewWeapon = NewObject<UWeapon>(User);
-	NewWeapon->Initialize(Key);
-	NewWeapon->BeginPlay();
-
-	if (Index == CurIndex)
-		EquipWeapon(NewWeapon, true);
-
-	Weapons[Index]->EndPlay();
-	Weapons[Index] = NewWeapon;
+	ServerAddWeapon(Index, Key);
 }
 
-void UWeaponComponent::SetWeaponCollision(bool bEnableRight, bool bEnableLeft)
+#if WITH_EDITOR
+
+void UWeaponComponent::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
 {
-	RightWeapon->SetCollisionEnabled(bEnableRight ? ECollisionEnabled::QueryOnly : ECollisionEnabled::NoCollision);
-	LeftWeapon->SetCollisionEnabled(bEnableLeft ? ECollisionEnabled::QueryOnly : ECollisionEnabled::NoCollision);
+	Super::PostEditChangeProperty(PropertyChangedEvent);
+
+	static const FName& KeiesName = GET_MEMBER_NAME_CHECKED(UWeaponComponent, Keies);
+	if (PropertyChangedEvent.Property && PropertyChangedEvent.GetPropertyName() == KeiesName)
+		Initialize();
 }
+
+#endif
 
 void UWeaponComponent::BeginPlay()
 {
-	User = Cast<AProjectRCharacter>(GetOwner());
-	User->OnDeath.AddDynamic(this, &UWeaponComponent::Detach);
-
-	RightWeapon->OnComponentBeginOverlap.AddDynamic(this, &UWeaponComponent::OnWeaponOverlap);
-	LeftWeapon->OnComponentBeginOverlap.AddDynamic(this, &UWeaponComponent::OnWeaponOverlap);
-
 	Super::BeginPlay();
 
-	for (UWeapon* Weapon : Weapons)
-		if (Weapon)	Weapon->BeginPlay();
-}
-
-void UWeaponComponent::EndPlay(EEndPlayReason::Type EndPlayReason)
-{
-	for (UWeapon* Weapon : Weapons)
-		if (Weapon)	Weapon->EndPlay();
-
-	Super::EndPlay(EndPlayReason);
+	auto* User = Cast<APRCharacter>(GetOwner());
+	User->OnDeath.AddDynamic(this, &UWeaponComponent::Detach);
 }
 
 UStaticMeshComponent* UWeaponComponent::CreateWeaponComponent(const FName& Name, const FName& SocketName)
@@ -115,9 +89,10 @@ UStaticMeshComponent* UWeaponComponent::CreateWeaponComponent(const FName& Name,
 	Component->SetCollisionProfileName(TEXT("Weapon"));
 	Component->SetGenerateOverlapEvents(true);
 
-	auto* Character = Cast<ACharacter>(GetOwner());
-	if (Character)
+	if (auto* Owner = GetOwner())
 	{
+		auto* Character = CastChecked<ACharacter>(Owner); // Only humanoid characters can have weapons.
+
 		auto* MeshComponent = Character->GetMesh();
 		const auto Rules = FAttachmentTransformRules::KeepRelativeTransform;
 		if (MeshComponent->DoesSocketExist(SocketName))
@@ -132,15 +107,103 @@ void UWeaponComponent::EquipWeapon(UWeapon* NewWeapon, bool bNeedUnequip)
 	if (!NewWeapon) return;
 
 	if (bNeedUnequip)
-		Weapons[CurIndex]->Unequip();
+		Weapons[WeaponIndex]->Unequip();
 
 	NewWeapon->Equip();
 }
 
-void UWeaponComponent::OnWeaponOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
-	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+void UWeaponComponent::Initialize()
 {
-	OnWeaponOverlapped.Broadcast(OtherActor);
+	AActor* Owner = GetOwner();
+	if (!Owner || !Owner->HasAuthority())
+		return;
+
+	const uint8 WeaponNum = Keies.Num();
+	Weapons.SetNum(WeaponNum);
+
+	for (int32 Idx = 0; Idx < WeaponNum; ++Idx)
+	{
+		Weapons[Idx] = NewObject<UWeapon>(GetOwner());
+		Weapons[Idx]->Initialize(WeaponContext, Keies[Idx]);
+	}
+
+	if (Weapons.Num() > 0)
+		EquipWeapon(Weapons[0], false);
+}
+
+void UWeaponComponent::ServerAttack_Implementation(bool bIsStrongAttack)
+{
+	SkillIndex *= 2u;
+	if (bIsStrongAttack)
+		++SkillIndex;
+
+	Weapons[WeaponIndex]->BeginSkill(SkillIndex);
+}
+
+bool UWeaponComponent::ServerAttack_Validate(bool bIsStrongAttack)
+{
+	return true;
+}
+
+void UWeaponComponent::ServerParry_Implementation()
+{
+	Weapons[WeaponIndex]->BeginParrying();
+}
+
+bool UWeaponComponent::ServerParry_Validate()
+{
+	return true;
+}
+
+void UWeaponComponent::ServerStopSkill_Implementation()
+{
+	UWeapon* Weapon = Weapons[WeaponIndex];
+	Weapon->EndSkill(SkillIndex);
+	Weapon->EndParrying();
+	SkillIndex = 0u;
+}
+
+bool UWeaponComponent::ServerStopSkill_Validate()
+{
+	return true;
+}
+
+void UWeaponComponent::ServerSwapWeapon_Implementation(uint8 Index)
+{
+	if (WeaponIndex == Index || UBuffLibrary::IsActivate<UCast>(GetOwner()))
+		return;
+
+	EquipWeapon(Weapons[Index], true);
+	WeaponIndex = Index;
+}
+
+bool UWeaponComponent::ServerSwapWeapon_Validate(uint8 Index)
+{
+	return Weapons.Num() > Index;
+}
+
+void UWeaponComponent::ServerAddWeapon_Implementation(uint8 Index, int32 Key)
+{
+	const int32 BeforeWeaponNum = Weapons.Num();
+	if (Index > BeforeWeaponNum)
+		Weapons.SetNum(Index + 1u);
+
+	const int32 AfterWeaponNum = Weapons.Num();
+	for (int32 Idx = BeforeWeaponNum; Idx < AfterWeaponNum; ++Idx)
+		Weapons[Idx] = NoWeapon;
+
+	auto* NewWeapon = NewObject<UWeapon>(GetOwner());
+	NewWeapon->Initialize(WeaponContext, Key);
+
+	if (Index == WeaponIndex)
+		EquipWeapon(NewWeapon, true);
+
+	Weapons[Index] = NewWeapon;
+}
+
+bool UWeaponComponent::ServerAddWeapon_Validate(uint8 Index, int32 Key)
+{
+	return true;
 }
 
 void UWeaponComponent::Detach()
