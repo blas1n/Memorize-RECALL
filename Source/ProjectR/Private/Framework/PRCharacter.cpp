@@ -72,13 +72,13 @@ void APRCharacter::BeginPlay()
 
 float APRCharacter::TakeDamage(float Damage, const FDamageEvent& DamageEvent,
 	AController* EventInstigator, AActor* DamageCauser)
-{
+{	
+	Damage = Super::TakeDamage(Damage, DamageEvent, EventInstigator, DamageCauser);
+	if (Damage <= 0.0f) return Damage;
+
 	auto* Parry = UBuffLibrary::GetBuff<UParry>(this);
 	auto* Character = Cast<APRCharacter>(DamageCauser);
 	const auto* DamageType = Cast<UProjectRDamageType>(DamageEvent.DamageTypeClass.GetDefaultObject());
-	
-	Damage = Super::TakeDamage(Damage, DamageEvent, EventInstigator, DamageCauser);
-	if (Damage <= 0.0f) return Damage;
 
 	if (DamageType->IsWeaponAttack() && Parry && Parry->ParryIfCan(Damage, EventInstigator, Character))
 		return 0.0f;
