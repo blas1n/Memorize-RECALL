@@ -141,9 +141,8 @@ void APRCharacter::Initialize()
 
 void APRCharacter::Heal(float Damage, AActor* Target, TSubclassOf<UDamageType> DamageType)
 {
-	auto* DamageTypeObj = Cast<UProjectRDamageType>(DamageType.GetDefaultObject());
-	if (DamageTypeObj->CanHealByDamage())
-		StatComponent->HealByDamage(Damage);
+	const auto* DamageTypeObj = Cast<UProjectRDamageType>(DamageType.GetDefaultObject());
+	if (DamageTypeObj->CanHealByDamage()) StatComponent->HealByDamage(Damage);
 }
 
 void APRCharacter::GetLookLocationAndRotation_Implementation(FVector& Location, FRotator& Rotation) const
