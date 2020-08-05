@@ -101,6 +101,9 @@ private:
 	UPROPERTY()
 	class UWeaponContext* WeaponContext;
 
+	UPROPERTY(Transient, BlueprintReadOnly, meta = (AllowPrivateAccess = true))
 	uint8 WeaponIndex;
+
+	UPROPERTY(Transient, BlueprintReadOnly, meta = (AllowPrivateAccess = true))
 	uint8 SkillIndex;
 };
