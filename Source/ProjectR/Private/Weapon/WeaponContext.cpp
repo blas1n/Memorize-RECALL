@@ -42,8 +42,8 @@ void UWeaponContext::Initialize(UStaticMeshComponent* InRightWeapon, class UStat
 	AActor* Outer = GetTypedOuter<AActor>();
 	if (Outer && Outer->HasAuthority())
 	{
-		RightWeapon->OnComponentBeginOverlap.AddDynamic(this, &UWeaponContext::OnWeaponOverlap);
-		LeftWeapon->OnComponentBeginOverlap.AddDynamic(this, &UWeaponContext::OnWeaponOverlap);
+		RightWeapon->OnComponentBeginOverlap.AddUniqueDynamic(this, &UWeaponContext::OnWeaponOverlap);
+		LeftWeapon->OnComponentBeginOverlap.AddUniqueDynamic(this, &UWeaponContext::OnWeaponOverlap);
 		SetWeaponCollision(false, false);
 	}
 	else
