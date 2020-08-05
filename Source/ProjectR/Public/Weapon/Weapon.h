@@ -35,8 +35,6 @@ public:
 private:
 	void LoadAll(const struct FWeaponData& WeaponData);
 
-	FORCEINLINE void CheckAndCallAsyncLoadDelegate() { if (--AsyncLoadCount == 0) OnAsyncLoadEnded.Broadcast(); }
-
 private:
 	UPROPERTY()
 	class APRCharacter* User;
