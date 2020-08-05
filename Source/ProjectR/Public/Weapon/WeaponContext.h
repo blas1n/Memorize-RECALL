@@ -38,7 +38,7 @@ public:
 private:
 	friend class UWeaponComponent;
 
-	void Initialize(class UStaticMeshComponent* InRightWeapon, class UStaticMeshComponent* InLeftWeapon);
+	void Initialize(class UStaticMeshComponent* InRightWeapon, UStaticMeshComponent* InLeftWeapon);
 
 	UPROPERTY(Transient)
 	UStaticMeshComponent* RightWeapon;
