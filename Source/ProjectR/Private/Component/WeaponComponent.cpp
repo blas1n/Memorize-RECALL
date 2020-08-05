@@ -130,6 +130,9 @@ void UWeaponComponent::Initialize()
 
 void UWeaponComponent::ServerAttack_Implementation(bool bIsStrongAttack)
 {
+	if (!Weapons.IsValidIndex(WeaponIndex))
+		return;
+
 	SkillIndex *= 2u;
 	if (bIsStrongAttack)
 		++SkillIndex;
@@ -144,7 +147,8 @@ bool UWeaponComponent::ServerAttack_Validate(bool bIsStrongAttack)
 
 void UWeaponComponent::ServerParry_Implementation()
 {
-	Weapons[WeaponIndex]->BeginParrying();
+	if (Weapons.IsValidIndex(WeaponIndex))
+		Weapons[WeaponIndex]->BeginParrying();
 }
 
 bool UWeaponComponent::ServerParry_Validate()
@@ -154,9 +158,13 @@ bool UWeaponComponent::ServerParry_Validate()
 
 void UWeaponComponent::ServerStopSkill_Implementation()
 {
-	UWeapon* Weapon = Weapons[WeaponIndex];
-	Weapon->EndSkill(SkillIndex);
-	Weapon->EndParrying();
+	if (Weapons.IsValidIndex(WeaponIndex))
+	{
+		UWeapon* Weapon = Weapons[WeaponIndex];
+		Weapon->EndSkill(SkillIndex);
+		Weapon->EndParrying();
+	}
+	
 	SkillIndex = 0u;
 }
 

@@ -86,22 +86,24 @@ void UWeapon::Unequip()
 
 void UWeapon::BeginSkill(uint8 Index)
 {
-	Skills[Index]->Begin();
+	if (Skills.IsValidIndex(Index))
+		Skills[Index]->Begin();
 }
 
 void UWeapon::EndSkill(uint8 Index)
 {
-	Skills[Index]->End();
+	if (Skills.IsValidIndex(Index))
+		Skills[Index]->End();
 }
 
 void UWeapon::BeginParrying()
 {
-	Parrying->Begin();
+	if (Parrying) Parrying->Begin();
 }
 
 void UWeapon::EndParrying()
 {
-	Parrying->End();
+	if (Parrying) Parrying->End();
 }
 
 void UWeapon::LoadAll(const FWeaponData& WeaponData)
