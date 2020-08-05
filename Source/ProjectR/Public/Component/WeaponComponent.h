@@ -34,7 +34,6 @@ public:
 
 	FORCEINLINE int32 GetWeaponNum() const noexcept { return Weapons.Num(); }
 	FORCEINLINE uint8 GetWeaponIndex() const noexcept { return WeaponIndex; }
-	FORCEINLINE uint8 GetSkillIndex() const noexcept { return SkillIndex; }
 
 private:
 #if WITH_EDITOR
