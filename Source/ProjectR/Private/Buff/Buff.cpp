@@ -1,6 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "Buff/Buff.h"
+#include "Engine/NetDriver.h"
 #include "GameFramework/Controller.h"
 #include "Framework/PRCharacter.h"
 
@@ -22,6 +23,21 @@ void UBuff::Tick(float DeltaSeconds)
 
 void UBuff::Apply()
 {
+	ServerApply();
+}
+
+void UBuff::Release()
+{
+	ServerRelease();
+}
+
+UWorld* UBuff::GetWorld() const
+{
+	return Target ? Target->GetWorld() : nullptr;
+}
+
+void UBuff::MulticastApply_Implementation()
+{
 	const bool bIsAlreadActive = IsActivate();
 
 	OnApply();
@@ -31,7 +47,7 @@ void UBuff::Apply()
 		OnApplied.Broadcast();
 }
 
-void UBuff::Release()
+void UBuff::MulticastRelease_Implementation()
 {
 	const bool bIsAlreadActive = IsActivate();
 
@@ -42,7 +58,16 @@ void UBuff::Release()
 		OnReleased.Broadcast();
 }
 
-UWorld* UBuff::GetWorld() const
+bool UBuff::CallRemoteFunction(UFunction* Function, void* Parameters, FOutParmRec* OutParms, FFrame* Stack)
 {
-	return Target ? Target->GetWorld() : nullptr;
+	if (AActor* MyOwner = GetTypedOuter<AActor>())
+	{
+		if (UNetDriver* NetDriver = MyOwner->GetNetDriver())
+		{
+			NetDriver->ProcessRemoteFunction(MyOwner, Function, Parameters, OutParms, Stack, this);
+			return true;
+		}
+	}
+
+	return false;
 }
