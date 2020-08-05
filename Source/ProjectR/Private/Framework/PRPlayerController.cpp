@@ -62,14 +62,14 @@ void APRPlayerController::MoveRight(float Value)
 void APRPlayerController::InputYaw(float Value)
 {
 	auto* Lock = UBuffLibrary::GetBuff<ULock>(GetPawn());
-	if (!Lock->IsActivate() || !Lock->GetLockedTarget())
+	if (!Lock || !Lock->IsActivate() || !Lock->GetLockedTarget())
 		AddYawInput(Value);
 }
 
 void APRPlayerController::InputPitch(float Value)
 {
 	auto* Lock = UBuffLibrary::GetBuff<ULock>(GetPawn());
-	if (!Lock->IsActivate() || !Lock->GetLockedTarget())
+	if (!Lock || !Lock->IsActivate() || !Lock->GetLockedTarget())
 		AddPitchInput(Value);
 }
 
