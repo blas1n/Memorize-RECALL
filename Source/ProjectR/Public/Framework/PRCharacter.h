@@ -12,7 +12,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnLand, const FHitResult&, Hit);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FOnAttack, float, Damage, AActor*, Target, TSubclassOf<UDamageType>, DamageType);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FOnDamage, float, Damage, AActor*, Target, TSubclassOf<UDamageType>, DamageType);
 
-UCLASS(Abstract, Blueprintable)
+UCLASS(BlueprintType)
 class PROJECTR_API APRCharacter final : public ACharacter, public IGenericTeamAgentInterface
 {
 	GENERATED_BODY()
