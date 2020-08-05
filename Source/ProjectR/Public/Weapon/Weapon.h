@@ -36,20 +36,20 @@ private:
 	void LoadAll(const struct FWeaponData& WeaponData);
 
 private:
-	UPROPERTY()
+	UPROPERTY(Transient)
 	class APRCharacter* User;
 	
 	UPROPERTY()
-	class USkill* WeakAttack;
+	TArray<class USkill*> Skills;
 
-	UPROPERTY()
+	UPROPERTY(Transient)
+	USkill* WeakAttack;
+
+	UPROPERTY(Transient)
 	USkill* StrongAttack;
 
-	UPROPERTY()
+	UPROPERTY(Transient)
 	USkill* Parrying;
-
-	UPROPERTY(BlueprintReadOnly, meta = (AllowPrivateAccess = true))
-	TArray<USkill*> Skills;
 
 	UPROPERTY(Transient)
 	UWeaponContext* Context;
