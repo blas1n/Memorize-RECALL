@@ -106,6 +106,12 @@ void UStatComponent::BeginPlay()
 
 void UStatComponent::EndPlay(EEndPlayReason::Type EndPlayReason)
 {
+	GetBuff(ULock::StaticClass())->OnApplied.RemoveDynamic(this, &UStatComponent::OnLockApplied);
+	GetBuff(ULock::StaticClass())->OnReleased.RemoveDynamic(this, &UStatComponent::OnLockReleased);
+
+	GetBuff(URun::StaticClass())->OnApplied.RemoveDynamic(this, &UStatComponent::OnRunApplied);
+	GetBuff(URun::StaticClass())->OnReleased.RemoveDynamic(this, &UStatComponent::OnRunReleased);
+
 	for (UBuff* Buff : Buffs)
 		Buff->EndPlay();
 
