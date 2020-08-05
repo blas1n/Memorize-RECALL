@@ -48,11 +48,6 @@ APRCharacter::APRCharacter()
 	Initialize();
 }
 
-void APRCharacter::SetTeamId(uint8 NewTeamId)
-{
-	TeamId = NewTeamId;
-}
-
 #if WITH_EDITOR
 
 void APRCharacter::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)

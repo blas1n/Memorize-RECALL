@@ -26,11 +26,9 @@ public:
 	}
 	
 	FORCEINLINE FGenericTeamId GetGenericTeamId() const override { return FGenericTeamId{ TeamId }; }
-	FORCEINLINE void SetGenericTeamId(const FGenericTeamId& NewTeamId) override { SetTeamId(NewTeamId.GetId()); }
+	FORCEINLINE void SetGenericTeamId(const FGenericTeamId& NewTeamId) override { TeamId = NewTeamId.GetId(); }
+	FORCEINLINE void SetGenericTeamId(uint8 NewTeamId) { TeamId = NewTeamId; }
 
-	UFUNCTION(BlueprintSetter)
-	void SetTeamId(uint8 NewTeamId);
-	
 	FORCEINLINE class UWeaponComponent* GetWeaponComponent() const noexcept { return WeaponComponent; }
 	FORCEINLINE class UStatComponent* GetStatComponent() const noexcept { return StatComponent; }
 	FORCEINLINE bool IsDeath() const noexcept { return bIsDeath; }
@@ -85,7 +83,7 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Data, meta = (AllowPrivateAccess = true))
 	int32 CharacterKey;
 
-	UPROPERTY(EditAnywhere, BlueprintSetter = SetTeamId, Category = Data, meta = (AllowPrivateAccess = true))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Data, meta = (AllowPrivateAccess = true))
 	uint8 TeamId;
 
 	UPROPERTY()
