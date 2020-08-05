@@ -85,18 +85,18 @@ private:
 private:
 	UPROPERTY(EditAnywhere, Category = Data, meta = (AllowPrivateAccess = true))
 	TArray<int32> Keies;
-	
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = true))
-	UStaticMeshComponent* RightWeapon;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = true))
-	UStaticMeshComponent* LeftWeapon;
 
 	UPROPERTY()
 	TArray<UWeapon*> Weapons;
 
 	UPROPERTY(Transient)
 	UWeapon* NoWeapon;
+	
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = true))
+	UStaticMeshComponent* RightWeapon;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = true))
+	UStaticMeshComponent* LeftWeapon;
 
 	UPROPERTY()
 	class UWeaponContext* WeaponContext;
