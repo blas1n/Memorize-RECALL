@@ -155,13 +155,12 @@ void APRCharacter::Death()
 	WeaponComponent->StopSkill();
 
 	bIsDeath = true;
-	StopAnimMontage();
 	SetCanBeDamaged(false);
+	GetController()->UnPossess();
 
 	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	GetMesh()->SetCollisionEnabled(ECollisionEnabled::PhysicsOnly);
 	GetMesh()->SetSimulatePhysics(true);
 
-	GetController()->UnPossess();
 	OnDeath.Broadcast();
 }
