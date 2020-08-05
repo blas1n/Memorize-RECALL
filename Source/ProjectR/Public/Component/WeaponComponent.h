@@ -41,6 +41,7 @@ private:
 	void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
 #endif
 
+	void InitializeComponent() override;
 	void BeginPlay() override;
 
 	UFUNCTION(Server, Reliable, WithValidation)
@@ -73,7 +74,7 @@ private:
 	void ServerAddWeapon_Implementation(uint8 Index, int32 Key);
 	bool ServerAddWeapon_Validate(uint8 Index, int32 Key);
 
-	UStaticMeshComponent* CreateWeaponComponent(const FName& Name, const FName& SocketName);
+	UStaticMeshComponent* CreateWeaponComponent(const FName& Name);
 	void EquipWeapon(class UWeapon* NewWeapon, bool bNeedUnequip);
 	void Initialize();
 

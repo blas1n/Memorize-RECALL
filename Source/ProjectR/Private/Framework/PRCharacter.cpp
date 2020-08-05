@@ -64,8 +64,12 @@ void APRCharacter::PostEditChangeProperty(FPropertyChangedEvent& PropertyChanged
 void APRCharacter::PostInitializeComponents()
 {
 	Super::PostInitializeComponents();
-
 	Initialize();
+}
+
+void APRCharacter::BeginPlay()
+{
+	Super::BeginPlay();
 	OnAttack.AddDynamic(this, &APRCharacter::Heal);
 }
 

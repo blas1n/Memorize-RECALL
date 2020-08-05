@@ -13,24 +13,12 @@ UWeaponComponent::UWeaponComponent()
 	: Super()
 {
 	PrimaryComponentTick.bCanEverTick = false;
+	bWantsInitializeComponent = true;
 
-	RightWeapon = CreateWeaponComponent(TEXT("RightWeapon"), TEXT("weapon_r"));
-	LeftWeapon = CreateWeaponComponent(TEXT("LeftWeapon"), TEXT("weapon_l"));
+	RightWeapon = CreateWeaponComponent(TEXT("RightWeapon"));
+	LeftWeapon = CreateWeaponComponent(TEXT("LeftWeapon"));
 
 	WeaponContext = CreateDefaultSubobject<UWeaponContext>(TEXT("WeaponContext"));
-	WeaponContext->Initialize(RightWeapon, LeftWeapon);
-
-	AActor* Owner = GetOwner();
-	if (Owner && Owner->HasAuthority())
-	{
-		NoWeapon = CreateDefaultSubobject<UWeapon>(TEXT("NoWeapon"));
-		NoWeapon->Initialize(WeaponContext, 0u);
-	}
-
-	WeaponIndex = 0u;
-	SkillIndex = 0u;
-
-	Initialize();
 }
 
 void UWeaponComponent::Attack(bool bIsStrongAttack)
@@ -71,34 +59,29 @@ void UWeaponComponent::PostEditChangeProperty(FPropertyChangedEvent& PropertyCha
 
 #endif
 
+void UWeaponComponent::InitializeComponent()
+{
+	Super::InitializeComponent();
+	Initialize();
+}
+
 void UWeaponComponent::BeginPlay()
 {
 	Super::BeginPlay();
-
+	
 	auto* User = Cast<APRCharacter>(GetOwner());
+	check(User);
+
 	User->OnDeath.AddDynamic(this, &UWeaponComponent::Detach);
 }
 
-UStaticMeshComponent* UWeaponComponent::CreateWeaponComponent(const FName& Name, const FName& SocketName)
+UStaticMeshComponent* UWeaponComponent::CreateWeaponComponent(const FName& Name)
 {
 	auto* Component = CreateDefaultSubobject<UStaticMeshComponent>(Name);
-	check(Component);
-
 	Component->CanCharacterStepUpOn = ECanBeCharacterBase::ECB_No;
 	Component->SetMobility(EComponentMobility::Movable);
 	Component->SetCollisionProfileName(TEXT("Weapon"));
 	Component->SetGenerateOverlapEvents(true);
-
-	if (auto* Owner = GetOwner())
-	{
-		auto* Character = CastChecked<ACharacter>(Owner); // Only humanoid characters can have weapons.
-
-		auto* MeshComponent = Character->GetMesh();
-		const auto Rules = FAttachmentTransformRules::KeepRelativeTransform;
-		if (MeshComponent->DoesSocketExist(SocketName))
-			Component->AttachToComponent(MeshComponent, Rules, SocketName);
-	}
-
 	return Component;
 }
 
@@ -114,9 +97,23 @@ void UWeaponComponent::EquipWeapon(UWeapon* NewWeapon, bool bNeedUnequip)
 
 void UWeaponComponent::Initialize()
 {
-	AActor* Owner = GetOwner();
-	if (!Owner || !Owner->HasAuthority())
+	// Only humanoid characters can have weapon component.
+	auto* MeshComponent = CastChecked<ACharacter>(GetOwner())->GetMesh();
+	const auto Rules = FAttachmentTransformRules::KeepRelativeTransform;
+
+	if (MeshComponent->DoesSocketExist(TEXT("weapon_r")))
+		RightWeapon->AttachToComponent(MeshComponent, Rules, TEXT("weapon_r"));
+
+	if (MeshComponent->DoesSocketExist(TEXT("weapon_l")))
+		LeftWeapon->AttachToComponent(MeshComponent, Rules, TEXT("weapon_l"));
+
+	WeaponContext->Initialize(RightWeapon, LeftWeapon);
+
+	if (GetOwnerRole() != ENetRole::ROLE_Authority)
 		return;
+
+	if (!NoWeapon) NoWeapon = NewObject<UWeapon>();
+	NoWeapon->Initialize(WeaponContext, 0u);
 
 	const uint8 WeaponNum = Keies.Num();
 	Weapons.SetNum(WeaponNum);
