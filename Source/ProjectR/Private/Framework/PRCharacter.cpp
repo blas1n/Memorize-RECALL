@@ -38,14 +38,11 @@ APRCharacter::APRCharacter()
 	GetCharacterMovement()->bOrientRotationToMovement = true;
 	GetCharacterMovement()->bAllowPhysicsRotationDuringAnimRootMotion = true;
 
-	static ConstructorHelpers::FObjectFinder<UDataTable> DataTable(TEXT("DataTable'/Game/Data/DataTable/DT_CharacterData.DT_CharacterData'"));
-	CharacterDataTable = DataTable.Object;
-
 	WeaponComponent = CreateDefaultSubobject<UWeaponComponent>(TEXT("Weapon"));
 	StatComponent = CreateDefaultSubobject<UStatComponent>(TEXT("Stat"));
-	bIsDeath = false;
-	
-	Initialize();
+
+	static ConstructorHelpers::FObjectFinder<UDataTable> DataTable(TEXT("DataTable'/Game/Data/DataTable/DT_CharacterData.DT_CharacterData'"));
+	CharacterDataTable = DataTable.Object;
 }
 
 #if WITH_EDITOR
