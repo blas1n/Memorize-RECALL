@@ -80,7 +80,7 @@ UBuff* UStatComponent::GetBuff(TSubclassOf<UBuff> BuffClass) const
 		}
 	}
 
-	if (!Ret)
+	if (!Ret && HasBegunPlay())
 	{
 		Ret = NewObject<UBuff>(GetOwner(), BuffClass);
 		Ret->BeginPlay();
