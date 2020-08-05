@@ -109,7 +109,7 @@ void UWeapon::LoadAll(const FWeaponData& WeaponData)
 	if (!WeaponData.RightMesh.IsNull())
 	{
 		++AsyncLoadCount;
-		UPRStatics::AsyncLoad(WeaponData.RightMesh, [this, &RightMeshPtr = WeaponData.RightMesh]() mutable
+		UPRStatics::AsyncLoad(WeaponData.RightMesh, [this, &RightMeshPtr = WeaponData.RightMesh]
 		{
 			RightWeaponMesh = RightMeshPtr.Get();
 			if (--AsyncLoadCount == 0)
@@ -120,7 +120,7 @@ void UWeapon::LoadAll(const FWeaponData& WeaponData)
 	if (!WeaponData.LeftMesh.IsNull())
 	{
 		++AsyncLoadCount;
-		UPRStatics::AsyncLoad(WeaponData.LeftMesh, [this, &LeftMeshPtr = WeaponData.LeftMesh]() mutable
+		UPRStatics::AsyncLoad(WeaponData.LeftMesh, [this, &LeftMeshPtr = WeaponData.LeftMesh]
 		{
 			LeftWeaponMesh = LeftMeshPtr.Get();
 			if (--AsyncLoadCount == 0)
@@ -131,7 +131,7 @@ void UWeapon::LoadAll(const FWeaponData& WeaponData)
 	if (!WeaponData.EquipAnim.IsNull())
 	{
 		++AsyncLoadCount;
-		UPRStatics::AsyncLoad(WeaponData.EquipAnim, [this, &EquipAnimPtr = WeaponData.EquipAnim]() mutable
+		UPRStatics::AsyncLoad(WeaponData.EquipAnim, [this, &EquipAnimPtr = WeaponData.EquipAnim]
 		{
 			EquipAnim = EquipAnimPtr.Get();
 			if (--AsyncLoadCount == 0)
