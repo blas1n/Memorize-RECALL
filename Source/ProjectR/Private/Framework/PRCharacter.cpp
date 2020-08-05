@@ -118,6 +118,7 @@ void APRCharacter::Initialize()
 	if (!Data)
 	{
 		UE_LOG(LogDataTable, Error, TEXT("Cannot found character data %d!"), CharacterKey);
+		CharacterKey = 0u;
 		return;
 	}
 
