@@ -20,8 +20,6 @@ UStatComponent::UStatComponent()
 void UStatComponent::SetLevel(uint8 NewLevel)
 {
 	Level = NewLevel;
-	OnChangedLevel.Broadcast();
-
 	InitData();
 }
 
@@ -93,9 +91,7 @@ UBuff* UStatComponent::GetBuff(TSubclassOf<UBuff> BuffClass) const
 void UStatComponent::BeginPlay()
 {
 	Super::BeginPlay();
-
 	InitData();
-	OnChangedLevel.Broadcast();
 
 	GetBuff(ULock::StaticClass())->OnApplied.AddDynamic(this, &UStatComponent::OnLockApplied);
 	GetBuff(ULock::StaticClass())->OnReleased.AddDynamic(this, &UStatComponent::OnLockReleased);
@@ -143,6 +139,8 @@ void UStatComponent::InitData()
 	SetRunSpeed(Data->RunSpeed);
 	SetWalkSpeed(Data->WalkSpeed);
 	SetLockSpeed(Data->LockSpeed);
+
+	OnChangedLevel.Broadcast();
 }
 
 void UStatComponent::MulticastHeal_Implementation(float Value)
