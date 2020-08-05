@@ -81,7 +81,7 @@ private:
 	UStatComponent* StatComponent;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Data, meta = (AllowPrivateAccess = true))
-	int32 CharacterKey;
+	uint8 CharacterKey;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Data, meta = (AllowPrivateAccess = true))
 	uint8 TeamId;
