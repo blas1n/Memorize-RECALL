@@ -8,7 +8,7 @@
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnInteract);
 
-UCLASS(Abstract, Blueprintable)
+UCLASS(BlueprintType)
 class PROJECTR_API APRPlayerController final : public APlayerController
 {
 	GENERATED_BODY()
