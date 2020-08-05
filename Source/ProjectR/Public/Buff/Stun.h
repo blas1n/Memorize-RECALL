@@ -13,17 +13,11 @@ class PROJECTR_API UStun final : public UBuff
 	GENERATED_BODY()
 	
 private:
-	void BeginPlay() override;
-
 	void OnApply() override;
 	void OnRelease() override;
 
 	bool IsActivate_Implementation() const override;
 
 private:
-	UPROPERTY()
-	class AController* Controller;
-
 	uint8 Count;
-	uint8 bIsPlayer : 1;
 };

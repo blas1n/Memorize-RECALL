@@ -8,36 +8,28 @@
 #include "Framework/PRCharacter.h"
 #include "Library/BuffLibrary.h"
 
-void UStun::BeginPlay()
-{
-	Super::BeginPlay();
-
-	Controller = GetTarget()->GetController();
-	bIsPlayer = Controller->IsPlayerController();
-}
-
 void UStun::OnApply()
 {
-	if (++Count > 1)
+	AController* Controller = GetTarget()->GetController();
+	if (++Count > 1 || !Controller || GetTarget()->GetRemoteRole() != ENetRole::ROLE_AutonomousProxy)
 		return;
-
-	if (bIsPlayer)
+	
+	if (GetTarget()->IsPlayerControlled())
 		Cast<APlayerController>(Controller)->DisableInput(nullptr);
-	else
-		if (auto* Brain = Cast<AAIController>(Controller)->GetBrainComponent())
-			Brain->StopLogic(TEXT("Stun"));
+	else if (auto* Brain = Cast<AAIController>(Controller)->GetBrainComponent())
+		Brain->StopLogic(TEXT("Stun"));
 }
 
 void UStun::OnRelease()
 {
-	if (--Count > 0)
+	AController* Controller = GetTarget()->GetController();
+	if (--Count > 0 || !Controller || GetTarget()->GetRemoteRole() != ENetRole::ROLE_AutonomousProxy)
 		return;
 
-	if (bIsPlayer)
+	if (GetTarget()->IsPlayerControlled())
 		Cast<APlayerController>(Controller)->EnableInput(nullptr);
-	else
-		if (auto* Brain = Cast<AAIController>(Controller)->GetBrainComponent())
-			Brain->RestartLogic();
+	else if (auto* Brain = Cast<AAIController>(Controller)->GetBrainComponent())
+		Brain->RestartLogic();
 }
 
 bool UStun::IsActivate_Implementation() const
