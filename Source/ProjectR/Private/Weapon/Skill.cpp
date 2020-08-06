@@ -13,16 +13,18 @@ void USkill::Initialize(UWeaponContext* InContext, UObject* Data)
 
 void USkill::Begin()
 {
-	if (!bIsExecute)
-		ReceiveBegin();
+	if (bIsExecute)
+		return;
 
 	bIsExecute = true;
+	ReceiveBegin();
 }
 
 void USkill::End()
 {
-	if (bIsExecute)
-		ReceiveEnd();
+	if (!bIsExecute)
+		return;
 
 	bIsExecute = false;
+	ReceiveEnd();
 }
