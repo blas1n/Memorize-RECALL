@@ -5,8 +5,10 @@
 #include "Components/SkeletalMeshComponent.h"
 #include "Engine/StaticMesh.h"
 #include "UObject/ConstructorHelpers.h"
+#include "Component/StatComponent.h"
 #include "Component/WeaponComponent.h"
 #include "Framework/PRCharacter.h"
+#include "Data/SkillData.h"
 #include "Data/WeaponData.h"
 #include "Library/PRStatics.h"
 #include "Weapon/Skill.h"
@@ -15,13 +17,17 @@
 UWeapon::UWeapon()
 	: Super()
 {
-	static ConstructorHelpers::FObjectFinder<UDataTable> DataTable(TEXT("DataTable'/Game/Data/DataTable/DT_WeaponData.DT_WeaponData'"));
-	WeaponDataTable = DataTable.Object;
+	static ConstructorHelpers::FObjectFinder<UDataTable> WeaponDataTableFinder(TEXT("DataTable'/Game/Data/DataTable/DT_WeaponData.DT_WeaponData'"));
+	WeaponDataTable = WeaponDataTableFinder.Object;
+
+	static ConstructorHelpers::FObjectFinder<UDataTable> SkillDataTableFinder(TEXT("DataTable'/Game/Data/DataTable/DT_WeaponData.DT_SkillData'"));
+	SkillDataTable = SkillDataTableFinder.Object;
 }
 
-void UWeapon::Initialize(UWeaponContext* InContext, int32 Key)
+void UWeapon::Initialize(UWeaponContext* InContext, int32 InKey)
 {
 	Context = InContext;
+	Key = InKey;
 
 	User = GetTypedOuter<APRCharacter>();
 	if (!User) return;
@@ -63,6 +69,13 @@ void UWeapon::Initialize(UWeaponContext* InContext, int32 Key)
 	LeftWeaponTransform = Data->LeftTransform;
 
 	LoadAll(*Data);
+}
+
+void UWeapon::BeginPlay()
+{
+	auto* StatComp = User->GetStatComponent();
+	StatComp->OnChangedLevel.AddUObject(this, &UWeapon::InitSkill);
+	InitSkill(StatComp->GetLevel());
 }
 
 void UWeapon::Equip()

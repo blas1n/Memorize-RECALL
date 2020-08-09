@@ -27,7 +27,12 @@ public:
 	void SwapWeapon(uint8 Index);
 
 	UFUNCTION(BlueprintCallable)
-	void AddWeapon(uint8 Index, int32 Key);
+	void AddWeapon(uint8 Index, int32 Kesy);
+
+	void CheckCombo();
+	void ExecuteCombo();
+
+	void OnEndSkill();
 
 	FORCEINLINE class UStaticMeshComponent* GetRightWeapon() const noexcept { return RightWeapon; }
 	FORCEINLINE UStaticMeshComponent* GetLeftWeapon() const noexcept { return LeftWeapon; }
@@ -42,9 +47,10 @@ private:
 
 	void InitializeComponent() override;
 	void BeginPlay() override;
+	void EndPlay(EEndPlayReason::Type EndPlayReason) override;
 
 	UFUNCTION(Server, Reliable, WithValidation)
-	void ServerAttack(bool bIsStrongAttack);
+	void ServerAttack(bool bIsStrongAttack, bool bIsCombo);
 
 	UFUNCTION(Server, Reliable, WithValidation)
 	void ServerParry();
@@ -58,8 +64,11 @@ private:
 	UFUNCTION(Server, Reliable, WithValidation)
 	void ServerAddWeapon(uint8 Index, int32 Key);
 
-	void ServerAttack_Implementation(bool bIsStrongAttack);
-	bool ServerAttack_Validate(bool bIsStrongAttack);
+	UFUNCTION(Client, Reliable)
+	void ClientOnStopSkill();
+
+	void ServerAttack_Implementation(bool bIsStrongAttack, bool bIsCombo);
+	bool ServerAttack_Validate(bool bIsStrongAttack, bool bIsCombo);
 
 	void ServerParry_Implementation();
 	bool ServerParry_Validate();
@@ -72,6 +81,8 @@ private:
 
 	void ServerAddWeapon_Implementation(uint8 Index, int32 Key);
 	bool ServerAddWeapon_Validate(uint8 Index, int32 Key);
+
+	void ClientOnStopSkill_Implementation();
 
 	UStaticMeshComponent* CreateWeaponComponent(const FName& Name);
 	void EquipWeapon(class UWeapon* NewWeapon, bool bNeedUnequip);
@@ -103,4 +114,11 @@ private:
 
 	uint8 WeaponIndex;
 	uint8 SkillIndex;
+
+	enum class ENextCombo
+	{
+		None, Week, Strong
+	} NextCombo;
+
+	uint8 bCheckCombo : 1;
 };
