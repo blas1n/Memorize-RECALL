@@ -1,6 +1,6 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-#include "Notify/AnimNotify_Combo.h"
+#include "Notify/AnimNotifyState_Combo.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "Component/WeaponComponent.h"
 #include "Framework/PRCharacter.h"
