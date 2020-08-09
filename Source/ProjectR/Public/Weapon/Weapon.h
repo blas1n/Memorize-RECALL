@@ -16,7 +16,10 @@ class PROJECTR_API UWeapon final : public UObject
 	
 public:
 	UWeapon();
-	void Initialize(class UWeaponContext* InContext, int32 Key);
+	void Initialize(class UWeaponContext* InContext, int32 InKey);
+
+	void BeginPlay();
+	void EndPlay() {}
 
 	void Equip();
 	void Unequip();
@@ -34,6 +37,8 @@ public:
 
 private:
 	void LoadAll(const struct FWeaponData& WeaponData);
+
+	void InitSkill(uint8 Level);
 
 private:
 	UPROPERTY(Transient)
@@ -63,10 +68,14 @@ private:
 	UPROPERTY()
 	class UDataTable* WeaponDataTable;
 
+	UPROPERTY()
+	UDataTable* SkillDataTable;
+
 	FTransform RightWeaponTransform;
 	FTransform LeftWeaponTransform;
 
 	FOnAsyncLoadEnded OnAsyncLoadEnded;
 
 	uint8 AsyncLoadCount;
+	uint8 Key;
 };

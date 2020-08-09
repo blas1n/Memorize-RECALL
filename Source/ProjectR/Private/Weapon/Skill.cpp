@@ -1,6 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "Weapon/Skill.h"
+#include "Component/WeaponComponent.h"
 #include "Framework/PRCharacter.h"
 
 void USkill::Initialize(UWeaponContext* InContext, UObject* Data)
@@ -27,4 +28,6 @@ void USkill::End()
 
 	bIsExecute = false;
 	ReceiveEnd();
+
+	User->GetWeaponComponent()->OnEndSkill();
 }

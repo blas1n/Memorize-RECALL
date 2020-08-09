@@ -23,7 +23,13 @@ UWeaponComponent::UWeaponComponent()
 
 void UWeaponComponent::Attack(bool bIsStrongAttack)
 {
-	ServerAttack(bIsStrongAttack);
+	if (bCheckCombo)
+	{
+		NextCombo = bIsStrongAttack ? ENextCombo::Strong : ENextCombo::Week;
+		bCheckCombo = false;
+	}
+	else if (NextCombo == ENextCombo::None)
+		ServerAttack(bIsStrongAttack, false);
 }
 
 void UWeaponComponent::Parry()
@@ -44,6 +50,29 @@ void UWeaponComponent::SwapWeapon(uint8 Index)
 void UWeaponComponent::AddWeapon(uint8 Index, int32 Key)
 {
 	ServerAddWeapon(Index, Key);
+}
+
+void UWeaponComponent::CheckCombo()
+{
+	if (GetOwnerRole() == ENetRole::ROLE_AutonomousProxy)
+		bCheckCombo = true;
+}
+
+void UWeaponComponent::ExecuteCombo()
+{
+	bCheckCombo = false;
+	if (NextCombo != ENextCombo::None && GetOwnerRole() == ENetRole::ROLE_AutonomousProxy)
+		ServerAttack(NextCombo == ENextCombo::Strong ? true : false, true);
+}
+
+void UWeaponComponent::OnEndSkill()
+{
+	if (NextCombo != ENextCombo::None)
+		SkillIndex = 0u;
+	else
+		NextCombo = ENextCombo::None;
+
+	ClientOnStopSkill();
 }
 
 #if WITH_EDITOR
@@ -70,9 +99,21 @@ void UWeaponComponent::BeginPlay()
 	Super::BeginPlay();
 	
 	auto* User = Cast<APRCharacter>(GetOwner());
-	check(User);
-
 	User->OnDeath.AddDynamic(this, &UWeaponComponent::Detach);
+
+	for (UWeapon* Weapon : Weapons)
+		Weapon->BeginPlay();
+}
+
+void UWeaponComponent::EndPlay(EEndPlayReason::Type EndPlayReason)
+{
+	for (UWeapon* Weapon : Weapons)
+		Weapon->EndPlay();
+
+	auto* User = Cast<APRCharacter>(GetOwner());
+	User->OnDeath.RemoveDynamic(this, &UWeaponComponent::Detach);
+
+	Super::EndPlay(EndPlayReason);
 }
 
 UStaticMeshComponent* UWeaponComponent::CreateWeaponComponent(const FName& Name)
@@ -97,7 +138,6 @@ void UWeaponComponent::EquipWeapon(UWeapon* NewWeapon, bool bNeedUnequip)
 
 void UWeaponComponent::Initialize()
 {
-	// Only humanoid characters can have weapon component.
 	auto* MeshComponent = CastChecked<ACharacter>(GetOwner())->GetMesh();
 	const auto Rules = FAttachmentTransformRules::KeepRelativeTransform;
 
@@ -128,19 +168,23 @@ void UWeaponComponent::Initialize()
 		EquipWeapon(Weapons[0], false);
 }
 
-void UWeaponComponent::ServerAttack_Implementation(bool bIsStrongAttack)
+void UWeaponComponent::ServerAttack_Implementation(bool bIsStrongAttack, bool bIsCombo)
 {
-	if (!Weapons.IsValidIndex(WeaponIndex))
-		return;
+	if (!Weapons.IsValidIndex(WeaponIndex)) return;
+	UWeapon* Weapon = Weapons[WeaponIndex];
 
-	SkillIndex *= 2u;
-	if (bIsStrongAttack)
-		++SkillIndex;
+	if (bIsCombo)
+	{
+		NextCombo = bIsStrongAttack ? ENextCombo::Strong : ENextCombo::Week;
+		ServerStopSkill_Implementation();
+		SkillIndex = (2u * SkillIndex) + 2u;
+	}
 
-	Weapons[WeaponIndex]->BeginSkill(SkillIndex);
+	if (bIsStrongAttack) ++SkillIndex;
+	Weapon->BeginSkill(SkillIndex);
 }
 
-bool UWeaponComponent::ServerAttack_Validate(bool bIsStrongAttack)
+bool UWeaponComponent::ServerAttack_Validate(bool bIsStrongAttack, bool bIsCombo)
 {
 	return true;
 }
@@ -158,14 +202,12 @@ bool UWeaponComponent::ServerParry_Validate()
 
 void UWeaponComponent::ServerStopSkill_Implementation()
 {
-	if (Weapons.IsValidIndex(WeaponIndex))
-	{
-		UWeapon* Weapon = Weapons[WeaponIndex];
-		Weapon->EndSkill(SkillIndex);
-		Weapon->EndParrying();
-	}
-	
-	SkillIndex = 0u;
+	if (!Weapons.IsValidIndex(WeaponIndex))
+		return;
+
+	UWeapon* Weapon = Weapons[WeaponIndex];
+	Weapon->EndSkill(SkillIndex);
+	Weapon->EndParrying();
 }
 
 bool UWeaponComponent::ServerStopSkill_Validate()
@@ -209,6 +251,12 @@ void UWeaponComponent::ServerAddWeapon_Implementation(uint8 Index, int32 Key)
 bool UWeaponComponent::ServerAddWeapon_Validate(uint8 Index, int32 Key)
 {
 	return true;
+}
+
+void UWeaponComponent::ClientOnStopSkill_Implementation()
+{
+	NextCombo = ENextCombo::None;
+	bCheckCombo = false;
 }
 
 void UWeaponComponent::Detach()
