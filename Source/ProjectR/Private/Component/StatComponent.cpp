@@ -140,7 +140,7 @@ void UStatComponent::InitData()
 	SetWalkSpeed(Data->WalkSpeed);
 	SetLockSpeed(Data->LockSpeed);
 
-	OnChangedLevel.Broadcast();
+	OnChangedLevel.Broadcast(Level);
 }
 
 void UStatComponent::MulticastHeal_Implementation(float Value)

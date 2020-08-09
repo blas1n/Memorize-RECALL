@@ -6,7 +6,7 @@
 #include "Components/ActorComponent.h"
 #include "StatComponent.generated.h"
 
-DECLARE_MULTICAST_DELEGATE(FOnChangedLevel);
+DECLARE_MULTICAST_DELEGATE_OneParam(FOnChangedLevel, uint8);
 
 UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
 class PROJECTR_API UStatComponent final : public UActorComponent
@@ -41,6 +41,8 @@ public:
 	void SetLockSpeed(float Value);
 
 	class UBuff* GetBuff(TSubclassOf<UBuff> BuffClass) const;
+
+	FORCEINLINE uint8 GetLevel() const noexcept { return Level; }
 
 	FORCEINLINE float GetHealth() const noexcept { return Health; }
 	FORCEINLINE float GetMaxHealth() const noexcept { return MaxHealth; }
