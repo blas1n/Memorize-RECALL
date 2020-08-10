@@ -10,6 +10,8 @@
 #include "Framework/PRCharacter.h"
 #include "Data/SkillData.h"
 #include "Data/WeaponData.h"
+#include "Interface/Executable.h"
+#include "Interface/StateExecutable.h"
 #include "Library/PRStatics.h"
 #include "Weapon/Skill.h"
 #include "Weapon/WeaponContext.h"
@@ -121,14 +123,25 @@ void UWeapon::EndSkill(uint8 Index)
 		Skills[Index]->End();
 }
 
-void UWeapon::BeginParrying()
+void UWeapon::Execute(uint8 Index)
 {
-	if (Parrying) Parrying->Begin();
+	USkill* Skill = Skills[Index];
+	if (Skill && Skill->GetClass()->ImplementsInterface(UExecutable::StaticClass()))
+		return IExecutable::Execute_Execute(Skill);
 }
 
-void UWeapon::EndParrying()
+void UWeapon::BeginExecute(uint8 Index)
 {
-	if (Parrying) Parrying->End();
+	USkill* Skill = Skills[Index];
+	if (Skill && Skill->GetClass()->ImplementsInterface(UStateExecutable::StaticClass()))
+		return IStateExecutable::Execute_BeginExecute(Skill);
+}
+
+void UWeapon::EndExecute(uint8 Index)
+{
+	USkill* Skill = Skills[Index];
+	if (Skill && Skill->GetClass()->ImplementsInterface(UStateExecutable::StaticClass()))
+		return IStateExecutable::Execute_EndExecute(Skill);
 }
 
 void UWeapon::LoadAll(const FWeaponData& WeaponData)
