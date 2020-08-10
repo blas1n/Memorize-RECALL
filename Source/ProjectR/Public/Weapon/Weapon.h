@@ -27,8 +27,9 @@ public:
 	void BeginSkill(uint8 Index);
 	void EndSkill(uint8 Index);
 	
-	void BeginParrying();
-	void EndParrying();
+	void Execute(uint8 Index);
+	void BeginExecute(uint8 Index);
+	void EndExecute(uint8 Index);
 
 	FORCEINLINE UWorld* GetWorld() const override
 	{

@@ -52,6 +52,24 @@ void UWeaponComponent::AddWeapon(uint8 Index, int32 Key)
 	ServerAddWeapon(Index, Key);
 }
 
+void UWeaponComponent::Execute()
+{
+	if (GetOwnerRole() == ENetRole::ROLE_Authority && Weapons.IsValidIndex(WeaponIndex))
+		Weapons[WeaponIndex]->Execute(bIsParrying ? 0u : SkillIndex + 1);
+}
+
+void UWeaponComponent::BeginExecute()
+{
+	if (GetOwnerRole() == ENetRole::ROLE_Authority && Weapons.IsValidIndex(WeaponIndex))
+		Weapons[WeaponIndex]->BeginExecute(bIsParrying ? 0u : SkillIndex + 1);
+}
+
+void UWeaponComponent::EndExecute()
+{
+	if (GetOwnerRole() == ENetRole::ROLE_Authority && Weapons.IsValidIndex(WeaponIndex))
+		Weapons[WeaponIndex]->EndExecute(bIsParrying ? 0u : SkillIndex + 1);
+}
+
 void UWeaponComponent::CheckCombo()
 {
 	if (GetOwnerRole() == ENetRole::ROLE_AutonomousProxy)
