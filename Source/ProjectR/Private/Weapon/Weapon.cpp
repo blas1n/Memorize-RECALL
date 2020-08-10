@@ -20,7 +20,7 @@ UWeapon::UWeapon()
 	static ConstructorHelpers::FObjectFinder<UDataTable> WeaponDataTableFinder(TEXT("DataTable'/Game/Data/DataTable/DT_WeaponData.DT_WeaponData'"));
 	WeaponDataTable = WeaponDataTableFinder.Object;
 
-	static ConstructorHelpers::FObjectFinder<UDataTable> SkillDataTableFinder(TEXT("DataTable'/Game/Data/DataTable/DT_WeaponData.DT_SkillData'"));
+	static ConstructorHelpers::FObjectFinder<UDataTable> SkillDataTableFinder(TEXT("DataTable'/Game/Data/DataTable/DT_SkillData.DT_SkillData'"));
 	SkillDataTable = SkillDataTableFinder.Object;
 }
 
