@@ -16,7 +16,7 @@ class PROJECTR_API UWeapon final : public UObject
 	
 public:
 	UWeapon();
-	void Initialize(class UWeaponContext* InContext, int32 InKey);
+	bool Initialize(class UWeaponContext* InContext, int32 InKey);
 
 	void BeginPlay();
 	void EndPlay() {}

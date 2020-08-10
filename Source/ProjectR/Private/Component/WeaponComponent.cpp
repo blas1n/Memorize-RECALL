@@ -155,13 +155,20 @@ void UWeaponComponent::Initialize()
 	if (!NoWeapon) NoWeapon = NewObject<UWeapon>(GetOwner());
 	NoWeapon->Initialize(WeaponContext, 0);
 
-	const uint8 WeaponNum = Keies.Num();
-	Weapons.SetNum(WeaponNum);
-
+	int32 WeaponNum = Keies.Num();
 	for (int32 Idx = 0; Idx < WeaponNum; ++Idx)
 	{
-		Weapons[Idx] = NewObject<UWeapon>(GetOwner());
-		Weapons[Idx]->Initialize(WeaponContext, Keies[Idx]);
+		UWeapon* Weapon = NewObject<UWeapon>(GetOwner());
+		if (Weapon->Initialize(WeaponContext, Keies[Idx]))
+		{
+			Weapons.Add(Weapon);
+			continue;
+		}
+		
+		Keies.RemoveAt(Idx);
+		Weapons.Empty();
+		--WeaponNum;
+		--Idx;
 	}
 
 	if (Weapons.Num() > 0)
