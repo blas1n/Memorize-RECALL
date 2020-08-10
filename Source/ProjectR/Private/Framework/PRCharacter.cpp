@@ -15,7 +15,6 @@
 #include "Component/WeaponComponent.h"
 #include "Data/CharacterData.h"
 #include "Data/PRDamageType.h"
-#include "Interface/Parryable.h"
 #include "Library/BuffLibrary.h"
 #include "Library/PRStatics.h"
 
