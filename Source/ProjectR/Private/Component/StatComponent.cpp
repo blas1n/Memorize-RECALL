@@ -126,7 +126,7 @@ void UStatComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorC
 void UStatComponent::InitData()
 {
 	const FString Key = FString::FromInt(StatKey) + FString::FromInt(Level);
-	const auto* Data = StatDataTable->FindRow<FStatData>(FName{ *Key }, TEXT(""));
+	const auto* Data = StatDataTable->FindRow<FStatData>(FName{ *Key }, TEXT(""), false);
 	if (!Data)
 	{
 		UE_LOG(LogDataTable, Error, TEXT("Cannot found stat data %s!"), *Key);

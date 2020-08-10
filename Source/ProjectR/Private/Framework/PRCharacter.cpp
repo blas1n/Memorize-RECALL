@@ -111,7 +111,7 @@ void APRCharacter::Landed(const FHitResult& Hit)
 
 void APRCharacter::Initialize()
 {
-	const auto* Data = CharacterDataTable->FindRow<FCharacterData>(FName{ *FString::FromInt(CharacterKey) }, TEXT(""));
+	const auto* Data = CharacterDataTable->FindRow<FCharacterData>(FName{ *FString::FromInt(CharacterKey) }, TEXT(""), false);
 	if (!Data)
 	{
 		UE_LOG(LogDataTable, Error, TEXT("Cannot found character data %d!"), CharacterKey);
