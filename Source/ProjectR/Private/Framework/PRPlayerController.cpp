@@ -125,6 +125,7 @@ void APRPlayerController::SwapWeapon(float Value)
 
 	const auto* WeaponComponent = GetPawn<APRCharacter>()->GetWeaponComponent();
 	const int32 WeaponNum = WeaponComponent->GetWeaponNum();
+	if (WeaponNum == 0) return;
 
 	int32 Idx = static_cast<int32>(WeaponComponent->GetWeaponIndex());
 	Idx += FMath::RoundFromZero(Value);
