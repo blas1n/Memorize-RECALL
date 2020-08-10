@@ -6,7 +6,7 @@
 #include "UObject/Interface.h"
 #include "Parryable.generated.h"
 
-UINTERFACE(Blueprintable, MinimalAPI)
+UINTERFACE(BlueprintType, MinimalAPI)
 class UParryable : public UInterface
 {
 	GENERATED_BODY()
