@@ -109,17 +109,21 @@ void UWeapon::Unequip()
 void UWeapon::BeginSkill(uint8 Index)
 {
 	if (Skills.IsValidIndex(Index))
-		Skills[Index]->Begin();
+		if (USkill* Skill = Skills[Index])
+			Skill->Begin();
 }
 
 void UWeapon::EndSkill(uint8 Index)
 {
 	if (Skills.IsValidIndex(Index))
-		Skills[Index]->End();
+		if (USkill* Skill = Skills[Index])
+			Skill->End();
 }
 
 void UWeapon::Execute(uint8 Index)
 {
+	if (!Skills.IsValidIndex(Index)) return;
+
 	USkill* Skill = Skills[Index];
 	if (Skill && Skill->GetClass()->ImplementsInterface(UExecutable::StaticClass()))
 		return IExecutable::Execute_Execute(Skill);
@@ -127,6 +131,8 @@ void UWeapon::Execute(uint8 Index)
 
 void UWeapon::BeginExecute(uint8 Index)
 {
+	if (!Skills.IsValidIndex(Index)) return;
+
 	USkill* Skill = Skills[Index];
 	if (Skill && Skill->GetClass()->ImplementsInterface(UStateExecutable::StaticClass()))
 		return IStateExecutable::Execute_BeginExecute(Skill);
@@ -134,6 +140,8 @@ void UWeapon::BeginExecute(uint8 Index)
 
 void UWeapon::EndExecute(uint8 Index)
 {
+	if (!Skills.IsValidIndex(Index)) return;
+
 	USkill* Skill = Skills[Index];
 	if (Skill && Skill->GetClass()->ImplementsInterface(UStateExecutable::StaticClass()))
 		return IStateExecutable::Execute_EndExecute(Skill);
