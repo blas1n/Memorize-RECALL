@@ -4,126 +4,125 @@
 #include "Components/SkeletalMeshComponent.h"
 #include "Components/StaticMeshComponent.h"
 #include "Buff/Cast.h"
-#include "Character/ProjectRCharacter.h"
+#include "Framework/PRCharacter.h"
 #include "Library/BuffLibrary.h"
-#include "Weapon.h"
+#include "Weapon/Weapon.h"
+#include "Weapon/WeaponContext.h"
 
 UWeaponComponent::UWeaponComponent()
 	: Super()
 {
 	PrimaryComponentTick.bCanEverTick = false;
+	bWantsInitializeComponent = true;
 
-	RightWeapon = CreateWeaponComponent(TEXT("RightWeapon"), TEXT("weapon_r"));
-	LeftWeapon = CreateWeaponComponent(TEXT("LeftWeapon"), TEXT("weapon_l"));
-	SetWeaponCollision(false, false);
+	RightWeapon = CreateWeaponComponent(TEXT("RightWeapon"));
+	LeftWeapon = CreateWeaponComponent(TEXT("LeftWeapon"));
 
-	User = nullptr;
-	WeaponNum = 0;
-	CurIndex = 0;
+	WeaponContext = CreateDefaultSubobject<UWeaponContext>(TEXT("WeaponContext"));
 }
 
-void UWeaponComponent::Initialize(const TArray<int32>& Keies)
+void UWeaponComponent::Attack(bool bIsStrongAttack)
 {
-	WeaponNum = Keies.Num();
-	Weapons.SetNum(WeaponNum);
-
-	for (int32 Idx = 0; Idx < WeaponNum; ++Idx)
+	if (bCheckCombo)
 	{
-		Weapons[Idx] = NewObject<UWeapon>(GetOwner());
-		Weapons[Idx]->Initialize(Keies[Idx]);
+		NextCombo = bIsStrongAttack ? ENextCombo::Strong : ENextCombo::Week;
+		bCheckCombo = false;
 	}
-
-	if (Weapons.Num() > 0)
-		EquipWeapon(Weapons[0], false);
+	else if (NextCombo == ENextCombo::None)
+		ServerAttack(bIsStrongAttack, false);
 }
 
-void UWeaponComponent::StartSkill(uint8 Index)
+void UWeaponComponent::Parry()
 {
-	if (WeaponNum > 0)
-		Weapons[CurIndex]->StartSkill(Index);
+	ServerParry();
 }
 
-void UWeaponComponent::EndSkill(uint8 Index)
+void UWeaponComponent::StopSkill()
 {
-	if (WeaponNum > 0)
-		Weapons[CurIndex]->EndSkill(Index);
-}
-
-bool UWeaponComponent::CanUseSkill(uint8 Index) const
-{
-	if (WeaponNum == 0) return false;
-	return Weapons[CurIndex]->CanUseSkill(Index);
+	ServerStopSkill();
 }
 
 void UWeaponComponent::SwapWeapon(uint8 Index)
 {
-	if (Index >= Weapons.Num() || CurIndex == Index || UBuffLibrary::IsActivate<UCast>(User))
-		return;
-	
-	EquipWeapon(Weapons[Index], true);
-	CurIndex = Index;
+	ServerSwapWeapon(Index);
 }
 
-void UWeaponComponent::CreateNewWeapon(int32 Key, uint8 Index)
+void UWeaponComponent::AddWeapon(uint8 Index, int32 Key)
 {
-	auto* NewWeapon = NewObject<UWeapon>(User);
-	NewWeapon->Initialize(Key);
-	NewWeapon->BeginPlay();
-
-	if (Index == CurIndex)
-		EquipWeapon(NewWeapon, true);
-
-	Weapons[Index]->EndPlay();
-	Weapons[Index] = NewWeapon;
+	ServerAddWeapon(Index, Key);
 }
 
-void UWeaponComponent::SetWeaponCollision(bool bEnableRight, bool bEnableLeft)
+void UWeaponComponent::CheckCombo()
 {
-	RightWeapon->SetCollisionEnabled(bEnableRight ? ECollisionEnabled::QueryOnly : ECollisionEnabled::NoCollision);
-	LeftWeapon->SetCollisionEnabled(bEnableLeft ? ECollisionEnabled::QueryOnly : ECollisionEnabled::NoCollision);
+	if (GetOwnerRole() == ENetRole::ROLE_AutonomousProxy)
+		bCheckCombo = true;
+}
+
+void UWeaponComponent::ExecuteCombo()
+{
+	bCheckCombo = false;
+	if (NextCombo != ENextCombo::None && GetOwnerRole() == ENetRole::ROLE_AutonomousProxy)
+		ServerAttack(NextCombo == ENextCombo::Strong ? true : false, true);
+}
+
+void UWeaponComponent::OnEndSkill()
+{
+	if (NextCombo != ENextCombo::None)
+		SkillIndex = 0u;
+	else
+		NextCombo = ENextCombo::None;
+
+	ClientOnStopSkill();
+}
+
+#if WITH_EDITOR
+
+void UWeaponComponent::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
+{
+	Super::PostEditChangeProperty(PropertyChangedEvent);
+
+	static const FName& KeiesName = GET_MEMBER_NAME_CHECKED(UWeaponComponent, Keies);
+	if (PropertyChangedEvent.Property && PropertyChangedEvent.GetPropertyName() == KeiesName)
+		Initialize();
+}
+
+#endif
+
+void UWeaponComponent::InitializeComponent()
+{
+	Super::InitializeComponent();
+	Initialize();
 }
 
 void UWeaponComponent::BeginPlay()
 {
-	User = Cast<AProjectRCharacter>(GetOwner());
+	Super::BeginPlay();
+	
+	auto* User = Cast<APRCharacter>(GetOwner());
 	User->OnDeath.AddDynamic(this, &UWeaponComponent::Detach);
 
-	RightWeapon->OnComponentBeginOverlap.AddDynamic(this, &UWeaponComponent::OnWeaponOverlap);
-	LeftWeapon->OnComponentBeginOverlap.AddDynamic(this, &UWeaponComponent::OnWeaponOverlap);
-
-	Super::BeginPlay();
-
 	for (UWeapon* Weapon : Weapons)
-		if (Weapon)	Weapon->BeginPlay();
+		Weapon->BeginPlay();
 }
 
 void UWeaponComponent::EndPlay(EEndPlayReason::Type EndPlayReason)
 {
 	for (UWeapon* Weapon : Weapons)
-		if (Weapon)	Weapon->EndPlay();
+		Weapon->EndPlay();
+
+	auto* User = Cast<APRCharacter>(GetOwner());
+	User->OnDeath.RemoveDynamic(this, &UWeaponComponent::Detach);
 
 	Super::EndPlay(EndPlayReason);
 }
 
-UStaticMeshComponent* UWeaponComponent::CreateWeaponComponent(const FName& Name, const FName& SocketName)
+UStaticMeshComponent* UWeaponComponent::CreateWeaponComponent(const FName& Name)
 {
 	auto* Component = CreateDefaultSubobject<UStaticMeshComponent>(Name);
-	check(Component);
-
 	Component->CanCharacterStepUpOn = ECanBeCharacterBase::ECB_No;
 	Component->SetMobility(EComponentMobility::Movable);
 	Component->SetCollisionProfileName(TEXT("Weapon"));
 	Component->SetGenerateOverlapEvents(true);
-
-	auto* Character = Cast<ACharacter>(GetOwner());
-	if (Character)
-	{
-		auto* MeshComponent = Character->GetMesh();
-		const auto Rules = FAttachmentTransformRules::KeepRelativeTransform;
-		if (MeshComponent->DoesSocketExist(SocketName))
-			Component->AttachToComponent(MeshComponent, Rules, SocketName);
-	}
-
 	return Component;
 }
 
@@ -132,15 +131,139 @@ void UWeaponComponent::EquipWeapon(UWeapon* NewWeapon, bool bNeedUnequip)
 	if (!NewWeapon) return;
 
 	if (bNeedUnequip)
-		Weapons[CurIndex]->Unequip();
+		Weapons[WeaponIndex]->Unequip();
 
 	NewWeapon->Equip();
 }
 
-void UWeaponComponent::OnWeaponOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
-	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+void UWeaponComponent::Initialize()
 {
-	OnWeaponOverlapped.Broadcast(OtherActor);
+	auto* MeshComponent = CastChecked<ACharacter>(GetOwner())->GetMesh();
+	const auto Rules = FAttachmentTransformRules::KeepRelativeTransform;
+
+	if (MeshComponent->DoesSocketExist(TEXT("weapon_r")))
+		RightWeapon->AttachToComponent(MeshComponent, Rules, TEXT("weapon_r"));
+
+	if (MeshComponent->DoesSocketExist(TEXT("weapon_l")))
+		LeftWeapon->AttachToComponent(MeshComponent, Rules, TEXT("weapon_l"));
+
+	WeaponContext->Initialize(RightWeapon, LeftWeapon);
+
+	if (GetOwnerRole() != ENetRole::ROLE_Authority)
+		return;
+
+	if (!NoWeapon) NoWeapon = NewObject<UWeapon>(GetOwner());
+	NoWeapon->Initialize(WeaponContext, 0);
+
+	int32 WeaponNum = Keies.Num();
+	for (int32 Idx = 0; Idx < WeaponNum; ++Idx)
+	{
+		UWeapon* Weapon = NewObject<UWeapon>(GetOwner());
+		if (Weapon->Initialize(WeaponContext, Keies[Idx]))
+		{
+			Weapons.Add(Weapon);
+			continue;
+		}
+		
+		Keies.RemoveAt(Idx);
+		Weapons.Empty();
+		--WeaponNum;
+		--Idx;
+	}
+
+	if (Weapons.Num() > 0)
+		EquipWeapon(Weapons[0], false);
+}
+
+void UWeaponComponent::ServerAttack_Implementation(bool bIsStrongAttack, bool bIsCombo)
+{
+	if (!Weapons.IsValidIndex(WeaponIndex)) return;
+	UWeapon* Weapon = Weapons[WeaponIndex];
+
+	if (bIsCombo)
+	{
+		NextCombo = bIsStrongAttack ? ENextCombo::Strong : ENextCombo::Week;
+		ServerStopSkill_Implementation();
+		SkillIndex = (2u * SkillIndex) + 2u;
+	}
+
+	if (bIsStrongAttack) ++SkillIndex;
+	Weapon->BeginSkill(SkillIndex);
+}
+
+bool UWeaponComponent::ServerAttack_Validate(bool bIsStrongAttack, bool bIsCombo)
+{
+	return true;
+}
+
+void UWeaponComponent::ServerParry_Implementation()
+{
+	if (Weapons.IsValidIndex(WeaponIndex))
+		Weapons[WeaponIndex]->BeginParrying();
+}
+
+bool UWeaponComponent::ServerParry_Validate()
+{
+	return true;
+}
+
+void UWeaponComponent::ServerStopSkill_Implementation()
+{
+	if (!Weapons.IsValidIndex(WeaponIndex))
+		return;
+
+	UWeapon* Weapon = Weapons[WeaponIndex];
+	Weapon->EndSkill(SkillIndex);
+	Weapon->EndParrying();
+}
+
+bool UWeaponComponent::ServerStopSkill_Validate()
+{
+	return true;
+}
+
+void UWeaponComponent::ServerSwapWeapon_Implementation(uint8 Index)
+{
+	if (WeaponIndex == Index || UBuffLibrary::IsActivate<UCast>(GetOwner()))
+		return;
+
+	EquipWeapon(Weapons[Index], true);
+	WeaponIndex = Index;
+}
+
+bool UWeaponComponent::ServerSwapWeapon_Validate(uint8 Index)
+{
+	return Weapons.Num() > Index;
+}
+
+void UWeaponComponent::ServerAddWeapon_Implementation(uint8 Index, int32 Key)
+{
+	const int32 BeforeWeaponNum = Weapons.Num();
+	if (Index > BeforeWeaponNum)
+		Weapons.SetNum(Index + 1u);
+
+	const int32 AfterWeaponNum = Weapons.Num();
+	for (int32 Idx = BeforeWeaponNum; Idx < AfterWeaponNum; ++Idx)
+		Weapons[Idx] = NoWeapon;
+
+	auto* NewWeapon = NewObject<UWeapon>(GetOwner());
+	NewWeapon->Initialize(WeaponContext, Key);
+
+	if (Index == WeaponIndex)
+		EquipWeapon(NewWeapon, true);
+
+	Weapons[Index] = NewWeapon;
+}
+
+bool UWeaponComponent::ServerAddWeapon_Validate(uint8 Index, int32 Key)
+{
+	return true;
+}
+
+void UWeaponComponent::ClientOnStopSkill_Implementation()
+{
+	NextCombo = ENextCombo::None;
+	bCheckCombo = false;
 }
 
 void UWeaponComponent::Detach()

@@ -5,8 +5,7 @@
 #include "GameFramework/Controller.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Buff/Root.h"
-#include "Character/ProjectRCharacter.h"
-#include "Character/ProjectRPlayerState.h"
+#include "Framework/PRCharacter.h"
 #include "Library/BuffLibrary.h"
 
 void ULock::SetLockTarget(AActor* InLockedTarget)

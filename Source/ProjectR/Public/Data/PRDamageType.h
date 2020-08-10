@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/DamageType.h"
-#include "ProjectRDamageType.generated.h"
+#include "PRDamageType.generated.h"
 
 UCLASS(const, Blueprintable, BlueprintType)
 class PROJECTR_API UProjectRDamageType : public UDamageType

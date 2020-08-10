@@ -6,8 +6,8 @@
 #include "NiagaraComponent.h"
 #include "NiagaraSystem.h"
 #include "NiagaraFunctionLibrary.h"
-#include "Character/ProjectRCharacter.h"
 #include "Component/WeaponComponent.h"
+#include "Framework/PRCharacter.h"
 
 #if WITH_EDITOR
 
@@ -101,7 +101,7 @@ bool UAnimNotifyState_PlayParticle::GetParentComponent(USkeletalMeshComponent* M
 		return true;
 	}
 
-	auto* Owner = Cast<AProjectRCharacter>(MeshComp->GetOwner());
+	auto* Owner = Cast<APRCharacter>(MeshComp->GetOwner());
 	if (!Owner)
 	{
 		Parent = MeshComp;

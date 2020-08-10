@@ -13,81 +13,54 @@ class PROJECTR_API UBuffLibrary final : public UBlueprintFunctionLibrary
 
 public:
 	UFUNCTION(BlueprintCallable)
-	static class UBuff* GetBuff(class AProjectRCharacter* Character, TSubclassOf<UBuff> BuffClass);
-	static const UBuff* GetBuff(const AProjectRCharacter* Character, TSubclassOf<UBuff> BuffClass);
+	static class UBuff* GetBuff(class AActor* Target, TSubclassOf<UBuff> BuffClass);
+	static const UBuff* GetBuff(const AActor* Target, TSubclassOf<UBuff> BuffClass);
 
 	template <class T>
-	FORCEINLINE static T* GetBuff(AProjectRCharacter* Character)
+	FORCEINLINE static T* GetBuff(AActor* Target)
 	{
-		return Cast<T>(GetBuff(Character, T::StaticClass()));
+		return Cast<T>(GetBuff(Target, T::StaticClass()));
 	}
 
 	template <class T>
-	FORCEINLINE static const T* GetBuff(const AProjectRCharacter* Character)
+	FORCEINLINE static const T* GetBuff(const AActor* Target)
 	{
-		return Cast<T>(GetBuff(Character, T::StaticClass()));
+		return Cast<T>(GetBuff(Target, T::StaticClass()));
 	}
 	
 	UFUNCTION(BlueprintCallable)
-	static void ApplyBuff(AProjectRCharacter* Character, TSubclassOf<UBuff> BuffClass);
+	static void ApplyBuff(AActor* Target, TSubclassOf<UBuff> BuffClass);
 
 	template <class T>
-	FORCEINLINE static void ApplyBuff(AProjectRCharacter* Character)
+	FORCEINLINE static void ApplyBuff(AActor* Target)
 	{
-		ApplyBuff(Character, T::StaticClass());
+		ApplyBuff(Target, T::StaticClass());
 	}
 
 	UFUNCTION(BlueprintCallable)
-	static void ReleaseBuff(AProjectRCharacter* Character, TSubclassOf<UBuff> BuffClass);
+	static void ReleaseBuff(AActor* Target, TSubclassOf<UBuff> BuffClass);
 
 	template <class T>
-	FORCEINLINE static void ReleaseBuff(AProjectRCharacter* Character)
+	FORCEINLINE static void ReleaseBuff(AActor* Target)
 	{
-		ReleaseBuff(Character, T::StaticClass());
+		ReleaseBuff(Target, T::StaticClass());
 	}
 
 	UFUNCTION(BlueprintCallable)
-	static void ApplyBuffWithDuration(AProjectRCharacter* Character, TSubclassOf<UBuff> BuffClass, float Duration);
+	static void ApplyBuffWithDuration(AActor* Target, TSubclassOf<UBuff> BuffClass, float Duration);
 
 	template <class T>
-	FORCEINLINE static void ApplyBuffWithDuration(AProjectRCharacter* Character, float Duration)
+	FORCEINLINE static void ApplyBuffWithDuration(AActor* Target, float Duration)
 	{
-		ApplyBuffWithDuration(Character, T::StaticClass(), Duration);
+		ApplyBuffWithDuration(Target, T::StaticClass(), Duration);
 	}
 
 	UFUNCTION(BlueprintCallable)
-	static void BlockBuff(AProjectRCharacter* Character, TSubclassOf<UBuff> BuffClass);
+	static bool IsActivate(const AActor* Target, TSubclassOf<UBuff> BuffClass);
 
 	template <class T>
-	FORCEINLINE static void BlockBuff(AProjectRCharacter* Character)
+	FORCEINLINE static bool IsActivate(const AActor* Target)
 	{
-		BlockBuff(Character, T::StaticClass());
-	}
-
-	UFUNCTION(BlueprintCallable)
-	static void UnblockBuff(AProjectRCharacter* Character, TSubclassOf<UBuff> BuffClass);
-
-	template <class T>
-	FORCEINLINE static void UnblockBuff(AProjectRCharacter* Character)
-	{
-		UnblockBuff(Character, T::StaticClass());
-	}
-
-	UFUNCTION(BlueprintCallable)
-	static bool IsActivate(const AProjectRCharacter* Character, TSubclassOf<UBuff> BuffClass);
-
-	template <class T>
-	FORCEINLINE static bool IsActivate(const AProjectRCharacter* Character)
-	{
-		return IsActivate(Character, T::StaticClass());
-	}
-
-	UFUNCTION(BlueprintCallable)
-	static bool IsBlocked(const AProjectRCharacter* Character, TSubclassOf<UBuff> BuffClass);
-
-	template <class T>
-	FORCEINLINE static bool IsBlocked(const AProjectRCharacter* Character)
-	{
-		return IsBlocked(Character, T::StaticClass());
+		return IsActivate(Target, T::StaticClass());
 	}
 };
