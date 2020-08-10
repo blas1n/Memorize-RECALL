@@ -187,13 +187,12 @@ void UWeapon::InitSkill(uint8 Level)
 {
 	if (Key == -1) return;
 
-	const FString KeyStr = FString::FromInt(Key);
-	const FString LevelStr = FString::FromInt(Level);
+	const FString BaseKey = FString::FromInt(Key) + FString::FromInt(Level);
 
 	const int32 SkillNum = Skills.Num();
 	for (int32 Idx = 0; Idx < SkillNum; ++Idx)
 	{
-		const FName SkillKey{ *(KeyStr + FString::FromInt(Idx) + LevelStr) };
+		const FName SkillKey{ *(BaseKey + FString::FromInt(Idx)) };
 		const auto* Data = SkillDataTable->FindRow<FSkillData>(SkillKey, TEXT(""), false);
 		if (!Data) UE_LOG(LogDataTable, Error, TEXT("Cannot found skill data %s!"), *SkillKey.ToString());
 
