@@ -6,8 +6,6 @@
 #include "Components/ActorComponent.h"
 #include "WeaponComponent.generated.h"
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnWeaponOverlapped, AActor*, Target);
-
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
 class PROJECTR_API UWeaponComponent final : public UActorComponent
 {
@@ -16,57 +14,95 @@ class PROJECTR_API UWeaponComponent final : public UActorComponent
 public:	
 	UWeaponComponent();
 
-	void Initialize(const TArray<int32>& Keies);
+	UFUNCTION(BlueprintCallable)
+	void Attack(bool bIsStrongAttack);
 
 	UFUNCTION(BlueprintCallable)
-	void StartSkill(uint8 Index);
+	void Parry();
 
 	UFUNCTION(BlueprintCallable)
-	void EndSkill(uint8 Index);
-
-	UFUNCTION(BlueprintCallable)
-	bool CanUseSkill(uint8 Index) const;
+	void StopSkill();
 
 	UFUNCTION(BlueprintCallable)
 	void SwapWeapon(uint8 Index);
 
 	UFUNCTION(BlueprintCallable)
-	void CreateNewWeapon(int32 Key, uint8 Index);
+	void AddWeapon(uint8 Index, int32 Kesy);
 
-	void SetWeaponCollision(bool bEnableRight, bool bEnableLeft);
+	void CheckCombo();
+	void ExecuteCombo();
 
-	UFUNCTION(BlueprintCallable)
-	class UWeapon* GetWeapon() noexcept { return Weapons[CurIndex]; }
-	
-	FORCEINLINE const UWeapon* GetWeapon() const noexcept { return Weapons[CurIndex]; }
+	void OnEndSkill();
 
 	FORCEINLINE class UStaticMeshComponent* GetRightWeapon() const noexcept { return RightWeapon; }
-	FORCEINLINE UStaticMeshComponent* GetLeftWeapon() const noexcept { return LeftWeapon; }	
+	FORCEINLINE UStaticMeshComponent* GetLeftWeapon() const noexcept { return LeftWeapon; }
 
-	FORCEINLINE uint8 GetWeaponNum() const noexcept { return WeaponNum; }
-	FORCEINLINE uint8 GetWeaponIndex() const noexcept { return CurIndex; }
+	FORCEINLINE int32 GetWeaponNum() const noexcept { return Weapons.Num(); }
+	FORCEINLINE uint8 GetWeaponIndex() const noexcept { return WeaponIndex; }
 
 private:
+#if WITH_EDITOR
+	void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
+#endif
+
+	void InitializeComponent() override;
 	void BeginPlay() override;
-	void EndPlay(EEndPlayReason::Type EndPlayReason);
+	void EndPlay(EEndPlayReason::Type EndPlayReason) override;
 
-	UStaticMeshComponent* CreateWeaponComponent(const FName& Name, const FName& SocketName);
-	void EquipWeapon(UWeapon* NewWeapon, bool bNeedUnequip);
+	UFUNCTION(Server, Reliable, WithValidation)
+	void ServerAttack(bool bIsStrongAttack, bool bIsCombo);
 
-	UFUNCTION()
-	void OnWeaponOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
-		UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+	UFUNCTION(Server, Reliable, WithValidation)
+	void ServerParry();
+
+	UFUNCTION(Server, Reliable, WithValidation)
+	void ServerStopSkill();
+
+	UFUNCTION(Server, Reliable, WithValidation)
+	void ServerSwapWeapon(uint8 Index);
+
+	UFUNCTION(Server, Reliable, WithValidation)
+	void ServerAddWeapon(uint8 Index, int32 Key);
+
+	UFUNCTION(Client, Reliable)
+	void ClientOnStopSkill();
+
+	void ServerAttack_Implementation(bool bIsStrongAttack, bool bIsCombo);
+	bool ServerAttack_Validate(bool bIsStrongAttack, bool bIsCombo);
+
+	void ServerParry_Implementation();
+	bool ServerParry_Validate();
+
+	void ServerStopSkill_Implementation();
+	bool ServerStopSkill_Validate();
+
+	void ServerSwapWeapon_Implementation(uint8 Index);
+	bool ServerSwapWeapon_Validate(uint8 Index);
+
+	void ServerAddWeapon_Implementation(uint8 Index, int32 Key);
+	bool ServerAddWeapon_Validate(uint8 Index, int32 Key);
+
+	void ClientOnStopSkill_Implementation();
+
+	UStaticMeshComponent* CreateWeaponComponent(const FName& Name);
+	void EquipWeapon(class UWeapon* NewWeapon, bool bNeedUnequip);
+	void Initialize();
 
 	UFUNCTION()
 	void Detach();
 
 	void DetachOnce(class UStaticMeshComponent* Weapon);
 
-public:
-	UPROPERTY(BlueprintAssignable)
-	FOnWeaponOverlapped OnWeaponOverlapped;
-
 private:
+	UPROPERTY(EditAnywhere, Category = Data, meta = (AllowPrivateAccess = true))
+	TArray<int32> Keies;
+
+	UPROPERTY(Transient)
+	TArray<UWeapon*> Weapons;
+
+	UPROPERTY(Transient)
+	UWeapon* NoWeapon;
+	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = true))
 	UStaticMeshComponent* RightWeapon;
 
@@ -74,11 +110,15 @@ private:
 	UStaticMeshComponent* LeftWeapon;
 
 	UPROPERTY()
-	TArray<UWeapon*> Weapons;
+	class UWeaponContext* WeaponContext;
 
-	UPROPERTY()
-	class AProjectRCharacter* User;
+	uint8 WeaponIndex;
+	uint8 SkillIndex;
 
-	uint8 WeaponNum;
-	uint8 CurIndex;
+	enum class ENextCombo
+	{
+		None, Week, Strong
+	} NextCombo;
+
+	uint8 bCheckCombo : 1;
 };

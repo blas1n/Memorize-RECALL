@@ -3,7 +3,7 @@
 #include "Buff/Parry.h"
 #include "Interface/Parryable.h"
 
-bool UParry::ParryIfCan(int32 Damage, AController* Instigator, AProjectRCharacter* Causer)
+bool UParry::ParryIfCan(float Damage, AController* Instigator, APRCharacter* Causer)
 {
 	const auto bCanParry = IsActivate() && ParryObject &&
 		IParryable::Execute_IsParryable(ParryObject, Damage, Instigator, Causer);

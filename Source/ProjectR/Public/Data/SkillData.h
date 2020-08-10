@@ -11,16 +11,6 @@ struct FSkillData : public FTableRowBase
 {
 	GENERATED_BODY()
 
-public:
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = true))
-	int32 Priority;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = true))
-	float CoolTime;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = true))
-	int32 UseEnergy;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = true))
-	class UDataAsset* AdditionalData;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UObject* Data;
 };

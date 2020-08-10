@@ -4,65 +4,46 @@
 #include "Engine/World.h"
 #include "TimerManager.h"
 #include "Buff/Buff.h"
-#include "Character/ProjectRCharacter.h"
-#include "Character/ProjectRPlayerState.h"
+#include "Component/StatComponent.h"
 
-UBuff* UBuffLibrary::GetBuff(AProjectRCharacter* Character, TSubclassOf<UBuff> BuffClass)
+UBuff* UBuffLibrary::GetBuff(AActor* Target, TSubclassOf<UBuff> BuffClass)
 {
-	if (!Character) return nullptr;
-	auto* PlayerState = Character->GetPlayerState<AProjectRPlayerState>();
-	return PlayerState ? PlayerState->GetBuff(BuffClass) : nullptr;
+	if (!Target) return nullptr;
+	auto* StatComp = Cast<UStatComponent>(Target->GetComponentByClass(UStatComponent::StaticClass()));
+	return StatComp ? StatComp->GetBuff(BuffClass) : nullptr;
 }
 
-const UBuff* UBuffLibrary::GetBuff(const AProjectRCharacter* Character, TSubclassOf<UBuff> BuffClass)
+const UBuff* UBuffLibrary::GetBuff(const AActor* Target, TSubclassOf<UBuff> BuffClass)
 {
-	return GetBuff(const_cast<AProjectRCharacter*>(Character), BuffClass);
+	return GetBuff(const_cast<AActor*>(Target), BuffClass);
 }
 
-void UBuffLibrary::ApplyBuff(AProjectRCharacter* Character, TSubclassOf<UBuff> BuffClass)
+void UBuffLibrary::ApplyBuff(AActor* Target, TSubclassOf<UBuff> BuffClass)
 {
-	if (UBuff* Buff = GetBuff(Character, BuffClass))
+	if (UBuff* Buff = GetBuff(Target, BuffClass))
 		Buff->Apply();
 }
 
-void UBuffLibrary::ReleaseBuff(AProjectRCharacter* Character, TSubclassOf<UBuff> BuffClass)
+void UBuffLibrary::ReleaseBuff(AActor* Target, TSubclassOf<UBuff> BuffClass)
 {
-	if (UBuff* Buff = GetBuff(Character, BuffClass))
+	if (UBuff* Buff = GetBuff(Target, BuffClass))
 		Buff->Release();
 }
 
-void UBuffLibrary::ApplyBuffWithDuration(AProjectRCharacter* Character, TSubclassOf<UBuff> BuffClass, float Duration)
+void UBuffLibrary::ApplyBuffWithDuration(AActor* Target, TSubclassOf<UBuff> BuffClass, float Duration)
 {
-	UBuff* Buff = GetBuff(Character, BuffClass);
+	UBuff* Buff = GetBuff(Target, BuffClass);
 	if (!Buff) return;
 
 	Buff->Apply();
 
 	FTimerHandle Handle;
-	Character->GetWorldTimerManager().SetTimer(Handle, [Buff]
+	Target->GetWorldTimerManager().SetTimer(Handle, [Buff]
 		{ Buff->Release(); }, Duration, false);
 }
 
-void UBuffLibrary::BlockBuff(AProjectRCharacter* Character, TSubclassOf<UBuff> BuffClass)
+bool UBuffLibrary::IsActivate(const AActor* Target, TSubclassOf<UBuff> BuffClass)
 {
-	if (UBuff* Buff = GetBuff(Character, BuffClass))
-		Buff->Block();
-}
-
-void UBuffLibrary::UnblockBuff(AProjectRCharacter* Character, TSubclassOf<UBuff> BuffClass)
-{
-	if (UBuff* Buff = GetBuff(Character, BuffClass))
-		Buff->Unblock();
-}
-
-bool UBuffLibrary::IsActivate(const AProjectRCharacter* Character, TSubclassOf<UBuff> BuffClass)
-{
-	const UBuff* Buff = GetBuff(Character, BuffClass);
+	const UBuff* Buff = GetBuff(Target, BuffClass);
 	return Buff ? Buff->IsActivate() : false;
-}
-
-bool UBuffLibrary::IsBlocked(const AProjectRCharacter* Character, TSubclassOf<UBuff> BuffClass)
-{
-	const UBuff* Buff = GetBuff(Character, BuffClass);
-	return Buff ? Buff->IsBlocked() : false;
 }

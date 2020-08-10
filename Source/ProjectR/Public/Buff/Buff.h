@@ -25,17 +25,8 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void Release();
 
-	UFUNCTION(BlueprintCallable)
-	void Block();
-
-	UFUNCTION(BlueprintCallable)
-	void Unblock();
-
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
 	bool IsActivate() const;
-
-	UFUNCTION(BlueprintCallable)
-	bool IsBlocked() const;
 
 	UWorld* GetWorld() const override;
 
@@ -60,7 +51,34 @@ protected:
 
 	virtual bool IsActivate_Implementation() const { return false; }
 
-	FORCEINLINE class AProjectRCharacter* GetTarget() const noexcept { return Target; }
+	FORCEINLINE class APRCharacter* GetTarget() const noexcept { return Target; }
+
+private:
+	UFUNCTION(Server, Reliable, WithValidation)
+	void ServerApply();
+
+	UFUNCTION(Server, Reliable, WithValidation)
+	void ServerRelease();
+
+	UFUNCTION(NetMulticast, Reliable)
+	void MulticastApply();
+
+	UFUNCTION(NetMulticast, Reliable)
+	void MulticastRelease();
+
+	FORCEINLINE void ServerApply_Implementation() { MulticastApply(); }
+	FORCEINLINE bool ServerApply_Validate() { return true; }
+
+	FORCEINLINE void ServerRelease_Implementation() { MulticastRelease(); }
+	FORCEINLINE bool ServerRelease_Validate() { return true; }
+
+	void MulticastApply_Implementation();
+	void MulticastRelease_Implementation();
+
+	FORCEINLINE bool IsSupportedForNetworking() const override { return true; }
+	FORCEINLINE bool IsNameStableForNetworking() const override { return true; }
+	
+	bool CallRemoteFunction(UFunction* Function, void* Parameters, FOutParmRec* OutParms, FFrame* Stack) override;
 
 public:
 	UPROPERTY(BlueprintAssignable)
@@ -70,9 +88,6 @@ public:
 	FOnReleased OnReleased;
 
 private:
-	UPROPERTY(BlueprintReadOnly, meta = (AllowPrivateAccess = true))
-	AProjectRCharacter* Target;
-
-	uint8 bIsBlock : 1;
-	uint8 bIsActivateWithoutBlock : 1;
+	UPROPERTY(Transient, BlueprintReadOnly, meta = (AllowPrivateAccess = true))
+	APRCharacter* Target;
 };

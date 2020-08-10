@@ -1,12 +1,13 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "Buff/Buff.h"
+#include "Engine/NetDriver.h"
 #include "GameFramework/Controller.h"
-#include "Character/ProjectRCharacter.h"
+#include "Framework/PRCharacter.h"
 
 void UBuff::BeginPlay()
 {
-	Target = GetTypedOuter<AProjectRCharacter>();
+	Target = GetTypedOuter<APRCharacter>();
 	RecieveBeginPlay();
 }
 
@@ -22,9 +23,21 @@ void UBuff::Tick(float DeltaSeconds)
 
 void UBuff::Apply()
 {
-	bIsActivateWithoutBlock = true;
-	if (IsBlocked()) return;
+	ServerApply();
+}
 
+void UBuff::Release()
+{
+	ServerRelease();
+}
+
+UWorld* UBuff::GetWorld() const
+{
+	return Target ? Target->GetWorld() : nullptr;
+}
+
+void UBuff::MulticastApply_Implementation()
+{
 	const bool bIsAlreadActive = IsActivate();
 
 	OnApply();
@@ -34,11 +47,8 @@ void UBuff::Apply()
 		OnApplied.Broadcast();
 }
 
-void UBuff::Release()
+void UBuff::MulticastRelease_Implementation()
 {
-	bIsActivateWithoutBlock = false;
-	if (IsBlocked()) return;
-
 	const bool bIsAlreadActive = IsActivate();
 
 	OnRelease();
@@ -48,34 +58,16 @@ void UBuff::Release()
 		OnReleased.Broadcast();
 }
 
-void UBuff::Block()
+bool UBuff::CallRemoteFunction(UFunction* Function, void* Parameters, FOutParmRec* OutParms, FFrame* Stack)
 {
-	const bool bWasBlock = bIsBlock;
-	bIsBlock = true;
-
-	if (!bWasBlock)
+	if (AActor* MyOwner = GetTypedOuter<AActor>())
 	{
-		bIsActivateWithoutBlock = IsActivate();
-		if (!bIsActivateWithoutBlock) return;
-
-		OnRelease();
-		RecieveOnRelease();
+		if (UNetDriver* NetDriver = MyOwner->GetNetDriver())
+		{
+			NetDriver->ProcessRemoteFunction(MyOwner, Function, Parameters, OutParms, Stack, this);
+			return true;
+		}
 	}
-}
 
-void UBuff::Unblock()
-{
-	bIsBlock = false;
-	if (bIsActivateWithoutBlock)
-		Apply();
-}
-
-bool UBuff::IsBlocked() const
-{
-	return bIsBlock;
-}
-
-UWorld* UBuff::GetWorld() const
-{
-	return Target ? Target->GetWorld() : nullptr;
+	return false;
 }

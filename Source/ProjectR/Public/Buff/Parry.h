@@ -13,8 +13,8 @@ class PROJECTR_API UParry final : public UBuff
 
 public:
 	UFUNCTION(BlueprintCallable)
-	bool ParryIfCan(int32 Damage, class AController*
-		Instigator, class AProjectRCharacter* Causer);
+	bool ParryIfCan(float Damage, class AController*
+		Instigator, class APRCharacter* Causer);
 	
 	UFUNCTION(BlueprintCallable)
 	void SetParryObject(UObject* Object);
