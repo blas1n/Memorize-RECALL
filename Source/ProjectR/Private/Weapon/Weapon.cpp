@@ -166,7 +166,7 @@ void UWeapon::InitSkill(uint8 Level)
 	const int32 SkillNum = Skills.Num();
 	for (int32 Idx = 0; Idx < SkillNum; ++Idx)
 	{
-		const auto* Data = SkillDataTable->FindRow<FSkillData>(FName{ *(KeyStr + FString::FromInt(Idx + 1) + LevelStr) }, TEXT(""));
+		const auto* Data = SkillDataTable->FindRow<FSkillData>(FName{ *(KeyStr + FString::FromInt(Idx + 1) + LevelStr) }, TEXT(""), false);
 		if (!Data)
 		{
 			UE_LOG(LogDataTable, Error, TEXT("Cannot found weapon data %d!"), Key);
@@ -176,7 +176,7 @@ void UWeapon::InitSkill(uint8 Level)
 		Skills[Idx]->Initialize(Context, Data->Data);
 	}
 
-	const auto* Data = SkillDataTable->FindRow<FSkillData>(FName{ *(KeyStr + TEXT("0") + LevelStr) }, TEXT(""));
+	const auto* Data = SkillDataTable->FindRow<FSkillData>(FName{ *(KeyStr + TEXT("0") + LevelStr) }, TEXT(""), false);
 	if (!Data)
 	{
 		UE_LOG(LogDataTable, Error, TEXT("Cannot found weapon data %d!"), Key);
