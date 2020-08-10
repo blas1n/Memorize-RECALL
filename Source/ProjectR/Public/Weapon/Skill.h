@@ -12,7 +12,7 @@ class PROJECTR_API USkill final : public UObject
 	GENERATED_BODY()
 	
 public:
-	void Initialize(class UWeaponContext* InContext, UObject* Data);
+	void Initialize(class UWeaponContext* InContext, class UDataAsset* Data);
 
 	UFUNCTION(BlueprintCallable)
 	void Begin();
@@ -24,7 +24,7 @@ public:
 
 protected:
 	UFUNCTION(BlueprintImplementableEvent, meta = (DisplayName = "Initialize"))
-	void ReceiveInitialize(UObject* Data);
+	void ReceiveInitialize(UDataAsset* Data);
 
 	UFUNCTION(BlueprintImplementableEvent, meta = (DisplayName = "Begin"))
 	void ReceiveBegin();

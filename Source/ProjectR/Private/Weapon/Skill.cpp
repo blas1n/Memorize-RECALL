@@ -5,7 +5,7 @@
 #include "Component/WeaponComponent.h"
 #include "Interface/ComponentOwner.h"
 
-void USkill::Initialize(UWeaponContext* InContext, UObject* Data)
+void USkill::Initialize(UWeaponContext* InContext, UDataAsset* Data)
 {
 	User = GetTypedOuter<AActor>();
 	Context = InContext;
