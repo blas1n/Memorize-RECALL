@@ -121,4 +121,5 @@ private:
 	} NextCombo;
 
 	uint8 bCheckCombo : 1;
+	uint8 bIsParrying : 1;
 };
