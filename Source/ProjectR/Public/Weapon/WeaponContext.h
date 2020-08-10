@@ -17,6 +17,7 @@ public:
 	void SetWeaponMesh(class UStaticMesh* RightMesh, const FTransform&
 		RightTransform, UStaticMesh* LeftMesh, const FTransform& LeftTransform);
 
+	UFUNCTION(BlueprintCallable)
 	void SetWeaponCollision(bool bEnableRight, bool bEnableLeft);
 
 private:
