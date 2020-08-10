@@ -1,12 +1,13 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "Weapon/Skill.h"
+#include "GameFramework/Actor.h"
 #include "Component/WeaponComponent.h"
-#include "Framework/PRCharacter.h"
+#include "Interface/ComponentOwner.h"
 
 void USkill::Initialize(UWeaponContext* InContext, UObject* Data)
 {
-	User = GetTypedOuter<APRCharacter>();
+	User = GetTypedOuter<AActor>();
 	Context = InContext;
 
 	ReceiveInitialize(Data);
@@ -29,7 +30,8 @@ void USkill::End()
 	bIsExecute = false;
 	ReceiveEnd();
 
-	User->GetWeaponComponent()->OnEndSkill();
+	IComponentOwner::Execute_GetWeaponComponent(User)->OnEndSkill();
+}
 
 UWorld* USkill::GetWorld() const
 {
