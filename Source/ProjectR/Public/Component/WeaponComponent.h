@@ -97,7 +97,7 @@ private:
 	UPROPERTY(EditAnywhere, Category = Data, meta = (AllowPrivateAccess = true))
 	TArray<int32> Keies;
 
-	UPROPERTY()
+	UPROPERTY(Transient)
 	TArray<UWeapon*> Weapons;
 
 	UPROPERTY(Transient)
