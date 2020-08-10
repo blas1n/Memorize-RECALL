@@ -84,7 +84,7 @@ bool UWeapon::Initialize(UWeaponContext* InContext, int32 InKey)
 
 void UWeapon::BeginPlay()
 {
-	auto* StatComp = User->GetStatComponent();
+	auto* StatComp = IComponentOwner::Execute_GetStatComponent(User);
 	StatComp->OnChangedLevel.AddUObject(this, &UWeapon::InitSkill);
 	InitSkill(StatComp->GetLevel());
 }
