@@ -31,11 +31,6 @@ public:
 	void BeginExecute(uint8 Index);
 	void EndExecute(uint8 Index);
 
-	FORCEINLINE UWorld* GetWorld() const override
-	{
-		return GetOuter()->GetWorld();
-	}
-
 private:
 	void LoadAll(const struct FWeaponData& WeaponData);
 
