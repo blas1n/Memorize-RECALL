@@ -46,31 +46,26 @@ bool UWeapon::Initialize(UWeaponContext* InContext, int32 InKey)
 		return false;
 	}
 
-	if (!Data->WeakAttackClass || !Data->StrongAttackClass || !Data->ParryingClass)
-	{
-		UE_LOG(LogDataTable, Error, TEXT("Attack class is not valid!"), Key);
-		Key = -1;
-		return false;
-	}
-
 	int32 SkillNum = 1;
 	for (uint8 Idx = 1u; Idx <= Data->ComboHeight; ++Idx)
 		SkillNum += static_cast<int32>(FMath::Pow(2, Idx));
 
 	Skills.Init(nullptr, SkillNum);
 
-	Skills[0] = NewObject<USkill>(this, Data->ParryingClass);
+	if (Data->ParryingClass)
+		Skills[0] = NewObject<USkill>(this, Data->ParryingClass);
 
 	for (const auto& Skill : Data->Skills)
-		Skills[Skill.Key] = NewObject<USkill>(this, Skill.Value);
+		if (Skill.Value)
+			Skills[Skill.Key] = NewObject<USkill>(this, Skill.Value);
 
 	for (int32 Index = 1; Index < SkillNum; ++Index)
 	{
 		if (Skills[Index]) continue;
 
-		if (Index % 2)
+		if (Index % 2 && Data->WeakAttackClass)
 			Skills[Index] = NewObject<USkill>(this, Data->WeakAttackClass);
-		else
+		else if (Data->StrongAttackClass)
 			Skills[Index] = NewObject<USkill>(this, Data->StrongAttackClass);
 	}
 
