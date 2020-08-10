@@ -51,16 +51,18 @@ bool UWeapon::Initialize(UWeaponContext* InContext, int32 InKey)
 		return false;
 	}
 
-	int32 SkillNum = 0;
+	int32 SkillNum = 1;
 	for (uint8 Idx = 1u; Idx <= Data->ComboHeight; ++Idx)
 		SkillNum += static_cast<int32>(FMath::Pow(2, Idx));
 
 	Skills.Init(nullptr, SkillNum);
 
+	Skills[0] = NewObject<USkill>(this, Data->ParryingClass);
+
 	for (const auto& Skill : Data->Skills)
 		Skills[Skill.Key] = NewObject<USkill>(this, Skill.Value);
 
-	for (int32 Index = 0; Index < SkillNum; ++Index)
+	for (int32 Index = 1; Index < SkillNum; ++Index)
 	{
 		if (Skills[Index]) continue;
 
@@ -175,7 +177,7 @@ void UWeapon::InitSkill(uint8 Level)
 	const int32 SkillNum = Skills.Num();
 	for (int32 Idx = 0; Idx < SkillNum; ++Idx)
 	{
-		const auto* Data = SkillDataTable->FindRow<FSkillData>(FName{ *(KeyStr + FString::FromInt(Idx + 1) + LevelStr) }, TEXT(""), false);
+		const auto* Data = SkillDataTable->FindRow<FSkillData>(FName{ *(KeyStr + FString::FromInt(Idx) + LevelStr) }, TEXT(""), false);
 		if (!Data)
 		{
 			UE_LOG(LogDataTable, Error, TEXT("Cannot found weapon data %d!"), Key);
@@ -184,13 +186,4 @@ void UWeapon::InitSkill(uint8 Level)
 
 		Skills[Idx]->Initialize(Context, Data->Data);
 	}
-
-	const auto* Data = SkillDataTable->FindRow<FSkillData>(FName{ *(KeyStr + TEXT("0") + LevelStr) }, TEXT(""), false);
-	if (!Data)
-	{
-		UE_LOG(LogDataTable, Error, TEXT("Cannot found weapon data %d!"), Key);
-		return;
-	}
-
-	Parrying->Initialize(Context, Data->Data);
 }
