@@ -121,6 +121,9 @@ void UWeaponComponent::BeginPlay()
 
 	for (UWeapon* Weapon : Weapons)
 		Weapon->BeginPlay();
+
+	if (Weapons.Num() > 0)
+		EquipWeapon(Weapons[0], false);
 }
 
 void UWeaponComponent::EndPlay(EEndPlayReason::Type EndPlayReason)
@@ -187,9 +190,6 @@ void UWeaponComponent::Initialize()
 		--WeaponNum;
 		--Idx;
 	}
-
-	if (Weapons.Num() > 0)
-		EquipWeapon(Weapons[0], false);
 }
 
 void UWeaponComponent::ServerAttack_Implementation(bool bIsStrongAttack, bool bIsCombo)
