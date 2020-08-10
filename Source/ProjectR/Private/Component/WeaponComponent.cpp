@@ -184,7 +184,6 @@ void UWeaponComponent::Initialize()
 		}
 		
 		Keies.RemoveAt(Idx);
-		Weapons.Empty();
 		--WeaponNum;
 		--Idx;
 	}
