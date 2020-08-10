@@ -44,7 +44,7 @@ bool UWeapon::Initialize(UWeaponContext* InContext, int32 InKey)
 		return false;
 	}
 
-	if (!Data->WeakAttackClass || !Data->StrongAttackClass)
+	if (!Data->WeakAttackClass || !Data->StrongAttackClass || !Data->ParryingClass)
 	{
 		UE_LOG(LogDataTable, Error, TEXT("Attack class is not valid!"), Key);
 		Key = -1;
