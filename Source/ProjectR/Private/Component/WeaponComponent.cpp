@@ -152,7 +152,7 @@ void UWeaponComponent::Initialize()
 	if (GetOwnerRole() != ENetRole::ROLE_Authority)
 		return;
 
-	if (!NoWeapon) NoWeapon = NewObject<UWeapon>();
+	if (!NoWeapon) NoWeapon = NewObject<UWeapon>(GetOwner());
 	NoWeapon->Initialize(WeaponContext, 0);
 
 	const uint8 WeaponNum = Keies.Num();
