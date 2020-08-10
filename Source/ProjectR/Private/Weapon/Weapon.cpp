@@ -81,7 +81,6 @@ void UWeapon::BeginPlay()
 {
 	auto* StatComp = IComponentOwner::Execute_GetStatComponent(User);
 	StatComp->OnChangedLevel.AddUObject(this, &UWeapon::InitSkill);
-	InitSkill(StatComp->GetLevel());
 }
 
 void UWeapon::Equip()
