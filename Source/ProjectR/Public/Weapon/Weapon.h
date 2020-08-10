@@ -48,9 +48,6 @@ private:
 	TArray<class USkill*> Skills;
 
 	UPROPERTY(Transient)
-	USkill* Parrying;
-
-	UPROPERTY(Transient)
 	UWeaponContext* Context;
 
 	UPROPERTY(Transient)
