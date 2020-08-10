@@ -7,7 +7,7 @@
 #include "NiagaraSystem.h"
 #include "NiagaraFunctionLibrary.h"
 #include "Component/WeaponComponent.h"
-#include "Framework/PRCharacter.h"
+#include "Interface/ComponentOwner.h"
 
 #if WITH_EDITOR
 
@@ -71,17 +71,18 @@ bool UAnimNotify_PlayParticle::GetParentComponent(USkeletalMeshComponent* MeshCo
 		return true;
 	}
 
-	auto* Owner = Cast<APRCharacter>(MeshComp->GetOwner());
-	if (!Owner)
+	AActor* Owner = MeshComp->GetOwner();
+	if (!Owner || Owner->GetClass()->ImplementsInterface(UComponentOwner::StaticClass()))
 	{
 		Parent = MeshComp;
 		return false;
 	}
 
+	auto* WeaponComp = IComponentOwner::Execute_GetWeaponComponent(Owner);
 	if (AttachParent == EAttachParent::RightWeapon)
-		Parent = Owner->GetWeaponComponent()->GetRightWeapon();
+		Parent = WeaponComp->GetRightWeapon();
 	else
-		Parent = Owner->GetWeaponComponent()->GetLeftWeapon();
+		Parent = WeaponComp->GetLeftWeapon();
 
 	return Parent != nullptr;
 }
