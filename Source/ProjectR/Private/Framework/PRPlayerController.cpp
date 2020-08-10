@@ -2,6 +2,7 @@
 
 #include "Framework/PRPlayerController.h"
 #include "Engine/World.h"
+#include "GameFramework/Character.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "TimerManager.h"
@@ -9,7 +10,7 @@
 #include "Buff/Root.h"
 #include "Buff/Run.h"
 #include "Component/WeaponComponent.h"
-#include "Framework/PRCharacter.h"
+#include "Interface/ComponentOwner.h"
 #include "Library/BuffLibrary.h"
 
 DECLARE_DELEGATE_OneParam(FIndexer, uint8);
@@ -75,17 +76,18 @@ void APRPlayerController::InputPitch(float Value)
 
 void APRPlayerController::PressDodge()
 {
-	auto* MyPawn = GetPawn<APRCharacter>();
+	auto* MyPawn = GetPawn<ACharacter>();
+	const bool bCanToGetComp = MyPawn->GetClass()->ImplementsInterface(UComponentOwner::StaticClass());
 
-	if (UBuffLibrary::IsActivate<ULock>(MyPawn))
-		MyPawn->GetWeaponComponent()->Parry();
+	if (bCanToGetComp && UBuffLibrary::IsActivate<ULock>(MyPawn))
+		IComponentOwner::Execute_GetWeaponComponent(MyPawn)->Parry();
 	else if (!UBuffLibrary::IsActivate<URoot>(MyPawn))
 		MyPawn->Jump();
 }
 
 void APRPlayerController::ReleaseDodge()
 {
-	auto* MyPawn = GetPawn<APRCharacter>();
+	auto* MyPawn = GetPawn<ACharacter>();
 	if (MyPawn && MyPawn->GetCharacterMovement()->IsFalling())
 		MyPawn->StopJumping();
 }
@@ -102,32 +104,38 @@ void APRPlayerController::Walk()
 
 void APRPlayerController::AttackWeak()
 {
-	if (auto* MyPawn = GetPawn<APRCharacter>())
-		GetPawn<APRCharacter>()->GetWeaponComponent()->Attack(false);
+	APawn* MyPawn = GetPawn();
+	if (MyPawn && MyPawn->GetClass()->ImplementsInterface(UComponentOwner::StaticClass()))
+		return IComponentOwner::Execute_GetWeaponComponent(MyPawn)->Attack(false);
 }
 
 void APRPlayerController::AttackStrong()
 {
-	if (auto* MyPawn = GetPawn<APRCharacter>())
-		GetPawn<APRCharacter>()->GetWeaponComponent()->Attack(true);
+	APawn* MyPawn = GetPawn();
+	if (MyPawn && MyPawn->GetClass()->ImplementsInterface(UComponentOwner::StaticClass()))
+		return IComponentOwner::Execute_GetWeaponComponent(MyPawn)->Attack(true);
 }
 
 void APRPlayerController::SwapWeapon(uint8 Index)
 {
-	if (auto* MyPawn = GetPawn<APRCharacter>())
-		GetPawn<APRCharacter>()->GetWeaponComponent()->SwapWeapon(Index);
+	APawn* MyPawn = GetPawn();
+	if (MyPawn && MyPawn->GetClass()->ImplementsInterface(UComponentOwner::StaticClass()))
+		return IComponentOwner::Execute_GetWeaponComponent(MyPawn)->SwapWeapon(Index);
 }
 
 void APRPlayerController::SwapWeapon(float Value)
 {
-	auto* MyPawn = GetPawn<APRCharacter>();
-	if (!MyPawn || Value == 0.0f) return;
+	APawn* MyPawn = GetPawn();
+	if (!MyPawn || MyPawn->GetClass()->ImplementsInterface(UComponentOwner::StaticClass()))
+		return;
 
-	const auto* WeaponComponent = GetPawn<APRCharacter>()->GetWeaponComponent();
-	const int32 WeaponNum = WeaponComponent->GetWeaponNum();
+	auto* WeaponComp = IComponentOwner::Execute_GetWeaponComponent(MyPawn);
+	if (!WeaponComp || Value == 0.0f) return;
+
+	const int32 WeaponNum = WeaponComp->GetWeaponNum();
 	if (WeaponNum == 0) return;
 
-	int32 Idx = static_cast<int32>(WeaponComponent->GetWeaponIndex());
+	int32 Idx = static_cast<int32>(WeaponComp->GetWeaponIndex());
 	Idx += FMath::RoundFromZero(Value);
 	Idx = ((Idx % WeaponNum) + WeaponNum) % WeaponNum;
 	

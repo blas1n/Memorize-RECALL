@@ -5,12 +5,14 @@
 #include "TimerManager.h"
 #include "Buff/Buff.h"
 #include "Component/StatComponent.h"
+#include "Interface/ComponentOwner.h"
 
 UBuff* UBuffLibrary::GetBuff(AActor* Target, TSubclassOf<UBuff> BuffClass)
 {
-	if (!Target) return nullptr;
-	auto* StatComp = Cast<UStatComponent>(Target->GetComponentByClass(UStatComponent::StaticClass()));
-	return StatComp ? StatComp->GetBuff(BuffClass) : nullptr;
+	if (Target && Target->GetClass()->ImplementsInterface(UComponentOwner::StaticClass()))
+		return IComponentOwner::Execute_GetStatComponent(Target)->GetBuff(BuffClass);
+
+	return nullptr;
 }
 
 const UBuff* UBuffLibrary::GetBuff(const AActor* Target, TSubclassOf<UBuff> BuffClass)

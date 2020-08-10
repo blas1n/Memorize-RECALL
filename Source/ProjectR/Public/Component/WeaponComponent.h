@@ -29,6 +29,10 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void AddWeapon(uint8 Index, int32 Kesy);
 
+	void Execute();
+	void BeginExecute();
+	void EndExecute();
+
 	void CheckCombo();
 	void ExecuteCombo();
 
@@ -121,4 +125,5 @@ private:
 	} NextCombo;
 
 	uint8 bCheckCombo : 1;
+	uint8 bIsParrying : 1;
 };
