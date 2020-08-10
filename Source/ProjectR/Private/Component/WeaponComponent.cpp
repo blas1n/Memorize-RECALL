@@ -153,7 +153,7 @@ void UWeaponComponent::Initialize()
 		return;
 
 	if (!NoWeapon) NoWeapon = NewObject<UWeapon>();
-	NoWeapon->Initialize(WeaponContext, 0u);
+	NoWeapon->Initialize(WeaponContext, 0);
 
 	const uint8 WeaponNum = Keies.Num();
 	Weapons.SetNum(WeaponNum);

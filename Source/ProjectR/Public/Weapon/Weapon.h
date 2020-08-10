@@ -76,6 +76,6 @@ private:
 
 	FOnAsyncLoadEnded OnAsyncLoadEnded;
 
+	int32 Key;
 	uint8 AsyncLoadCount;
-	uint8 Key;
 };
