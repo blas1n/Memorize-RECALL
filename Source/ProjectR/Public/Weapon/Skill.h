@@ -20,10 +20,7 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void End();
 
-	FORCEINLINE UWorld* GetWorld() const override
-	{
-		return GetOuter()->GetWorld();
-	}
+	UWorld* GetWorld() const override;
 
 protected:
 	UFUNCTION(BlueprintImplementableEvent, meta = (DisplayName = "Initialize"))

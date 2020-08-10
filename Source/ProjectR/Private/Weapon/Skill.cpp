@@ -30,4 +30,8 @@ void USkill::End()
 	ReceiveEnd();
 
 	User->GetWeaponComponent()->OnEndSkill();
+
+UWorld* USkill::GetWorld() const
+{
+	return User ? User->GetWorld() : nullptr;
 }
