@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "GenericTeamAgentInterface.h"
+#include "Interface/ComponentOwner.h"
 #include "PRCharacter.generated.h"
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnDeath);
@@ -13,7 +14,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FOnAttack, float, Damage, AActor*
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FOnDamage, float, Damage, AActor*, Target, TSubclassOf<UDamageType>, DamageType);
 
 UCLASS(BlueprintType)
-class PROJECTR_API APRCharacter final : public ACharacter, public IGenericTeamAgentInterface
+class PROJECTR_API APRCharacter final : public ACharacter, public IGenericTeamAgentInterface, public IComponentOwner
 {
 	GENERATED_BODY()
 
@@ -28,14 +29,14 @@ public:
 	FORCEINLINE FGenericTeamId GetGenericTeamId() const override { return FGenericTeamId{ TeamId }; }
 	FORCEINLINE void SetGenericTeamId(const FGenericTeamId& NewTeamId) override { TeamId = NewTeamId.GetId(); }
 	FORCEINLINE void SetGenericTeamId(uint8 NewTeamId) { TeamId = NewTeamId; }
-
-	FORCEINLINE class UWeaponComponent* GetWeaponComponent() const noexcept { return WeaponComponent; }
-	FORCEINLINE class UStatComponent* GetStatComponent() const noexcept { return StatComponent; }
 	FORCEINLINE bool IsDeath() const noexcept { return bIsDeath; }
 
 protected:
 	UFUNCTION(BlueprintNativeEvent)
 	void GetLookLocationAndRotation(FVector& Location, FRotator& Rotation) const;
+
+	FORCEINLINE UWeaponComponent* GetWeaponComponent_Implementation() const override { return WeaponComponent; }
+	FORCEINLINE UStatComponent* GetStatComponent_Implementation() const override { return StatComponent; }
 
 private:
 #if WITH_EDITOR

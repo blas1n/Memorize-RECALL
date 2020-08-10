@@ -4,23 +4,22 @@
 
 #include "CoreMinimal.h"
 #include "UObject/Interface.h"
-#include "Parryable.generated.h"
+#include "StateExecutable.generated.h"
 
 UINTERFACE(BlueprintType, MinimalAPI)
-class UParryable : public UInterface
+class UStateExecutable : public UInterface
 {
 	GENERATED_BODY()
 };
 
-class PROJECTR_API IParryable
+class PROJECTR_API IStateExecutable
 {
 	GENERATED_BODY()
 
 public:
 	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
-	bool IsParryable(float Damage, class AController* Instigator,
-		class APRCharacter* Causer) const;
+	void BeginExecute();
 
 	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
-	void Parry(float Damage, AController* Instigator, APRCharacter* Causer);
+	void EndExecute();
 };
