@@ -24,30 +24,36 @@ UWeapon::UWeapon()
 	SkillDataTable = SkillDataTableFinder.Object;
 }
 
-void UWeapon::Initialize(UWeaponContext* InContext, int32 InKey)
+bool UWeapon::Initialize(UWeaponContext* InContext, int32 InKey)
 {
 	Context = InContext;
 	Key = InKey;
 
 	User = GetTypedOuter<APRCharacter>();
-	if (!User) return;
+	if (!User)
+	{
+		Key = -1;
+		return false;
+	}
 
-	const auto* Data = WeaponDataTable->FindRow<FWeaponData>(FName{ *FString::FromInt(Key) }, TEXT(""));
+	const auto* Data = WeaponDataTable->FindRow<FWeaponData>(FName{ *FString::FromInt(Key) }, TEXT(""), false);
 	if (!Data)
 	{
 		UE_LOG(LogDataTable, Error, TEXT("Cannot found weapon data %d!"), Key);
-		return;
+		Key = -1;
+		return false;
 	}
 
 	if (!Data->WeakAttackClass || !Data->StrongAttackClass)
 	{
 		UE_LOG(LogDataTable, Error, TEXT("Attack class is not valid!"), Key);
-		return;
+		Key = -1;
+		return false;
 	}
 
 	int32 SkillNum = 0;
 	for (uint8 Idx = 1u; Idx <= Data->ComboHeight; ++Idx)
-		SkillNum += static_cast<int>(pow(2, Idx));
+		SkillNum += static_cast<int32>(FMath::Pow(2, Idx));
 
 	Skills.Init(nullptr, SkillNum);
 
@@ -69,6 +75,7 @@ void UWeapon::Initialize(UWeaponContext* InContext, int32 InKey)
 	LeftWeaponTransform = Data->LeftTransform;
 
 	LoadAll(*Data);
+	return true;
 }
 
 void UWeapon::BeginPlay()
@@ -160,6 +167,8 @@ void UWeapon::LoadAll(const FWeaponData& WeaponData)
 
 void UWeapon::InitSkill(uint8 Level)
 {
+	if (Key == -1) return;
+
 	const FString KeyStr = FString::FromInt(Key);
 	const FString LevelStr = FString::FromInt(Level);
 
