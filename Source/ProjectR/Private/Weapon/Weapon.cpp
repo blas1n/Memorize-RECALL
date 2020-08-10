@@ -10,6 +10,7 @@
 #include "Framework/PRCharacter.h"
 #include "Data/SkillData.h"
 #include "Data/WeaponData.h"
+#include "Interface/ComponentOwner.h"
 #include "Interface/Executable.h"
 #include "Interface/StateExecutable.h"
 #include "Library/PRStatics.h"
@@ -192,13 +193,11 @@ void UWeapon::InitSkill(uint8 Level)
 	const int32 SkillNum = Skills.Num();
 	for (int32 Idx = 0; Idx < SkillNum; ++Idx)
 	{
-		const auto* Data = SkillDataTable->FindRow<FSkillData>(FName{ *(KeyStr + FString::FromInt(Idx) + LevelStr) }, TEXT(""), false);
-		if (!Data)
-		{
-			UE_LOG(LogDataTable, Error, TEXT("Cannot found weapon data %d!"), Key);
-			return;
-		}
+		const FName SkillKey{ *(KeyStr + FString::FromInt(Idx) + LevelStr) };
+		const auto* Data = SkillDataTable->FindRow<FSkillData>(SkillKey, TEXT(""), false);
+		if (!Data) UE_LOG(LogDataTable, Error, TEXT("Cannot found skill data %s!"), *SkillKey.ToString());
 
-		Skills[Idx]->Initialize(Context, Data->Data);
+		if (USkill* Skill = Skills[Idx])
+			Skill->Initialize(Context, Data ? Data->Data : nullptr);
 	}
 }
