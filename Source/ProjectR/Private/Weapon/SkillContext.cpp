@@ -7,18 +7,34 @@
 #include "Engine/NetDriver.h"
 #include "GameFramework/Character.h"
 
-void USkillContext::SetWeaponMesh(UStaticMesh* RightMesh, const FTransform&
-	RightTransform, UStaticMesh* LeftMesh, const FTransform& LeftTransform)
+void USkillContext::Initialize(UStaticMeshComponent* InRightMeshComp, UStaticMeshComponent* InLeftMeshComp)
 {
-	MulticastSetWeaponMesh(RightMesh, RightTransform, LeftMesh, LeftTransform);
+	RightWeaponComp = InRightMeshComp;
+	LeftWeaponComp = InLeftMeshComp;
+
+	auto* Outer = GetTypedOuter<AActor>();
+	if (Outer && Outer->HasAuthority())
+	{
+		RightWeaponComp->OnComponentBeginOverlap.AddUniqueDynamic(this, &USkillContext::OnWeaponOverlap);
+		LeftWeaponComp->OnComponentBeginOverlap.AddUniqueDynamic(this, &USkillContext::OnWeaponOverlap);
+		SetWeaponCollision(false, false);
+	}
+	else
+	{
+		RightWeaponComp->SetCollisionProfileName(TEXT("NoCollision"));
+		LeftWeaponComp->SetCollisionProfileName(TEXT("NoCollision"));
+
+		RightWeaponComp->SetGenerateOverlapEvents(false);
+		LeftWeaponComp->SetGenerateOverlapEvents(false);
+	}
 }
 
 void USkillContext::SetWeaponCollision(bool bEnableRight, bool bEnableLeft)
 {
 	check(GetTypedOuter<AActor>()->HasAuthority());
 
-	RightWeapon->SetCollisionEnabled(bEnableRight ? ECollisionEnabled::QueryOnly : ECollisionEnabled::NoCollision);
-	LeftWeapon->SetCollisionEnabled(bEnableLeft ? ECollisionEnabled::QueryOnly : ECollisionEnabled::NoCollision);
+	RightWeaponComp->SetCollisionEnabled(bEnableRight ? ECollisionEnabled::QueryOnly : ECollisionEnabled::NoCollision);
+	LeftWeaponComp->SetCollisionEnabled(bEnableLeft ? ECollisionEnabled::QueryOnly : ECollisionEnabled::NoCollision);
 }
 
 void USkillContext::PlayAnimation(UAnimMontage* Animation)
@@ -66,39 +82,4 @@ void USkillContext::MulticastPlayAnimation_Implementation(UAnimMontage* Animatio
 void USkillContext::MulticastStopAnimation_Implementation(UAnimMontage* Animation)
 {
 	GetTypedOuter<ACharacter>()->StopAnimMontage(PlayingMontage);
-}
-
-void USkillContext::MulticastSetWeaponMesh_Implementation(UStaticMesh* RightMesh,
-	const FTransform& RightTransform, UStaticMesh* LeftMesh, const FTransform& LeftTransform)
-{
-	RightWeapon->SetStaticMesh(RightMesh);
-	RightWeapon->SetRelativeTransform(RightTransform);
-
-	LeftWeapon->SetStaticMesh(LeftMesh);
-	LeftWeapon->SetRelativeTransform(LeftTransform);
-}
-
-void USkillContext::Initialize(UStaticMeshComponent* InRightWeapon, class UStaticMeshComponent* InLeftWeapon)
-{
-	RightWeapon = InRightWeapon;
-	LeftWeapon = InLeftWeapon;
-
-	auto* Outer = GetTypedOuter<AActor>();
-	if (Outer && Outer->HasAuthority())
-	{
-		RightWeapon->OnComponentBeginOverlap.AddUniqueDynamic(this, &USkillContext::OnWeaponOverlap);
-		LeftWeapon->OnComponentBeginOverlap.AddUniqueDynamic(this, &USkillContext::OnWeaponOverlap);
-		SetWeaponCollision(false, false);
-	}
-	else
-	{
-		RightWeapon->SetCollisionProfileName(TEXT("NoCollision"));
-		LeftWeapon->SetCollisionProfileName(TEXT("NoCollision"));
-
-		RightWeapon->SetGenerateOverlapEvents(false);
-		LeftWeapon->SetGenerateOverlapEvents(false);
-	}
-}
-
-	return false;
 }

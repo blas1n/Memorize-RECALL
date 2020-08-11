@@ -15,9 +15,7 @@ class PROJECTR_API USkillContext final : public UNetworkObject
 	GENERATED_BODY()
 
 public:
-	UFUNCTION(BlueprintCallable)
-	void SetWeaponMesh(class UStaticMesh* RightMesh, const FTransform&
-		RightTransform, UStaticMesh* LeftMesh, const FTransform& LeftTransform);
+	void Initialize(class UStaticMeshComponent* InRightMeshComp, UStaticMeshComponent* InLeftMeshComp);
 
 	UFUNCTION(BlueprintCallable)
 	void SetWeaponCollision(bool bEnableRight, bool bEnableLeft);
@@ -29,16 +27,6 @@ public:
 	void StopAnimation();
 
 private:
-	UFUNCTION(NetMulticast, Reliable)
-	void MulticastPlayAnimation(UAnimMontage* Animation);
-
-	UFUNCTION(NetMulticast, Reliable)
-	void MulticastStopAnimation(UAnimMontage* Animation);
-
-	UFUNCTION(NetMulticast, Reliable)
-	void MulticastSetWeaponMesh(UStaticMesh* RightMesh, const FTransform&
-		RightTransform, UStaticMesh* LeftMesh, const FTransform& LeftTransform);
-
 	UFUNCTION()
 	void OnMontageEnded(UAnimMontage* Montage, bool bInterrupted);
 
@@ -46,11 +34,15 @@ private:
 	void OnWeaponOverlap(class UPrimitiveComponent* OverlappedComponent, class AActor* OtherActor,
 		UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const struct FHitResult& SweepResult);
 
+	UFUNCTION(NetMulticast, Reliable)
+	void MulticastPlayAnimation(UAnimMontage* Animation);
+
+	UFUNCTION(NetMulticast, Reliable)
+	void MulticastStopAnimation(UAnimMontage* Animation);
+
 	void MulticastPlayAnimation_Implementation(UAnimMontage* Animation);
 	void MulticastStopAnimation_Implementation(UAnimMontage* Animation);
 
-	void MulticastSetWeaponMesh_Implementation(UStaticMesh* RightMesh,
-		const FTransform& RightTransform, UStaticMesh* LeftMesh, const FTransform& LeftTransform);
 public:
 	UPROPERTY(BlueprintAssignable)
 	FOnAnimationEnded OnAnimationEnded;
@@ -59,15 +51,11 @@ public:
 	FOnWeaponOverlapped OnWeaponOverlapped;
 
 private:
-	friend class UWeaponComponent;
-
-	void Initialize(class UStaticMeshComponent* InRightWeapon, UStaticMeshComponent* InLeftWeapon);
+	UPROPERTY(Transient)
+	UStaticMeshComponent* RightWeaponComp;
 
 	UPROPERTY(Transient)
-	UStaticMeshComponent* RightWeapon;
-
-	UPROPERTY(Transient)
-	UStaticMeshComponent* LeftWeapon;
+	UStaticMeshComponent* LeftWeaponComp;
 
 	UPROPERTY(Transient)
 	UAnimMontage* PlayingMontage;
