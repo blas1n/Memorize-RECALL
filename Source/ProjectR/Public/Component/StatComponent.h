@@ -16,29 +16,11 @@ class PROJECTR_API UStatComponent final : public UActorComponent
 public:
 	UStatComponent();
 
-	UFUNCTION(BlueprintSetter)
+	UFUNCTION(BlueprintSetter, BlueprintAuthorityOnly)
 	void SetLevel(uint8 NewLevel);
 
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly)
 	void Heal(float Value);
-
-	UFUNCTION(BlueprintCallable)
-	void HealByDamage(float Damage);
-
-	UFUNCTION(BlueprintCallable)
-	void SetMaxHealth(float Value, bool bWithCur = true);
-
-	UFUNCTION(BlueprintCallable)
-	void SetHealValue(float Value);
-
-	UFUNCTION(BlueprintSetter)
-	void SetRunSpeed(float Value);
-
-	UFUNCTION(BlueprintSetter)
-	void SetWalkSpeed(float Value);
-
-	UFUNCTION(BlueprintSetter)
-	void SetLockSpeed(float Value);
 
 	class UBuff* GetBuff(TSubclassOf<UBuff> BuffClass) const;
 
@@ -46,7 +28,6 @@ public:
 
 	FORCEINLINE float GetHealth() const noexcept { return Health; }
 	FORCEINLINE float GetMaxHealth() const noexcept { return MaxHealth; }
-	FORCEINLINE float GetHealthHeal() const noexcept { return HealthHeal; }
 
 	FORCEINLINE float GetRunSpeed() const noexcept { return RunSpeed; }
 	FORCEINLINE float GetWalkSpeed() const noexcept { return WalkSpeed; }
@@ -55,35 +36,13 @@ public:
 private:
 	void BeginPlay() override;
 	void EndPlay(EEndPlayReason::Type EndPlayReason) override;
-	void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction);
-
-	void InitData();
-
-	UFUNCTION(NetMulticast, Reliable)
-	void MulticastHeal(float Value);
+	void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
+	void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 	UFUNCTION(NetMulticast, Reliable)
-	void MulticastSetMaxHealth(float Value, bool bWithCur);
+	void MulticastSetLevel(uint8 NewLevel);
 
-	UFUNCTION(NetMulticast, Reliable)
-	void MulticastSetHealValue(float Value);
-
-	UFUNCTION(NetMulticast, Reliable)
-	void MulticastSetRunSpeed(float Value);
-
-	UFUNCTION(NetMulticast, Reliable)
-	void MulticastSetWalkSpeed(float Value);
-
-	UFUNCTION(NetMulticast, Reliable)
-	void MulticastSetLockSpeed(float Value);
-
-	void MulticastHeal_Implementation(float Value);
-	void MulticastSetMaxHealth_Implementation(float Value, bool bWithCur);
-	void MulticastSetHealValue_Implementation(float Value);
-
-	void MulticastSetRunSpeed_Implementation(float Value);
-	void MulticastSetWalkSpeed_Implementation(float Value);
-	void MulticastSetLockSpeed_Implementation(float Value);
+	void MulticastSetLevel_Implementation(uint8 NewLevel);
 
 	UFUNCTION()
 	void OnLockApplied();
@@ -109,25 +68,22 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintSetter = SetLevel, Category = Data, meta = (AllowPrivateAccess = true))
 	uint8 Level;
 
-	UPROPERTY(Transient, VisibleInstanceOnly, BlueprintReadOnly, Category = Health, meta = (AllowPrivateAccess = true))
+	UPROPERTY(Replicated, Transient, VisibleInstanceOnly, BlueprintReadOnly, Category = Health, meta = (AllowPrivateAccess = true))
 	float Health;
 
 	UPROPERTY(Transient, VisibleInstanceOnly, BlueprintReadOnly, Category = Health, meta = (AllowPrivateAccess = true))
 	float MaxHealth;
 
-	UPROPERTY(Transient, VisibleInstanceOnly, BlueprintReadOnly, Category = Health, meta = (AllowPrivateAccess = true))
-	float HealthHeal;
-
-	UPROPERTY(Transient, VisibleInstanceOnly, BlueprintSetter = SetRunSpeed, Category = Speed, meta = (AllowPrivateAccess = true))
+	UPROPERTY(Transient, VisibleInstanceOnly, BlueprintReadOnly, Category = Speed, meta = (AllowPrivateAccess = true))
 	float RunSpeed;
 
-	UPROPERTY(Transient, VisibleInstanceOnly, BlueprintSetter = SetWalkSpeed, Category = Speed, meta = (AllowPrivateAccess = true))
+	UPROPERTY(Transient, VisibleInstanceOnly, BlueprintReadOnly, Category = Speed, meta = (AllowPrivateAccess = true))
 	float WalkSpeed;
 
-	UPROPERTY(Transient, VisibleInstanceOnly, BlueprintSetter = SetLockSpeed, Category = Speed, meta = (AllowPrivateAccess = true))
+	UPROPERTY(Transient, VisibleInstanceOnly, BlueprintReadOnly, Category = Speed, meta = (AllowPrivateAccess = true))
 	float LockSpeed;
 
-	UPROPERTY()
+	UPROPERTY(Replicated)
 	mutable TArray<UBuff*> Buffs;
 
 	UPROPERTY()

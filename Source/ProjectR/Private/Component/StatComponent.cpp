@@ -5,6 +5,7 @@
 #include "Engine/World.h"
 #include "GameFramework/Character.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "Net/UnrealNetwork.h"
 #include "UObject/ConstructorHelpers.h"
 #include "Buff/Lock.h"
 #include "Buff/Run.h"
@@ -13,56 +14,23 @@
 UStatComponent::UStatComponent()
 	: Super()
 {
+	PrimaryComponentTick.bCanEverTick = false;
+	SetIsReplicatedByDefault(true);
+
 	static ConstructorHelpers::FObjectFinder<UDataTable> DataTable(TEXT("DataTable'/Game/Data/DataTable/DT_StatData.DT_StatData'"));
 	StatDataTable = DataTable.Object;
 }
 
 void UStatComponent::SetLevel(uint8 NewLevel)
 {
-	Level = NewLevel;
-	InitData();
+	check(GetOwnerRole() == ENetRole::ROLE_Authority);
+	MulticastSetLevel(NewLevel);
 }
 
 void UStatComponent::Heal(float Value)
 {
-	if (Value != 0.0f)
-		MulticastHeal(Value);
-}
-
-void UStatComponent::HealByDamage(float Damage)
-{
-	if (Damage > 0.0f && HealthHeal != 0.0f)
-		Heal(Damage * HealthHeal);
-}
-
-void UStatComponent::SetMaxHealth(float Value, bool bWithCur)
-{
-	if (MaxHealth != Value)
-		MulticastSetMaxHealth(Value, bWithCur);
-}
-
-void UStatComponent::SetHealValue(float Value)
-{
-	if (HealthHeal != Value)
-		MulticastSetHealValue(Value);
-}
-
-void UStatComponent::SetRunSpeed(float Value)
-{
-	if (RunSpeed != Value)
-		MulticastSetRunSpeed(Value);
-}
-
-void UStatComponent::SetWalkSpeed(float Value)
-{
-	if (WalkSpeed != Value)
-		MulticastSetWalkSpeed(Value);
-}
-
-void UStatComponent::SetLockSpeed(float Value)
-{
-	if (LockSpeed == Value)
-		MulticastSetLockSpeed(Value);
+	check(GetOwnerRole() == ENetRole::ROLE_Authority);
+	Health = FMath::Clamp(Health + Value, 0.0f, MaxHealth);
 }
 
 UBuff* UStatComponent::GetBuff(TSubclassOf<UBuff> BuffClass) const
@@ -91,7 +59,9 @@ UBuff* UStatComponent::GetBuff(TSubclassOf<UBuff> BuffClass) const
 void UStatComponent::BeginPlay()
 {
 	Super::BeginPlay();
-	InitData();
+
+	if (GetOwnerRole() == ENetRole::ROLE_Authority)
+		SetLevel(Level);
 
 	GetBuff(ULock::StaticClass())->OnApplied.AddDynamic(this, &UStatComponent::OnLockApplied);
 	GetBuff(ULock::StaticClass())->OnReleased.AddDynamic(this, &UStatComponent::OnLockReleased);
@@ -123,8 +93,16 @@ void UStatComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorC
 			Buff->Tick(DeltaTime);
 }
 
-void UStatComponent::InitData()
+void UStatComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+	DOREPLIFETIME(UStatComponent, Health);
+}
+
+void UStatComponent::MulticastSetLevel_Implementation(uint8 NewLevel)
+{
+	Level = NewLevel;
+
 	const FString Key = FString::FromInt(StatKey) + FString::FromInt(Level);
 	const auto* Data = StatDataTable->FindRow<FStatData>(FName{ *Key }, TEXT(""), false);
 	if (!Data)
@@ -133,59 +111,15 @@ void UStatComponent::InitData()
 		return;
 	}
 
-	SetMaxHealth(Data->MaxHealth);
-	SetHealValue(Data->HealthHeal);
+	Health += Data->MaxHealth - MaxHealth;
+	MaxHealth = Data->MaxHealth;
 
-	SetRunSpeed(Data->RunSpeed);
-	SetWalkSpeed(Data->WalkSpeed);
-	SetLockSpeed(Data->LockSpeed);
+	RunSpeed = Data->RunSpeed;
+	WalkSpeed = Data->WalkSpeed;
+	LockSpeed = Data->LockSpeed;
+	SetMovement();
 
 	OnChangedLevel.Broadcast(Level);
-}
-
-void UStatComponent::MulticastHeal_Implementation(float Value)
-{
-	Health = FMath::Clamp(Health + Value, 0.0f, MaxHealth);
-}
-
-void UStatComponent::MulticastSetMaxHealth_Implementation(float Value, bool bWithCur)
-{
-	if (bWithCur)
-		Health += Value - MaxHealth;
-
-	MaxHealth = Value;
-}
-
-void UStatComponent::MulticastSetHealValue_Implementation(float Value)
-{
-	HealthHeal = Value;
-}
-
-void UStatComponent::MulticastSetRunSpeed_Implementation(float Value)
-{
-	RunSpeed = Value;
-
-	auto* User = Cast<ACharacter>(GetOwner());
-	if (User && bIsRunned)
-		User->GetCharacterMovement()->MaxWalkSpeed = RunSpeed;
-}
-
-void UStatComponent::MulticastSetWalkSpeed_Implementation(float Value)
-{
-	WalkSpeed = Value;
-
-	auto* User = Cast<ACharacter>(GetOwner());
-	if (User && !bIsRunned && !bIsLocked)
-		User->GetCharacterMovement()->MaxWalkSpeed = WalkSpeed;
-}
-
-void UStatComponent::MulticastSetLockSpeed_Implementation(float Value)
-{
-	LockSpeed = Value;
-
-	auto* User = Cast<ACharacter>(GetOwner());
-	if (User && !bIsRunned && bIsLocked)
-		User->GetCharacterMovement()->MaxWalkSpeed = LockSpeed;
 }
 
 void UStatComponent::OnLockApplied()
