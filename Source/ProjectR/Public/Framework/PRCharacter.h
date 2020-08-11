@@ -44,7 +44,6 @@ private:
 #endif
 
 	void PostInitializeComponents() override;
-	void BeginPlay() override;
 
 	float TakeDamage(float Damage, const FDamageEvent& DamageEvent,
 		AController* EventInstigator, AActor* DamageCauser) override;
@@ -55,9 +54,6 @@ private:
 	void Landed(const FHitResult& Hit) override;
 
 	void Initialize();
-
-	UFUNCTION()
-	void Heal(float Damage, AActor* Target, TSubclassOf<UDamageType> DamageType);
 
 	void GetLookLocationAndRotation_Implementation(FVector& Location, FRotator& Rotation) const;
 	void Death();
