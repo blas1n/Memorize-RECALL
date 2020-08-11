@@ -12,7 +12,7 @@ class PROJECTR_API USkill final : public UObject
 	GENERATED_BODY()
 	
 public:
-	void Initialize(class UWeaponContext* InContext, class UDataAsset* Data);
+	void Initialize(class USkillContext* InContext, class UDataAsset* Data);
 
 	UFUNCTION(BlueprintCallable)
 	void Begin();
@@ -37,7 +37,7 @@ private:
 	class AActor* User;
 
 	UPROPERTY(Transient, BlueprintReadOnly, Category = Owner, meta = (AllowPrivateAccess = true))
-	UWeaponContext* Context;
+	USkillContext* Context;
 
 	uint8 bIsExecute : 1;
 };

@@ -168,19 +168,20 @@ void UWeaponComponent::Initialize()
 	if (MeshComponent->DoesSocketExist(TEXT("weapon_l")))
 		LeftWeapon->AttachToComponent(MeshComponent, Rules, TEXT("weapon_l"));
 
-	WeaponContext->Initialize(RightWeapon, LeftWeapon);
+	SkillContext = NewObject<USkillContext>(this);
+	SkillContext->Initialize(RightWeapon, LeftWeapon);
 
 	if (GetOwnerRole() != ENetRole::ROLE_Authority)
 		return;
 
 	if (!NoWeapon) NoWeapon = NewObject<UWeapon>(GetOwner());
-	NoWeapon->Initialize(WeaponContext, 0);
+	NoWeapon->Initialize(SkillContext, 0);
 
 	int32 WeaponNum = Keies.Num();
 	for (int32 Idx = 0; Idx < WeaponNum; ++Idx)
 	{
 		UWeapon* Weapon = NewObject<UWeapon>(GetOwner());
-		if (Weapon->Initialize(WeaponContext, Keies[Idx]))
+		if (Weapon->Initialize(SkillContext, Keies[Idx]))
 		{
 			Weapons.Add(Weapon);
 			continue;
@@ -266,7 +267,7 @@ void UWeaponComponent::ServerAddWeapon_Implementation(uint8 Index, int32 Key)
 		Weapons[Idx] = NoWeapon;
 
 	auto* NewWeapon = NewObject<UWeapon>(GetOwner());
-	NewWeapon->Initialize(WeaponContext, Key);
+	NewWeapon->Initialize(SkillContext, Key);
 
 	if (Index == WeaponIndex)
 		EquipWeapon(NewWeapon, true);
