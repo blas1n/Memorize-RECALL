@@ -121,9 +121,6 @@ private:
 	UPROPERTY(Replicated)
 	FVisualData VisualData;
 
-	UPROPERTY()
-	class UWeaponContext* WeaponContext;
-
 	uint8 WeaponIndex;
 	uint8 SkillIndex;
 
