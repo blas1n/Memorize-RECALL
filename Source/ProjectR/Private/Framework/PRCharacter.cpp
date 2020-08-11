@@ -7,10 +7,7 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/Controller.h"
 #include "UObject/ConstructorHelpers.h"
-#include "Buff/Cast.h"
-#include "Buff/Lock.h"
 #include "Buff/Parry.h"
-#include "Buff/Run.h"
 #include "Component/StatComponent.h"
 #include "Component/WeaponComponent.h"
 #include "Data/CharacterData.h"
@@ -63,12 +60,6 @@ void APRCharacter::PostInitializeComponents()
 	Initialize();
 }
 
-void APRCharacter::BeginPlay()
-{
-	Super::BeginPlay();
-	OnAttack.AddDynamic(this, &APRCharacter::Heal);
-}
-
 float APRCharacter::TakeDamage(float Damage, const FDamageEvent& DamageEvent,
 	AController* EventInstigator, AActor* DamageCauser)
 {	
@@ -119,29 +110,23 @@ void APRCharacter::Initialize()
 	}
 
 	UPRStatics::AsyncLoad(Data->Mesh, [this, Data]() mutable
-	{
-		static const auto Rules = FAttachmentTransformRules::KeepRelativeTransform;
+		{
+			static const auto Rules = FAttachmentTransformRules::KeepRelativeTransform;
 
-		GetCapsuleComponent()->SetCapsuleHalfHeight(Data->CapsuleHalfHeight);
-		GetCapsuleComponent()->SetCapsuleRadius(Data->CapsuleRadius);
+			GetCapsuleComponent()->SetCapsuleHalfHeight(Data->CapsuleHalfHeight);
+			GetCapsuleComponent()->SetCapsuleRadius(Data->CapsuleRadius);
 
-		GetMesh()->SetSkeletalMesh(Data->Mesh.Get());
-		GetMesh()->SetAnimClass(Data->AnimClass);
+			GetMesh()->SetSkeletalMesh(Data->Mesh.Get());
+			GetMesh()->SetAnimClass(Data->AnimClass);
 
-		const FVector& Location = GetMesh()->GetRelativeLocation();
-		const FRotator& Rotation = GetMesh()->GetRelativeRotation();
+			const FVector& Location = GetMesh()->GetRelativeLocation();
+			const FRotator& Rotation = GetMesh()->GetRelativeRotation();
 
-		GetMesh()->SetRelativeLocationAndRotation(
-			FVector{ Location.X, Location.Y, Data->MeshZ },
-			FRotator{ Rotation.Pitch, Data->MeshYaw, Rotation.Roll }
-		);
-	});
-}
-
-void APRCharacter::Heal(float Damage, AActor* Target, TSubclassOf<UDamageType> DamageType)
-{
-	const auto* DamageTypeObj = Cast<UProjectRDamageType>(DamageType.GetDefaultObject());
-	if (DamageTypeObj->CanHealByDamage()) StatComponent->HealByDamage(Damage);
+			GetMesh()->SetRelativeLocationAndRotation(
+				FVector{ Location.X, Location.Y, Data->MeshZ },
+				FRotator{ Rotation.Pitch, Data->MeshYaw, Rotation.Roll }
+			);
+		});
 }
 
 void APRCharacter::GetLookLocationAndRotation_Implementation(FVector& Location, FRotator& Rotation) const
