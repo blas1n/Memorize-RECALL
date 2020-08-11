@@ -127,7 +127,7 @@ private:
 	uint8 WeaponIndex;
 	uint8 SkillIndex;
 
-	enum class ENextCombo
+	enum class ENextCombo : uint8
 	{
 		None, Week, Strong
 	} NextCombo;
