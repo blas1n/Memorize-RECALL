@@ -109,8 +109,15 @@ void UWeapon::Unequip()
 void UWeapon::BeginSkill(uint8 Index)
 {
 	if (Skills.IsValidIndex(Index))
+	{
 		if (USkill* Skill = Skills[Index])
+		{
 			Skill->Begin();
+			return;
+		}
+	}
+
+	IComponentOwner::Execute_GetWeaponComponent(User)->OnEndSkill();
 }
 
 void UWeapon::EndSkill(uint8 Index)
