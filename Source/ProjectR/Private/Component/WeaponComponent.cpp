@@ -1,13 +1,14 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "Component/WeaponComponent.h"
+#include "Animation/AnimInstance.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "Components/StaticMeshComponent.h"
-#include "Buff/Cast.h"
+#include "Net/UnrealNetwork.h"
 #include "Framework/PRCharacter.h"
 #include "Library/BuffLibrary.h"
+#include "Weapon/SkillContext.h"
 #include "Weapon/Weapon.h"
-#include "Weapon/WeaponContext.h"
 
 UWeaponComponent::UWeaponComponent()
 	: Super()
@@ -27,28 +28,35 @@ void UWeaponComponent::Attack(bool bIsStrongAttack)
 		NextCombo = bIsStrongAttack ? ENextCombo::Strong : ENextCombo::Week;
 		bCheckCombo = false;
 	}
-	else if (NextCombo == ENextCombo::None)
+	else if (!bIsCasting && NextCombo == ENextCombo::None)
+	{
 		ServerAttack(bIsStrongAttack, false);
+		bIsCasting = true;
+	}
 }
 
 void UWeaponComponent::Parry()
 {
-	ServerParry();
+	if (!bIsCasting)
+	{
+		ServerParry();
+		bIsCasting = true;
+	}
 }
 
 void UWeaponComponent::StopSkill()
 {
-	ServerStopSkill();
+	if (bIsCasting) ServerStopSkill();
 }
 
 void UWeaponComponent::SwapWeapon(uint8 Index)
 {
-	ServerSwapWeapon(Index);
+	if (!bIsCasting) ServerSwapWeapon(Index);
 }
 
 void UWeaponComponent::AddWeapon(uint8 Index, int32 Key)
 {
-	ServerAddWeapon(Index, Key);
+	if (!bIsCasting) ServerAddWeapon(Index, Key);
 }
 
 void UWeaponComponent::Execute()
@@ -173,7 +181,7 @@ void UWeaponComponent::Initialize()
 
 	if (MeshComponent->DoesSocketExist(TEXT("weapon_l")))
 		LeftWeapon->AttachToComponent(MeshComponent, Rules, TEXT("weapon_l"));
-
+	
 	SkillContext = NewObject<USkillContext>(this);
 	SkillContext->Initialize(RightWeapon, LeftWeapon);
 
@@ -250,7 +258,7 @@ bool UWeaponComponent::ServerStopSkill_Validate()
 
 void UWeaponComponent::ServerSwapWeapon_Implementation(uint8 Index)
 {
-	if (WeaponIndex == Index || UBuffLibrary::IsActivate<UCast>(GetOwner()))
+	if (WeaponIndex == Index || bIsCasting)
 		return;
 
 	EquipWeapon(Weapons[Index], true);
@@ -290,6 +298,7 @@ void UWeaponComponent::ClientOnStopSkill_Implementation()
 {
 	NextCombo = ENextCombo::None;
 	bCheckCombo = false;
+	bIsCasting = false;
 }
 
 void UWeaponComponent::Detach()
