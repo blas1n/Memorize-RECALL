@@ -17,8 +17,6 @@ UWeaponComponent::UWeaponComponent()
 
 	RightWeapon = CreateWeaponComponent(TEXT("RightWeapon"));
 	LeftWeapon = CreateWeaponComponent(TEXT("LeftWeapon"));
-
-	WeaponContext = CreateDefaultSubobject<UWeaponContext>(TEXT("WeaponContext"));
 }
 
 void UWeaponComponent::Attack(bool bIsStrongAttack)
