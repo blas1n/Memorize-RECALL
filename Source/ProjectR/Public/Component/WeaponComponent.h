@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
+#include "Data/VisualData.h"
 #include "WeaponComponent.generated.h"
 
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
@@ -52,6 +53,7 @@ private:
 	void InitializeComponent() override;
 	void BeginPlay() override;
 	void EndPlay(EEndPlayReason::Type EndPlayReason) override;
+	void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 	UFUNCTION(Server, Reliable, WithValidation)
 	void ServerAttack(bool bIsStrongAttack, bool bIsCombo);
@@ -107,11 +109,11 @@ private:
 	UPROPERTY(Transient)
 	UWeapon* NoWeapon;
 	
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = true))
+	UPROPERTY(Replicated)
 	class USkillContext* SkillContext;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = true))
-	UStaticMeshComponent* LeftWeapon;
+	UPROPERTY(Replicated)
+	FVisualData VisualData;
 
 	UPROPERTY()
 	class UWeaponContext* WeaponContext;

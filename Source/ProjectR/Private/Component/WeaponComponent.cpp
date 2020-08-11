@@ -14,6 +14,7 @@ UWeaponComponent::UWeaponComponent()
 {
 	PrimaryComponentTick.bCanEverTick = false;
 	bWantsInitializeComponent = true;
+	SetIsReplicatedByDefault(true);
 
 	RightWeapon = CreateWeaponComponent(TEXT("RightWeapon"));
 	LeftWeapon = CreateWeaponComponent(TEXT("LeftWeapon"));
@@ -133,6 +134,13 @@ void UWeaponComponent::EndPlay(EEndPlayReason::Type EndPlayReason)
 	User->OnDeath.RemoveDynamic(this, &UWeaponComponent::Detach);
 
 	Super::EndPlay(EndPlayReason);
+}
+
+void UWeaponComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+	DOREPLIFETIME(UWeaponComponent, SkillContext);
+	DOREPLIFETIME(UWeaponComponent, VisualData);
 }
 
 UStaticMeshComponent* UWeaponComponent::CreateWeaponComponent(const FName& Name)
