@@ -15,7 +15,6 @@
 #include "Interface/StateExecutable.h"
 #include "Library/PRStatics.h"
 #include "Weapon/Skill.h"
-#include "Weapon/SkillContext.h"
 
 UWeapon::UWeapon()
 	: Super()
@@ -64,15 +63,15 @@ bool UWeapon::Initialize(USkillContext* InContext, int32 InKey)
 	{
 		if (Skills[Index]) continue;
 
-		if (Index % 2 && Data->WeakAttackClass)
+		if ((Index % 2) && Data->WeakAttackClass)
 			Skills[Index] = NewObject<USkill>(this, Data->WeakAttackClass);
 		else if (Data->StrongAttackClass)
 			Skills[Index] = NewObject<USkill>(this, Data->StrongAttackClass);
 	}
 
-	UpperAnimInstance = Data->UpperAnimInstance;
-	RightWeaponTransform = Data->RightTransform;
-	LeftWeaponTransform = Data->LeftTransform;
+	VisualData.UpperAnimInstance = Data->UpperAnimInstance;
+	VisualData.RightTransform = Data->RightTransform;
+	VisualData.LeftTransform = Data->LeftTransform;
 
 	LoadAll(*Data);
 	return true;
@@ -82,28 +81,6 @@ void UWeapon::BeginPlay()
 {
 	auto* StatComp = IComponentOwner::Execute_GetStatComponent(User);
 	StatComp->OnChangedLevel.AddUObject(this, &UWeapon::InitSkill);
-}
-
-void UWeapon::Equip()
-{
-	if (auto* AnimInstance = User->GetMesh()->GetAnimInstance())
-		AnimInstance->LinkAnimClassLayers(UpperAnimInstance);
-
-	const auto SetWeaponMesh = [this]
-	{
-		Context->SetWeaponMesh(RightWeaponMesh, RightWeaponTransform, LeftWeaponMesh, LeftWeaponTransform);
-		if (EquipAnim) User->PlayAnimMontage(EquipAnim);
-	};
-
-	if (AsyncLoadCount)
-		OnAsyncLoadEnded.AddLambda(SetWeaponMesh);
-	else SetWeaponMesh();
-}
-
-void UWeapon::Unequip()
-{
-	if (auto* AnimInstance = User->GetMesh()->GetAnimInstance())
-		AnimInstance->UnlinkAnimClassLayers(UpperAnimInstance);
 }
 
 void UWeapon::BeginSkill(uint8 Index)
@@ -161,7 +138,7 @@ void UWeapon::LoadAll(const FWeaponData& WeaponData)
 		++AsyncLoadCount;
 		UPRStatics::AsyncLoad(WeaponData.RightMesh, [this, &RightMeshPtr = WeaponData.RightMesh]
 		{
-			RightWeaponMesh = RightMeshPtr.Get();
+			VisualData.RightMesh = RightMeshPtr.Get();
 			if (--AsyncLoadCount == 0)
 				OnAsyncLoadEnded.Broadcast();
 		});
@@ -172,7 +149,7 @@ void UWeapon::LoadAll(const FWeaponData& WeaponData)
 		++AsyncLoadCount;
 		UPRStatics::AsyncLoad(WeaponData.LeftMesh, [this, &LeftMeshPtr = WeaponData.LeftMesh]
 		{
-			LeftWeaponMesh = LeftMeshPtr.Get();
+			VisualData.LeftMesh = LeftMeshPtr.Get();
 			if (--AsyncLoadCount == 0)
 				OnAsyncLoadEnded.Broadcast();
 		});
@@ -183,7 +160,7 @@ void UWeapon::LoadAll(const FWeaponData& WeaponData)
 		++AsyncLoadCount;
 		UPRStatics::AsyncLoad(WeaponData.EquipAnim, [this, &EquipAnimPtr = WeaponData.EquipAnim]
 		{
-			EquipAnim = EquipAnimPtr.Get();
+			VisualData.EquipAnim = EquipAnimPtr.Get();
 			if (--AsyncLoadCount == 0)
 				OnAsyncLoadEnded.Broadcast();
 		});

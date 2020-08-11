@@ -4,9 +4,9 @@
 
 #include "CoreMinimal.h"
 #include "UObject/NoExportTypes.h"
+#include "Data/VisualData.h"
 #include "Weapon.generated.h"
 
-DECLARE_DELEGATE(FOnAsyncLoadEndedSingle);
 DECLARE_MULTICAST_DELEGATE(FOnAsyncLoadEnded);
 
 UCLASS(BlueprintType)
@@ -21,9 +21,6 @@ public:
 	void BeginPlay();
 	void EndPlay() {}
 
-	void Equip();
-	void Unequip();
-
 	void BeginSkill(uint8 Index);
 	void EndSkill(uint8 Index);
 	
@@ -31,10 +28,15 @@ public:
 	void BeginExecute(uint8 Index);
 	void EndExecute(uint8 Index);
 
+	FORCEINLINE const FVisualData& GetVisualData() const noexcept { return VisualData; }
+
 private:
 	void LoadAll(const struct FWeaponData& WeaponData);
 
 	void InitSkill(uint8 Level);
+
+public:
+	FOnAsyncLoadEnded OnAsyncLoadEnded;
 
 private:
 	UPROPERTY(Transient)
@@ -47,27 +49,13 @@ private:
 	USkillContext* Context;
 
 	UPROPERTY(Transient)
-	TSubclassOf<class UAnimInstance> UpperAnimInstance;
-
-	UPROPERTY(Transient)
-	class UAnimMontage* EquipAnim;
-
-	UPROPERTY(Transient)
-	class UStaticMesh* RightWeaponMesh;
-
-	UPROPERTY(Transient)
-	UStaticMesh* LeftWeaponMesh;
+	FVisualData VisualData;
 
 	UPROPERTY()
 	class UDataTable* WeaponDataTable;
 
 	UPROPERTY()
 	UDataTable* SkillDataTable;
-
-	FTransform RightWeaponTransform;
-	FTransform LeftWeaponTransform;
-
-	FOnAsyncLoadEnded OnAsyncLoadEnded;
 
 	int32 Key;
 	uint8 AsyncLoadCount;
