@@ -131,4 +131,5 @@ private:
 
 	uint8 bCheckCombo : 1;
 	uint8 bIsParrying : 1;
+	uint8 bIsCasting : 1;
 };
