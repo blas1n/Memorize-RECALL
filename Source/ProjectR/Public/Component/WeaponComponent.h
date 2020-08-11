@@ -100,6 +100,12 @@ private:
 	void DetachOnce(class UStaticMeshComponent* Weapon);
 
 private:
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = true))
+	UStaticMeshComponent* RightWeapon;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = true))
+	UStaticMeshComponent* LeftWeapon;
+
 	UPROPERTY(EditAnywhere, Category = Data, meta = (AllowPrivateAccess = true))
 	TArray<int32> Keies;
 
