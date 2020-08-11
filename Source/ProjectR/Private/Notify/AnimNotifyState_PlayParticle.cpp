@@ -103,7 +103,7 @@ bool UAnimNotifyState_PlayParticle::GetParentComponent(USkeletalMeshComponent* M
 	}
 
 	AActor* Owner = MeshComp->GetOwner();
-	if (!Owner || Owner->GetClass()->ImplementsInterface(UComponentOwner::StaticClass()))
+	if (!Owner || !Owner->GetClass()->ImplementsInterface(UComponentOwner::StaticClass()))
 	{
 		Parent = MeshComp;
 		return false;
