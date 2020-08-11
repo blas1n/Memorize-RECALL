@@ -3,14 +3,14 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "UObject/NoExportTypes.h"
+#include "NetworkObject.h"
 #include "SkillContext.generated.h"
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnAnimationEnded);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnWeaponOverlapped, AActor*, Target);
 
 UCLASS(BlueprintType)
-class PROJECTR_API USkillContext final : public UObject
+class PROJECTR_API USkillContext final : public UNetworkObject
 {
 	GENERATED_BODY()
 
@@ -51,11 +51,6 @@ private:
 
 	void MulticastSetWeaponMesh_Implementation(UStaticMesh* RightMesh,
 		const FTransform& RightTransform, UStaticMesh* LeftMesh, const FTransform& LeftTransform);
-
-	FORCEINLINE bool IsSupportedForNetworking() const override { return true; }
-	int32 GetFunctionCallspace(UFunction* Function, FFrame* Stack) override;
-	bool CallRemoteFunction(UFunction* Function, void* Parameters, FOutParmRec* OutParms, FFrame* Stack) override;
-
 public:
 	UPROPERTY(BlueprintAssignable)
 	FOnAnimationEnded OnAnimationEnded;

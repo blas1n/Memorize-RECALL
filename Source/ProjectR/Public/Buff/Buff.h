@@ -3,14 +3,14 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "UObject/NoExportTypes.h"
+#include "NetworkObject.h"
 #include "Buff.generated.h"
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnApplied);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnReleased);
 
 UCLASS(Abstract, Blueprintable)
-class PROJECTR_API UBuff : public UObject
+class PROJECTR_API UBuff : public UNetworkObject
 {
 	GENERATED_BODY()
 
@@ -74,11 +74,6 @@ private:
 
 	void MulticastApply_Implementation();
 	void MulticastRelease_Implementation();
-
-	FORCEINLINE bool IsSupportedForNetworking() const override { return true; }
-	FORCEINLINE bool IsNameStableForNetworking() const override { return true; }
-	
-	bool CallRemoteFunction(UFunction* Function, void* Parameters, FOutParmRec* OutParms, FFrame* Stack) override;
 
 public:
 	UPROPERTY(BlueprintAssignable)

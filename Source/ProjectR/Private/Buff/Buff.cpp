@@ -57,17 +57,3 @@ void UBuff::MulticastRelease_Implementation()
 	if (bIsAlreadActive && !IsActivate())
 		OnReleased.Broadcast();
 }
-
-bool UBuff::CallRemoteFunction(UFunction* Function, void* Parameters, FOutParmRec* OutParms, FFrame* Stack)
-{
-	if (AActor* MyOwner = GetTypedOuter<AActor>())
-	{
-		if (UNetDriver* NetDriver = MyOwner->GetNetDriver())
-		{
-			NetDriver->ProcessRemoteFunction(MyOwner, Function, Parameters, OutParms, Stack, this);
-			return true;
-		}
-	}
-
-	return false;
-}
