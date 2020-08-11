@@ -15,7 +15,7 @@
 #include "Interface/StateExecutable.h"
 #include "Library/PRStatics.h"
 #include "Weapon/Skill.h"
-#include "Weapon/WeaponContext.h"
+#include "Weapon/SkillContext.h"
 
 UWeapon::UWeapon()
 	: Super()
@@ -27,7 +27,7 @@ UWeapon::UWeapon()
 	SkillDataTable = SkillDataTableFinder.Object;
 }
 
-bool UWeapon::Initialize(UWeaponContext* InContext, int32 InKey)
+bool UWeapon::Initialize(USkillContext* InContext, int32 InKey)
 {
 	Context = InContext;
 	Key = InKey;

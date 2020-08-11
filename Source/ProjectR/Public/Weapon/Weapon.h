@@ -16,7 +16,7 @@ class PROJECTR_API UWeapon final : public UObject
 	
 public:
 	UWeapon();
-	bool Initialize(class UWeaponContext* InContext, int32 InKey);
+	bool Initialize(class USkillContext* InContext, int32 InKey);
 
 	void BeginPlay();
 	void EndPlay() {}
@@ -44,7 +44,7 @@ private:
 	TArray<class USkill*> Skills;
 
 	UPROPERTY(Transient)
-	UWeaponContext* Context;
+	USkillContext* Context;
 
 	UPROPERTY(Transient)
 	TSubclassOf<class UAnimInstance> UpperAnimInstance;

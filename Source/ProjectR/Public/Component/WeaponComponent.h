@@ -108,7 +108,7 @@ private:
 	UWeapon* NoWeapon;
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = true))
-	UStaticMeshComponent* RightWeapon;
+	class USkillContext* SkillContext;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = true))
 	UStaticMeshComponent* LeftWeapon;
