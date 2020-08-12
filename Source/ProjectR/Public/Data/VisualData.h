@@ -25,7 +25,4 @@ struct FVisualData
 
 	UPROPERTY()
 	TSubclassOf<class UAnimInstance> UpperAnimInstance;
-
-	UPROPERTY()
-	class UAnimMontage* EquipAnim;
 };
