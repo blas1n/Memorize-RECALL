@@ -73,6 +73,9 @@ private:
 	UFUNCTION(Client, Reliable)
 	void ClientOnStopSkill();
 
+	UFUNCTION(NetMulticast, Reliable)
+	void MulticastEquipWeapon(TSubclassOf<UAnimInstance> UnlinkAnim);
+
 	void ServerAttack_Implementation(bool bIsStrongAttack, bool bIsCombo);
 	bool ServerAttack_Validate(bool bIsStrongAttack, bool bIsCombo);
 
@@ -90,9 +93,14 @@ private:
 
 	void ClientOnStopSkill_Implementation();
 
+	FORCEINLINE void MulticastEquipWeapon_Implementation
+		(TSubclassOf<UAnimInstance> UnlinkAnim) { ApplyWeapon(UnlinkAnim); }
+
 	UStaticMeshComponent* CreateWeaponComponent(const FName& Name);
 	void EquipWeapon(class UWeapon* NewWeapon, bool bNeedUnequip);
 	void Initialize();
+
+	void ApplyWeapon(TSubclassOf<UAnimInstance> UnlinkAnim);
 
 	UFUNCTION()
 	void Detach();

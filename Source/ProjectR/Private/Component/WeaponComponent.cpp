@@ -126,11 +126,15 @@ void UWeaponComponent::BeginPlay()
 	auto* User = Cast<APRCharacter>(GetOwner());
 	User->OnDeath.AddDynamic(this, &UWeaponComponent::Detach);
 
-	for (UWeapon* Weapon : Weapons)
-		Weapon->BeginPlay();
+	if (GetOwnerRole() == ENetRole::ROLE_Authority)
+	{
+		for (UWeapon* Weapon : Weapons)
+			Weapon->BeginPlay();
 
-	if (Weapons.Num() > 0)
-		EquipWeapon(Weapons[0], false);
+		if (Weapons.Num() > 0)
+			EquipWeapon(Weapons[0], false);
+	}
+	else ApplyWeapon(nullptr);
 }
 
 void UWeaponComponent::EndPlay(EEndPlayReason::Type EndPlayReason)
@@ -165,10 +169,13 @@ void UWeaponComponent::EquipWeapon(UWeapon* NewWeapon, bool bNeedUnequip)
 {
 	if (!NewWeapon) return;
 
-	if (bNeedUnequip)
-		Weapons[WeaponIndex]->Unequip();
-
-	NewWeapon->Equip();
+	NewWeapon->RegisterOnAsyncLoadEnded(
+		FOnAsyncLoadEndedSingle::CreateLambda([this, NewWeapon, bNeedUnequip]
+		{
+			VisualData = NewWeapon->GetVisualData();
+			MulticastEquipWeapon(Weapons[WeaponIndex]->GetVisualData().UpperAnimInstance);
+		}
+	));
 }
 
 void UWeaponComponent::Initialize()
@@ -300,6 +307,23 @@ void UWeaponComponent::ClientOnStopSkill_Implementation()
 	NextCombo = ENextCombo::None;
 	bCheckCombo = false;
 	bIsCasting = false;
+}
+
+void UWeaponComponent::ApplyWeapon(TSubclassOf<UAnimInstance> UnlinkAnim)
+{
+	if (auto* AnimInstance = Cast<ACharacter>(GetOwner())->GetMesh()->GetAnimInstance())
+	{
+		if (UnlinkAnim.Get())
+			AnimInstance->UnlinkAnimClassLayers(Weapons[WeaponIndex]->GetVisualData().UpperAnimInstance);
+
+		AnimInstance->LinkAnimClassLayers(VisualData.UpperAnimInstance);
+	}
+	
+	RightWeapon->SetStaticMesh(VisualData.RightMesh);
+	RightWeapon->SetRelativeTransform(VisualData.RightTransform);
+
+	LeftWeapon->SetStaticMesh(VisualData.LeftMesh);
+	LeftWeapon->SetRelativeTransform(VisualData.LeftTransform);
 }
 
 void UWeaponComponent::Detach()
