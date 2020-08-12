@@ -7,6 +7,7 @@
 #include "Data/VisualData.h"
 #include "Weapon.generated.h"
 
+DECLARE_DELEGATE(FOnAsyncLoadEndedSingle);
 DECLARE_MULTICAST_DELEGATE(FOnAsyncLoadEnded);
 
 UCLASS(BlueprintType)
@@ -24,6 +25,8 @@ public:
 	void BeginSkill(uint8 Index);
 	void EndSkill(uint8 Index);
 	
+	void RegisterOnAsyncLoadEnded(const FOnAsyncLoadEndedSingle& Callback);
+
 	void Execute(uint8 Index);
 	void BeginExecute(uint8 Index);
 	void EndExecute(uint8 Index);
@@ -34,9 +37,6 @@ private:
 	void LoadAll(const struct FWeaponData& WeaponData);
 
 	void InitSkill(uint8 Level);
-
-public:
-	FOnAsyncLoadEnded OnAsyncLoadEnded;
 
 private:
 	UPROPERTY(Transient)
@@ -56,6 +56,8 @@ private:
 
 	UPROPERTY()
 	UDataTable* SkillDataTable;
+
+	FOnAsyncLoadEnded OnAsyncLoadEnded;
 
 	int32 Key;
 	uint8 AsyncLoadCount;
