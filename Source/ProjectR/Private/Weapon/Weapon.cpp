@@ -104,6 +104,13 @@ void UWeapon::EndSkill(uint8 Index)
 			Skill->End();
 }
 
+void UWeapon::RegisterOnAsyncLoadEnded(const FOnAsyncLoadEndedSingle& Callback)
+{
+	check(Callback.IsBound());
+	if (AsyncLoadCount) OnAsyncLoadEnded.Add(Callback);
+	else Callback.Execute();
+}
+
 void UWeapon::Execute(uint8 Index)
 {
 	if (!Skills.IsValidIndex(Index)) return;
