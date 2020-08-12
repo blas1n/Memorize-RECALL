@@ -1,13 +1,13 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-#include "Weapon/Skill.h"
-#include "GameFramework/Actor.h"
+#include "Misc/Skill.h"
 #include "Component/WeaponComponent.h"
+#include "Framework/PRCharacter.h"
 #include "Interface/ComponentOwner.h"
 
 void USkill::Initialize(USkillContext* InContext, UDataAsset* Data)
 {
-	User = GetTypedOuter<AActor>();
+	User = GetTypedOuter<APRCharacter>();
 	Context = InContext;
 
 	ReceiveInitialize(Data);
