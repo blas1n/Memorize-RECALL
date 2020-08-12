@@ -40,7 +40,4 @@ struct FWeaponData : public FTableRowBase
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TSubclassOf<class UAnimInstance> UpperAnimInstance;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	TAssetPtr<class UAnimMontage> EquipAnim;
 };
