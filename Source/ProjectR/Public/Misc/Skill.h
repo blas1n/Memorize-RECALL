@@ -34,7 +34,7 @@ protected:
 
 private:
 	UPROPERTY(Transient, BlueprintReadOnly, Category = Owner, meta = (AllowPrivateAccess = true))
-	class AActor* User;
+	class APRCharacter* User;
 
 	UPROPERTY(Transient, BlueprintReadOnly, Category = Owner, meta = (AllowPrivateAccess = true))
 	USkillContext* Context;
