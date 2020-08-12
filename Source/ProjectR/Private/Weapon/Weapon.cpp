@@ -140,38 +140,22 @@ void UWeapon::EndExecute(uint8 Index)
 
 void UWeapon::LoadAll(const FWeaponData& WeaponData)
 {
-	if (!WeaponData.RightMesh.IsNull())
-	{
-		++AsyncLoadCount;
-		UPRStatics::AsyncLoad(WeaponData.RightMesh, [this, &RightMeshPtr = WeaponData.RightMesh]
-		{
-			VisualData.RightMesh = RightMeshPtr.Get();
-			if (--AsyncLoadCount == 0)
-				OnAsyncLoadEnded.Broadcast();
-		});
-	}
+	if (!WeaponData.RightMesh.IsNull()) ++AsyncLoadCount;
+	if (!WeaponData.LeftMesh.IsNull()) ++AsyncLoadCount;
 
-	if (!WeaponData.LeftMesh.IsNull())
+	UPRStatics::AsyncLoad(WeaponData.RightMesh, [this, &RightMeshPtr = WeaponData.RightMesh]
 	{
-		++AsyncLoadCount;
-		UPRStatics::AsyncLoad(WeaponData.LeftMesh, [this, &LeftMeshPtr = WeaponData.LeftMesh]
-		{
-			VisualData.LeftMesh = LeftMeshPtr.Get();
-			if (--AsyncLoadCount == 0)
-				OnAsyncLoadEnded.Broadcast();
-		});
-	}
+		VisualData.RightMesh = RightMeshPtr.Get();
+		if (--AsyncLoadCount == 0u)
+			OnAsyncLoadEnded.Broadcast();
+	});
 
-	if (!WeaponData.EquipAnim.IsNull())
+	UPRStatics::AsyncLoad(WeaponData.LeftMesh, [this, &LeftMeshPtr = WeaponData.LeftMesh]
 	{
-		++AsyncLoadCount;
-		UPRStatics::AsyncLoad(WeaponData.EquipAnim, [this, &EquipAnimPtr = WeaponData.EquipAnim]
-		{
-			VisualData.EquipAnim = EquipAnimPtr.Get();
-			if (--AsyncLoadCount == 0)
-				OnAsyncLoadEnded.Broadcast();
-		});
-	}
+		VisualData.LeftMesh = LeftMeshPtr.Get();
+		if (--AsyncLoadCount == 0u)
+			OnAsyncLoadEnded.Broadcast();
+	});
 }
 
 void UWeapon::InitSkill(uint8 Level)
