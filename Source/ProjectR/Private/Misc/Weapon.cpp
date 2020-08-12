@@ -1,6 +1,6 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-#include "Weapon/Weapon.h"
+#include "Misc/Weapon.h"
 #include "Animation/AnimInstance.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "Engine/StaticMesh.h"
@@ -14,7 +14,7 @@
 #include "Interface/Executable.h"
 #include "Interface/StateExecutable.h"
 #include "Library/PRStatics.h"
-#include "Weapon/Skill.h"
+#include "Misc/Skill.h"
 
 UWeapon::UWeapon()
 	: Super()
