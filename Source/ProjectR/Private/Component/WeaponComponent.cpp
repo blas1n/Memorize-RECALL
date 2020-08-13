@@ -6,9 +6,8 @@
 #include "Components/StaticMeshComponent.h"
 #include "Net/UnrealNetwork.h"
 #include "Framework/PRCharacter.h"
-#include "Library/BuffLibrary.h"
-#include "Weapon/SkillContext.h"
-#include "Weapon/Weapon.h"
+#include "Misc/SkillContext.h"
+#include "Misc/Weapon.h"
 
 UWeaponComponent::UWeaponComponent()
 	: Super()
