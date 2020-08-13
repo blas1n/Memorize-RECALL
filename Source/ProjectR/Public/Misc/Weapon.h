@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "UObject/NoExportTypes.h"
+#include "Data/VisualData.h"
 #include "Weapon.generated.h"
 
 DECLARE_DELEGATE(FOnAsyncLoadEndedSingle);
@@ -16,25 +17,21 @@ class PROJECTR_API UWeapon final : public UObject
 	
 public:
 	UWeapon();
-	bool Initialize(class UWeaponContext* InContext, int32 InKey);
+	bool Initialize(class USkillContext* InContext, int32 InKey);
 
 	void BeginPlay();
 	void EndPlay() {}
 
-	void Equip();
-	void Unequip();
-
 	void BeginSkill(uint8 Index);
 	void EndSkill(uint8 Index);
 	
+	void RegisterOnAsyncLoadEnded(const FOnAsyncLoadEndedSingle& Callback);
+
 	void Execute(uint8 Index);
 	void BeginExecute(uint8 Index);
 	void EndExecute(uint8 Index);
 
-	FORCEINLINE UWorld* GetWorld() const override
-	{
-		return GetOuter()->GetWorld();
-	}
+	FORCEINLINE const FVisualData& GetVisualData() const noexcept { return VisualData; }
 
 private:
 	void LoadAll(const struct FWeaponData& WeaponData);
@@ -49,28 +46,16 @@ private:
 	TArray<class USkill*> Skills;
 
 	UPROPERTY(Transient)
-	UWeaponContext* Context;
+	USkillContext* Context;
 
 	UPROPERTY(Transient)
-	TSubclassOf<class UAnimInstance> UpperAnimInstance;
-
-	UPROPERTY(Transient)
-	class UAnimMontage* EquipAnim;
-
-	UPROPERTY(Transient)
-	class UStaticMesh* RightWeaponMesh;
-
-	UPROPERTY(Transient)
-	UStaticMesh* LeftWeaponMesh;
+	FVisualData VisualData;
 
 	UPROPERTY()
 	class UDataTable* WeaponDataTable;
 
 	UPROPERTY()
 	UDataTable* SkillDataTable;
-
-	FTransform RightWeaponTransform;
-	FTransform LeftWeaponTransform;
 
 	FOnAsyncLoadEnded OnAsyncLoadEnded;
 

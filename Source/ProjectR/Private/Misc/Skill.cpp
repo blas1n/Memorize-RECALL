@@ -1,10 +1,10 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-#include "Weapon/Skill.h"
+#include "Misc/Skill.h"
 #include "Component/WeaponComponent.h"
 #include "Framework/PRCharacter.h"
 
-void USkill::Initialize(UWeaponContext* InContext, UObject* Data)
+void USkill::Initialize(USkillContext* InContext, UDataAsset* Data)
 {
 	User = GetTypedOuter<APRCharacter>();
 	Context = InContext;
@@ -30,4 +30,9 @@ void USkill::End()
 	ReceiveEnd();
 
 	User->GetWeaponComponent()->OnEndSkill();
+}
+
+UWorld* USkill::GetWorld() const
+{
+	return User ? User->GetWorld() : nullptr;
 }

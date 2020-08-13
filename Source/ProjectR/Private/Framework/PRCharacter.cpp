@@ -6,22 +6,20 @@
 #include "Engine/DataTable.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/Controller.h"
+#include "Kismet/KismetMathLibrary.h"
+#include "Net/UnrealNetwork.h"
 #include "UObject/ConstructorHelpers.h"
-#include "Buff/Cast.h"
-#include "Buff/Lock.h"
-#include "Buff/Parry.h"
-#include "Buff/Run.h"
 #include "Component/StatComponent.h"
 #include "Component/WeaponComponent.h"
 #include "Data/CharacterData.h"
 #include "Data/PRDamageType.h"
-#include "Library/BuffLibrary.h"
+#include "Interface/Parryable.h"
 #include "Library/PRStatics.h"
 
 APRCharacter::APRCharacter()
 	: Super()
 {
-	PrimaryActorTick.bCanEverTick = false;
+	PrimaryActorTick.bCanEverTick = true;
 
 	bUseControllerRotationPitch = false;
 	bUseControllerRotationYaw = false;
@@ -36,12 +34,31 @@ APRCharacter::APRCharacter()
 	GetCharacterMovement()->bUseControllerDesiredRotation = false;
 	GetCharacterMovement()->bOrientRotationToMovement = true;
 	GetCharacterMovement()->bAllowPhysicsRotationDuringAnimRootMotion = true;
-
+	
 	WeaponComponent = CreateDefaultSubobject<UWeaponComponent>(TEXT("Weapon"));
 	StatComponent = CreateDefaultSubobject<UStatComponent>(TEXT("Stat"));
 
 	static ConstructorHelpers::FObjectFinder<UDataTable> DataTable(TEXT("DataTable'/Game/Data/DataTable/DT_CharacterData.DT_CharacterData'"));
 	CharacterDataTable = DataTable.Object;
+}
+
+void APRCharacter::SetParryingObject(UObject* NewParryingObject)
+{
+	check(HasAuthority());
+
+	if (!NewParryingObject)
+	{
+		ParryingObject = nullptr;
+		return;
+	}
+
+	check(NewParryingObject->GetClass()->ImplementsInterface(UParryable::StaticClass()));
+	ParryingObject = NewParryingObject;
+}
+
+void APRCharacter::SetMoveState(EMoveState NewMoveState)
+{
+	ServerSetMoveState(NewMoveState);
 }
 
 #if WITH_EDITOR
@@ -57,16 +74,29 @@ void APRCharacter::PostEditChangeProperty(FPropertyChangedEvent& PropertyChanged
 
 #endif
 
+void APRCharacter::Tick(float DeltaSeconds)
+{
+	Super::Tick(DeltaSeconds);
+
+	if (!LockTarget || IsMoveInputIgnored())
+		return;
+
+	const FVector TargetLocation = LockTarget->GetActorLocation();
+
+	FVector Loc; FRotator Rot;
+	GetActorEyesViewPoint(Loc, Rot);
+
+	const FRotator ControlLookAt = UKismetMathLibrary::
+		FindLookAtRotation(Loc, TargetLocation);
+
+	if (AController* MyController = GetController())
+		MyController->SetControlRotation(ControlLookAt);
+}
+
 void APRCharacter::PostInitializeComponents()
 {
 	Super::PostInitializeComponents();
 	Initialize();
-}
-
-void APRCharacter::BeginPlay()
-{
-	Super::BeginPlay();
-	OnAttack.AddDynamic(this, &APRCharacter::Heal);
 }
 
 float APRCharacter::TakeDamage(float Damage, const FDamageEvent& DamageEvent,
@@ -75,12 +105,15 @@ float APRCharacter::TakeDamage(float Damage, const FDamageEvent& DamageEvent,
 	Damage = Super::TakeDamage(Damage, DamageEvent, EventInstigator, DamageCauser);
 	if (Damage <= 0.0f) return Damage;
 
-	auto* Parry = UBuffLibrary::GetBuff<UParry>(this);
 	auto* Character = Cast<APRCharacter>(DamageCauser);
 	const auto* DamageType = Cast<UProjectRDamageType>(DamageEvent.DamageTypeClass.GetDefaultObject());
 
-	if (DamageType->IsWeaponAttack() && Parry && Parry->ParryIfCan(Damage, EventInstigator, Character))
+	if (DamageType->IsWeaponAttack() && IsParryable(Damage, Character))
+	{
+		IParryable::Execute_Parry(ParryingObject, Damage, Character);
 		return 0.0f;
+	}
+		
 
 	StatComponent->Heal(-Damage);
 	if (StatComponent->GetHealth() <= 0.0f) Death();
@@ -103,6 +136,12 @@ bool APRCharacter::ShouldTakeDamage(float Damage, const FDamageEvent& DamageEven
 		&& GetTeamAttitudeTowards(*EventInstigator) != ETeamAttitude::Friendly;
 }
 
+void APRCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+	DOREPLIFETIME(APRCharacter, MoveState);
+}
+
 void APRCharacter::Landed(const FHitResult& Hit)
 {
 	OnLand.Broadcast(Hit);
@@ -118,7 +157,7 @@ void APRCharacter::Initialize()
 		return;
 	}
 
-	UPRStatics::AsyncLoad(Data->Mesh, [this, Data]() mutable
+	UPRStatics::AsyncLoad(Data->Mesh, [this, Data]
 	{
 		static const auto Rules = FAttachmentTransformRules::KeepRelativeTransform;
 
@@ -138,21 +177,35 @@ void APRCharacter::Initialize()
 	});
 }
 
-void APRCharacter::Heal(float Damage, AActor* Target, TSubclassOf<UDamageType> DamageType)
-{
-	const auto* DamageTypeObj = Cast<UProjectRDamageType>(DamageType.GetDefaultObject());
-	if (DamageTypeObj->CanHealByDamage()) StatComponent->HealByDamage(Damage);
-}
-
-void APRCharacter::GetLookLocationAndRotation_Implementation(FVector& Location, FRotator& Rotation) const
-{
-	Super::GetActorEyesViewPoint(Location, Rotation);
-}
-
 void APRCharacter::Death()
 {
+	check(HasAuthority());
 	WeaponComponent->StopSkill();
+	MulticastDeath();
+}
 
+void APRCharacter::ServerSetMoveState_Implementation(EMoveState NewMoveState)
+{
+	MoveState = NewMoveState;
+	OnRep_MoveState();
+}
+
+void APRCharacter::ServerLock_Implementation(AActor* NewLockTarget)
+{
+	LockTarget = NewLockTarget;
+	bIsLocked = true;
+	SetMovement();
+}
+
+void APRCharacter::ServerUnlock_Implementation()
+{
+	LockTarget = nullptr;
+	bIsLocked = false;
+	SetMovement();
+}
+
+void APRCharacter::MulticastDeath_Implementation()
+{
 	bIsDeath = true;
 	SetCanBeDamaged(false);
 	GetController()->UnPossess();
@@ -162,4 +215,56 @@ void APRCharacter::Death()
 	GetMesh()->SetSimulatePhysics(true);
 
 	OnDeath.Broadcast();
+}
+
+void APRCharacter::OnRep_MoveState()
+{
+	SetMovement();
+}
+
+void APRCharacter::OnRep_LockTarget()
+{
+	SetMovement();
+}
+
+void APRCharacter::OnRep_IsLocked()
+{
+	SetMovement();
+}
+
+void APRCharacter::SetMovement()
+{
+	float Speed = StatComponent->GetWalkSpeed();
+	bool bOrientRotationToMovement = true;
+	bool bUseControllerDesiredRotation = false;
+
+	if (MoveState == EMoveState::Run)
+	{
+		Speed = StatComponent->GetRunSpeed();
+	}
+	else if (bIsLocked)
+	{
+		Speed = StatComponent->GetLockSpeed();
+
+		if (LockTarget)
+		{
+			bOrientRotationToMovement = false;
+			bUseControllerDesiredRotation = true;
+		}
+	}
+
+	auto* Movement = GetCharacterMovement();
+	Movement->MaxWalkSpeed = Speed;
+	Movement->bOrientRotationToMovement = bOrientRotationToMovement;
+	Movement->bUseControllerDesiredRotation = bUseControllerDesiredRotation;
+}
+
+void APRCharacter::GetLookLocationAndRotation_Implementation(FVector& Location, FRotator& Rotation) const
+{
+	Super::GetActorEyesViewPoint(Location, Rotation);
+}
+
+bool APRCharacter::IsParryable(float Damage, APRCharacter* Causer)
+{
+	return ParryingObject && IParryable::Execute_IsParryable(ParryingObject, Damage, Causer);
 }

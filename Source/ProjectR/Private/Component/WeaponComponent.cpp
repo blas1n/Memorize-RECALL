@@ -1,24 +1,23 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "Component/WeaponComponent.h"
+#include "Animation/AnimInstance.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "Components/StaticMeshComponent.h"
-#include "Buff/Cast.h"
+#include "Net/UnrealNetwork.h"
 #include "Framework/PRCharacter.h"
-#include "Library/BuffLibrary.h"
-#include "Weapon/Weapon.h"
-#include "Weapon/WeaponContext.h"
+#include "Misc/SkillContext.h"
+#include "Misc/Weapon.h"
 
 UWeaponComponent::UWeaponComponent()
 	: Super()
 {
 	PrimaryComponentTick.bCanEverTick = false;
 	bWantsInitializeComponent = true;
+	SetIsReplicatedByDefault(true);
 
 	RightWeapon = CreateWeaponComponent(TEXT("RightWeapon"));
 	LeftWeapon = CreateWeaponComponent(TEXT("LeftWeapon"));
-
-	WeaponContext = CreateDefaultSubobject<UWeaponContext>(TEXT("WeaponContext"));
 }
 
 void UWeaponComponent::Attack(bool bIsStrongAttack)
@@ -28,28 +27,35 @@ void UWeaponComponent::Attack(bool bIsStrongAttack)
 		NextCombo = bIsStrongAttack ? ENextCombo::Strong : ENextCombo::Week;
 		bCheckCombo = false;
 	}
-	else if (NextCombo == ENextCombo::None)
+	else if (!bIsCasting && NextCombo == ENextCombo::None)
+	{
 		ServerAttack(bIsStrongAttack, false);
+		bIsCasting = true;
+	}
 }
 
 void UWeaponComponent::Parry()
 {
-	ServerParry();
+	if (!bIsCasting)
+	{
+		ServerParry();
+		bIsCasting = true;
+	}
 }
 
 void UWeaponComponent::StopSkill()
 {
-	ServerStopSkill();
+	if (bIsCasting) ServerStopSkill();
 }
 
 void UWeaponComponent::SwapWeapon(uint8 Index)
 {
-	ServerSwapWeapon(Index);
+	if (!bIsCasting) ServerSwapWeapon(Index);
 }
 
 void UWeaponComponent::AddWeapon(uint8 Index, int32 Key)
 {
-	ServerAddWeapon(Index, Key);
+	if (!bIsCasting) ServerAddWeapon(Index, Key);
 }
 
 void UWeaponComponent::Execute()
@@ -119,8 +125,15 @@ void UWeaponComponent::BeginPlay()
 	auto* User = Cast<APRCharacter>(GetOwner());
 	User->OnDeath.AddDynamic(this, &UWeaponComponent::Detach);
 
-	for (UWeapon* Weapon : Weapons)
-		Weapon->BeginPlay();
+	if (GetOwnerRole() == ENetRole::ROLE_Authority)
+	{
+		for (UWeapon* Weapon : Weapons)
+			Weapon->BeginPlay();
+
+		if (Weapons.Num() > 0)
+			EquipWeapon(Weapons[0], false);
+	}
+	else ApplyWeapon(nullptr);
 }
 
 void UWeaponComponent::EndPlay(EEndPlayReason::Type EndPlayReason)
@@ -132,6 +145,13 @@ void UWeaponComponent::EndPlay(EEndPlayReason::Type EndPlayReason)
 	User->OnDeath.RemoveDynamic(this, &UWeaponComponent::Detach);
 
 	Super::EndPlay(EndPlayReason);
+}
+
+void UWeaponComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+	DOREPLIFETIME(UWeaponComponent, SkillContext);
+	DOREPLIFETIME(UWeaponComponent, VisualData);
 }
 
 UStaticMeshComponent* UWeaponComponent::CreateWeaponComponent(const FName& Name)
@@ -148,10 +168,13 @@ void UWeaponComponent::EquipWeapon(UWeapon* NewWeapon, bool bNeedUnequip)
 {
 	if (!NewWeapon) return;
 
-	if (bNeedUnequip)
-		Weapons[WeaponIndex]->Unequip();
-
-	NewWeapon->Equip();
+	NewWeapon->RegisterOnAsyncLoadEnded(
+		FOnAsyncLoadEndedSingle::CreateLambda([this, NewWeapon, bNeedUnequip]
+		{
+			VisualData = NewWeapon->GetVisualData();
+			MulticastEquipWeapon(Weapons[WeaponIndex]->GetVisualData().UpperAnimInstance);
+		}
+	));
 }
 
 void UWeaponComponent::Initialize()
@@ -164,33 +187,31 @@ void UWeaponComponent::Initialize()
 
 	if (MeshComponent->DoesSocketExist(TEXT("weapon_l")))
 		LeftWeapon->AttachToComponent(MeshComponent, Rules, TEXT("weapon_l"));
-
-	WeaponContext->Initialize(RightWeapon, LeftWeapon);
+	
+	SkillContext = NewObject<USkillContext>(this);
+	SkillContext->Initialize(RightWeapon, LeftWeapon);
 
 	if (GetOwnerRole() != ENetRole::ROLE_Authority)
 		return;
 
 	if (!NoWeapon) NoWeapon = NewObject<UWeapon>(GetOwner());
-	NoWeapon->Initialize(WeaponContext, 0);
+	NoWeapon->Initialize(SkillContext, 0);
 
+	Weapons.Empty();
 	int32 WeaponNum = Keies.Num();
 	for (int32 Idx = 0; Idx < WeaponNum; ++Idx)
 	{
 		UWeapon* Weapon = NewObject<UWeapon>(GetOwner());
-		if (Weapon->Initialize(WeaponContext, Keies[Idx]))
+		if (Weapon->Initialize(SkillContext, Keies[Idx]))
 		{
 			Weapons.Add(Weapon);
 			continue;
 		}
 		
 		Keies.RemoveAt(Idx);
-		Weapons.Empty();
 		--WeaponNum;
 		--Idx;
 	}
-
-	if (Weapons.Num() > 0)
-		EquipWeapon(Weapons[0], false);
 }
 
 void UWeaponComponent::ServerAttack_Implementation(bool bIsStrongAttack, bool bIsCombo)
@@ -209,11 +230,6 @@ void UWeaponComponent::ServerAttack_Implementation(bool bIsStrongAttack, bool bI
 	Weapon->BeginSkill(SkillIndex + 1);
 }
 
-bool UWeaponComponent::ServerAttack_Validate(bool bIsStrongAttack, bool bIsCombo)
-{
-	return true;
-}
-
 void UWeaponComponent::ServerParry_Implementation()
 {
 	if (Weapons.IsValidIndex(WeaponIndex))
@@ -221,11 +237,6 @@ void UWeaponComponent::ServerParry_Implementation()
 		Weapons[WeaponIndex]->BeginSkill(0u);
 		bIsParrying = true;
 	}
-}
-
-bool UWeaponComponent::ServerParry_Validate()
-{
-	return true;
 }
 
 void UWeaponComponent::ServerStopSkill_Implementation()
@@ -237,23 +248,13 @@ void UWeaponComponent::ServerStopSkill_Implementation()
 	}
 }
 
-bool UWeaponComponent::ServerStopSkill_Validate()
-{
-	return true;
-}
-
 void UWeaponComponent::ServerSwapWeapon_Implementation(uint8 Index)
 {
-	if (WeaponIndex == Index || UBuffLibrary::IsActivate<UCast>(GetOwner()))
+	if (WeaponIndex == Index || bIsCasting)
 		return;
 
 	EquipWeapon(Weapons[Index], true);
 	WeaponIndex = Index;
-}
-
-bool UWeaponComponent::ServerSwapWeapon_Validate(uint8 Index)
-{
-	return Weapons.Num() > Index;
 }
 
 void UWeaponComponent::ServerAddWeapon_Implementation(uint8 Index, int32 Key)
@@ -267,7 +268,7 @@ void UWeaponComponent::ServerAddWeapon_Implementation(uint8 Index, int32 Key)
 		Weapons[Idx] = NoWeapon;
 
 	auto* NewWeapon = NewObject<UWeapon>(GetOwner());
-	NewWeapon->Initialize(WeaponContext, Key);
+	NewWeapon->Initialize(SkillContext, Key);
 
 	if (Index == WeaponIndex)
 		EquipWeapon(NewWeapon, true);
@@ -275,15 +276,28 @@ void UWeaponComponent::ServerAddWeapon_Implementation(uint8 Index, int32 Key)
 	Weapons[Index] = NewWeapon;
 }
 
-bool UWeaponComponent::ServerAddWeapon_Validate(uint8 Index, int32 Key)
-{
-	return true;
-}
-
 void UWeaponComponent::ClientOnStopSkill_Implementation()
 {
 	NextCombo = ENextCombo::None;
 	bCheckCombo = false;
+	bIsCasting = false;
+}
+
+void UWeaponComponent::ApplyWeapon(TSubclassOf<UAnimInstance> UnlinkAnim)
+{
+	if (auto* AnimInstance = Cast<ACharacter>(GetOwner())->GetMesh()->GetAnimInstance())
+	{
+		if (UnlinkAnim.Get())
+			AnimInstance->UnlinkAnimClassLayers(Weapons[WeaponIndex]->GetVisualData().UpperAnimInstance);
+
+		AnimInstance->LinkAnimClassLayers(VisualData.UpperAnimInstance);
+	}
+	
+	RightWeapon->SetStaticMesh(VisualData.RightMesh);
+	RightWeapon->SetRelativeTransform(VisualData.RightTransform);
+
+	LeftWeapon->SetStaticMesh(VisualData.LeftMesh);
+	LeftWeapon->SetRelativeTransform(VisualData.LeftTransform);
 }
 
 void UWeaponComponent::Detach()

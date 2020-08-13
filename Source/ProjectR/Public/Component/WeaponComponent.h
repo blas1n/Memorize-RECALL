@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
+#include "Data/VisualData.h"
 #include "WeaponComponent.generated.h"
 
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
@@ -52,6 +53,7 @@ private:
 	void InitializeComponent() override;
 	void BeginPlay() override;
 	void EndPlay(EEndPlayReason::Type EndPlayReason) override;
+	void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 	UFUNCTION(Server, Reliable, WithValidation)
 	void ServerAttack(bool bIsStrongAttack, bool bIsCombo);
@@ -71,26 +73,34 @@ private:
 	UFUNCTION(Client, Reliable)
 	void ClientOnStopSkill();
 
+	UFUNCTION(NetMulticast, Reliable)
+	void MulticastEquipWeapon(TSubclassOf<UAnimInstance> UnlinkAnim);
+
 	void ServerAttack_Implementation(bool bIsStrongAttack, bool bIsCombo);
-	bool ServerAttack_Validate(bool bIsStrongAttack, bool bIsCombo);
+	FORCEINLINE bool ServerAttack_Validate(bool bIsStrongAttack, bool bIsCombo) const noexcept { return true; }
 
 	void ServerParry_Implementation();
-	bool ServerParry_Validate();
+	FORCEINLINE bool ServerParry_Validate() const noexcept { return true; }
 
 	void ServerStopSkill_Implementation();
-	bool ServerStopSkill_Validate();
+	FORCEINLINE bool ServerStopSkill_Validate() const noexcept { return true; }
 
 	void ServerSwapWeapon_Implementation(uint8 Index);
-	bool ServerSwapWeapon_Validate(uint8 Index);
+	FORCEINLINE bool ServerSwapWeapon_Validate(uint8 Index) const noexcept { return Weapons.Num() > Index; }
 
 	void ServerAddWeapon_Implementation(uint8 Index, int32 Key);
-	bool ServerAddWeapon_Validate(uint8 Index, int32 Key);
+	FORCEINLINE bool ServerAddWeapon_Validate(uint8 Index, int32 Key) const noexcept { return true; }
 
 	void ClientOnStopSkill_Implementation();
+
+	FORCEINLINE void MulticastEquipWeapon_Implementation
+		(TSubclassOf<UAnimInstance> UnlinkAnim) { ApplyWeapon(UnlinkAnim); }
 
 	UStaticMeshComponent* CreateWeaponComponent(const FName& Name);
 	void EquipWeapon(class UWeapon* NewWeapon, bool bNeedUnequip);
 	void Initialize();
+
+	void ApplyWeapon(TSubclassOf<UAnimInstance> UnlinkAnim);
 
 	UFUNCTION()
 	void Detach();
@@ -98,6 +108,12 @@ private:
 	void DetachOnce(class UStaticMeshComponent* Weapon);
 
 private:
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = true))
+	UStaticMeshComponent* RightWeapon;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = true))
+	UStaticMeshComponent* LeftWeapon;
+
 	UPROPERTY(EditAnywhere, Category = Data, meta = (AllowPrivateAccess = true))
 	TArray<int32> Keies;
 
@@ -107,23 +123,21 @@ private:
 	UPROPERTY(Transient)
 	UWeapon* NoWeapon;
 	
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = true))
-	UStaticMeshComponent* RightWeapon;
+	UPROPERTY(Replicated)
+	class USkillContext* SkillContext;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = true))
-	UStaticMeshComponent* LeftWeapon;
-
-	UPROPERTY()
-	class UWeaponContext* WeaponContext;
+	UPROPERTY(Replicated)
+	FVisualData VisualData;
 
 	uint8 WeaponIndex;
 	uint8 SkillIndex;
 
-	enum class ENextCombo
+	enum class ENextCombo : uint8
 	{
 		None, Week, Strong
 	} NextCombo;
 
 	uint8 bCheckCombo : 1;
 	uint8 bIsParrying : 1;
+	uint8 bIsCasting : 1;
 };

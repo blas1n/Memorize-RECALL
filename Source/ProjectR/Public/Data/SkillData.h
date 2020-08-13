@@ -12,5 +12,5 @@ struct FSkillData : public FTableRowBase
 	GENERATED_BODY()
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	UObject* Data;
+	class UDataAsset* Data;
 };
