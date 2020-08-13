@@ -35,10 +35,11 @@ private:
 	void BeginPlay() override;
 	void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
-	UFUNCTION(NetMulticast, Reliable)
-	void MulticastSetLevel(uint8 NewLevel);
+	UFUNCTION(Server, Reliable, WithValidation)
+	void ServerSetLevel(uint8 NewLevel);
 
-	void MulticastSetLevel_Implementation(uint8 NewLevel);
+	void ServerSetLevel_Implementation(uint8 NewLevel);
+	FORCEINLINE bool ServerSetLevel_Validate(uint8 NewLevel) const { return true; }
 
 	UFUNCTION()
 	void OnRep_Level();
@@ -50,7 +51,7 @@ private:
 	UPROPERTY(EditAnywhere, Category = Data, meta = (AllowPrivateAccess = true))
 	uint8 StatKey;
 
-	UPROPERTY(EditAnywhere, BlueprintSetter = SetLevel, Category = Data, meta = (AllowPrivateAccess = true))
+	UPROPERTY(ReplicatedUsing = OnRep_Level, EditAnywhere, BlueprintSetter = SetLevel, Category = Data, meta = (AllowPrivateAccess = true))
 	uint8 Level;
 
 	UPROPERTY(Replicated, Transient, VisibleInstanceOnly, BlueprintReadOnly, Category = Health, meta = (AllowPrivateAccess = true))

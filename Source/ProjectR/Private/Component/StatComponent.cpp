@@ -22,8 +22,7 @@ UStatComponent::UStatComponent()
 
 void UStatComponent::SetLevel(uint8 NewLevel)
 {
-	check(GetOwnerRole() == ENetRole::ROLE_Authority);
-	MulticastSetLevel(NewLevel);
+	ServerSetLevel(NewLevel);
 }
 
 void UStatComponent::Heal(float Value)
@@ -42,39 +41,27 @@ void UStatComponent::BeginPlay()
 		OnRep_Level();
 }
 
-void UStatComponent::EndPlay(EEndPlayReason::Type EndPlayReason)
-{
-	GetBuff(ULock::StaticClass())->OnApplied.RemoveDynamic(this, &UStatComponent::OnLockApplied);
-	GetBuff(ULock::StaticClass())->OnReleased.RemoveDynamic(this, &UStatComponent::OnLockReleased);
-
-	GetBuff(URun::StaticClass())->OnApplied.RemoveDynamic(this, &UStatComponent::OnRunApplied);
-	GetBuff(URun::StaticClass())->OnReleased.RemoveDynamic(this, &UStatComponent::OnRunReleased);
-
-	for (UBuff* Buff : Buffs)
-		Buff->EndPlay();
-
-	Super::EndPlay(EndPlayReason);
-}
-
-void UStatComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
-{
-	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-
-	for (UBuff* Buff : Buffs)
-		if (Buff->IsActivate())
-			Buff->Tick(DeltaTime);
-}
-
 void UStatComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+	
+	DOREPLIFETIME(UStatComponent, Level);
 	DOREPLIFETIME(UStatComponent, Health);
 }
 
-void UStatComponent::MulticastSetLevel_Implementation(uint8 NewLevel)
+void UStatComponent::ServerSetLevel_Implementation(uint8 NewLevel)
 {
 	Level = NewLevel;
 
+	const float BeforeMaxHealth = MaxHealth;
+	OnRep_Level();
+
+	Health += MaxHealth - BeforeMaxHealth;
+	if (Health < 0.0f) Health = 0.0f;
+}
+
+void UStatComponent::OnRep_Level()
+{
 	const FString Key = FString::FromInt(StatKey) + FString::FromInt(Level);
 	const auto* Data = StatDataTable->FindRow<FStatData>(FName{ *Key }, TEXT(""), false);
 	if (!Data)
@@ -83,16 +70,14 @@ void UStatComponent::MulticastSetLevel_Implementation(uint8 NewLevel)
 		return;
 	}
 
-	Health += Data->MaxHealth - MaxHealth;
 	MaxHealth = Data->MaxHealth;
-
 	RunSpeed = Data->RunSpeed;
 	WalkSpeed = Data->WalkSpeed;
 	LockSpeed = Data->LockSpeed;
-	SetMovement();
-
-	OnChangedLevel.Broadcast(Level);
+	
+	const auto* MyOwner = Cast<APRCharacter>(GetOwner());
 	const EMoveState MoveState = MyOwner->GetMoveState();
+	float Speed = WalkSpeed;
 
 	if (MoveState == EMoveState::Run)
 		Speed = RunSpeed;
