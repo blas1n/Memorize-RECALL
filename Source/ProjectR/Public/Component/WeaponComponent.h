@@ -77,19 +77,19 @@ private:
 	void MulticastEquipWeapon(TSubclassOf<UAnimInstance> UnlinkAnim);
 
 	void ServerAttack_Implementation(bool bIsStrongAttack, bool bIsCombo);
-	bool ServerAttack_Validate(bool bIsStrongAttack, bool bIsCombo);
+	FORCEINLINE bool ServerAttack_Validate(bool bIsStrongAttack, bool bIsCombo) const noexcept { return true; }
 
 	void ServerParry_Implementation();
-	bool ServerParry_Validate();
+	FORCEINLINE bool ServerParry_Validate() const noexcept { return true; }
 
 	void ServerStopSkill_Implementation();
-	bool ServerStopSkill_Validate();
+	FORCEINLINE bool ServerStopSkill_Validate() const noexcept { return true; }
 
 	void ServerSwapWeapon_Implementation(uint8 Index);
-	bool ServerSwapWeapon_Validate(uint8 Index);
+	FORCEINLINE bool ServerSwapWeapon_Validate(uint8 Index) const noexcept { return Weapons.Num() > Index; }
 
 	void ServerAddWeapon_Implementation(uint8 Index, int32 Key);
-	bool ServerAddWeapon_Validate(uint8 Index, int32 Key);
+	FORCEINLINE bool ServerAddWeapon_Validate(uint8 Index, int32 Key) const noexcept { return true; }
 
 	void ClientOnStopSkill_Implementation();
 

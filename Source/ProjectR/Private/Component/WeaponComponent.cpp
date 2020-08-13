@@ -230,11 +230,6 @@ void UWeaponComponent::ServerAttack_Implementation(bool bIsStrongAttack, bool bI
 	Weapon->BeginSkill(SkillIndex + 1);
 }
 
-bool UWeaponComponent::ServerAttack_Validate(bool bIsStrongAttack, bool bIsCombo)
-{
-	return true;
-}
-
 void UWeaponComponent::ServerParry_Implementation()
 {
 	if (Weapons.IsValidIndex(WeaponIndex))
@@ -242,11 +237,6 @@ void UWeaponComponent::ServerParry_Implementation()
 		Weapons[WeaponIndex]->BeginSkill(0u);
 		bIsParrying = true;
 	}
-}
-
-bool UWeaponComponent::ServerParry_Validate()
-{
-	return true;
 }
 
 void UWeaponComponent::ServerStopSkill_Implementation()
@@ -258,11 +248,6 @@ void UWeaponComponent::ServerStopSkill_Implementation()
 	}
 }
 
-bool UWeaponComponent::ServerStopSkill_Validate()
-{
-	return true;
-}
-
 void UWeaponComponent::ServerSwapWeapon_Implementation(uint8 Index)
 {
 	if (WeaponIndex == Index || bIsCasting)
@@ -270,11 +255,6 @@ void UWeaponComponent::ServerSwapWeapon_Implementation(uint8 Index)
 
 	EquipWeapon(Weapons[Index], true);
 	WeaponIndex = Index;
-}
-
-bool UWeaponComponent::ServerSwapWeapon_Validate(uint8 Index)
-{
-	return Weapons.Num() > Index;
 }
 
 void UWeaponComponent::ServerAddWeapon_Implementation(uint8 Index, int32 Key)
@@ -294,11 +274,6 @@ void UWeaponComponent::ServerAddWeapon_Implementation(uint8 Index, int32 Key)
 		EquipWeapon(NewWeapon, true);
 
 	Weapons[Index] = NewWeapon;
-}
-
-bool UWeaponComponent::ServerAddWeapon_Validate(uint8 Index, int32 Key)
-{
-	return true;
 }
 
 void UWeaponComponent::ClientOnStopSkill_Implementation()
