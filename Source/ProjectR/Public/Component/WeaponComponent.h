@@ -30,11 +30,19 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void AddWeapon(uint8 Index, int32 Kesy);
 
+	UFUNCTION(BlueprintCallable)
 	void Execute();
+
+	UFUNCTION(BlueprintCallable)
 	void BeginExecute();
+
+	UFUNCTION(BlueprintCallable)
 	void EndExecute();
 
+	UFUNCTION(BlueprintCallable)
 	void CheckCombo();
+
+	UFUNCTION(BlueprintCallable)
 	void ExecuteCombo();
 
 	void OnEndSkill();
