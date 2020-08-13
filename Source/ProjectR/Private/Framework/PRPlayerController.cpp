@@ -2,16 +2,11 @@
 
 #include "Framework/PRPlayerController.h"
 #include "Engine/World.h"
-#include "GameFramework/Character.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "TimerManager.h"
-#include "Buff/Lock.h"
-#include "Buff/Root.h"
-#include "Buff/Run.h"
 #include "Component/WeaponComponent.h"
-#include "Interface/ComponentOwner.h"
-#include "Library/BuffLibrary.h"
+#include "Framework/PRCharacter.h"
 
 DECLARE_DELEGATE_OneParam(FIndexer, uint8);
 
@@ -48,40 +43,34 @@ void APRPlayerController::SetupInputComponent()
 
 void APRPlayerController::MoveForward(float Value)
 {
-	auto* MyPawn = GetPawn<ACharacter>();
-	if (MyPawn && !UBuffLibrary::IsActivate<URoot>(MyPawn))
+	if (auto* MyPawn = GetPawn())
 		MyPawn->AddMovementInput(GetDirectionVector(EAxis::X), Value);
 }
 
 void APRPlayerController::MoveRight(float Value)
 {
-	auto* MyPawn = GetPawn<ACharacter>();
-	if (MyPawn && !UBuffLibrary::IsActivate<URoot>(MyPawn))
+	if (auto* MyPawn = GetPawn())
 		MyPawn->AddMovementInput(GetDirectionVector(EAxis::Y), Value);
 }
 
 void APRPlayerController::InputYaw(float Value)
 {
-	auto* Lock = UBuffLibrary::GetBuff<ULock>(GetPawn());
-	if (!Lock || !Lock->IsActivate() || !Lock->GetLockedTarget())
-		AddYawInput(Value);
+	AddYawInput(Value);
 }
 
 void APRPlayerController::InputPitch(float Value)
 {
-	auto* Lock = UBuffLibrary::GetBuff<ULock>(GetPawn());
-	if (!Lock || !Lock->IsActivate() || !Lock->GetLockedTarget())
-		AddPitchInput(Value);
+	AddPitchInput(Value);
 }
 
 void APRPlayerController::PressDodge()
 {
-	auto* MyPawn = GetPawn<ACharacter>();
-	const bool bCanToGetComp = MyPawn->GetClass()->ImplementsInterface(UComponentOwner::StaticClass());
+	auto* MyPawn = GetPawn<APRCharacter>();
+	if (!MyPawn) return;
 
-	if (bCanToGetComp && UBuffLibrary::IsActivate<ULock>(MyPawn))
-		IComponentOwner::Execute_GetWeaponComponent(MyPawn)->Parry();
-	else if (!UBuffLibrary::IsActivate<URoot>(MyPawn))
+	if (MyPawn->IsLocked())
+		MyPawn->GetWeaponComponent()->Parry();
+	else
 		MyPawn->Jump();
 }
 
@@ -94,12 +83,12 @@ void APRPlayerController::ReleaseDodge()
 
 void APRPlayerController::Run()
 {
-	UBuffLibrary::ApplyBuff<URun>(GetPawn());
+	GetPawn<APRCharacter>()->SetMoveState(EMoveState::Run);
 }
 
 void APRPlayerController::Walk()
 {
-	UBuffLibrary::ReleaseBuff<URun>(GetPawn());
+	GetPawn<APRCharacter>()->SetMoveState(EMoveState::Walk);
 }
 
 void APRPlayerController::AttackWeak()
