@@ -7,9 +7,8 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Net/UnrealNetwork.h"
 #include "UObject/ConstructorHelpers.h"
-#include "Buff/Lock.h"
-#include "Buff/Run.h"
 #include "Data/StatData.h"
+#include "Framework/PRCharacter.h"
 
 UStatComponent::UStatComponent()
 	: Super()
@@ -33,41 +32,14 @@ void UStatComponent::Heal(float Value)
 	Health = FMath::Clamp(Health + Value, 0.0f, MaxHealth);
 }
 
-UBuff* UStatComponent::GetBuff(TSubclassOf<UBuff> BuffClass) const
-{
-	UBuff* Ret = nullptr;
-
-	for (UBuff* Buff : Buffs)
-	{
-		if (Buff->GetClass()->IsChildOf(BuffClass))
-		{
-			Ret = Buff;
-			break;
-		}
-	}
-
-	if (!Ret && HasBegunPlay())
-	{
-		Ret = NewObject<UBuff>(GetOwner(), BuffClass);
-		Ret->BeginPlay();
-		Buffs.Add(Ret);
-	}
-
-	return Ret;
-}
-
 void UStatComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
 	if (GetOwnerRole() == ENetRole::ROLE_Authority)
 		SetLevel(Level);
-
-	GetBuff(ULock::StaticClass())->OnApplied.AddDynamic(this, &UStatComponent::OnLockApplied);
-	GetBuff(ULock::StaticClass())->OnReleased.AddDynamic(this, &UStatComponent::OnLockReleased);
-
-	GetBuff(URun::StaticClass())->OnApplied.AddDynamic(this, &UStatComponent::OnRunApplied);
-	GetBuff(URun::StaticClass())->OnReleased.AddDynamic(this, &UStatComponent::OnRunReleased);
+	else
+		OnRep_Level();
 }
 
 void UStatComponent::EndPlay(EEndPlayReason::Type EndPlayReason)
@@ -120,59 +92,13 @@ void UStatComponent::MulticastSetLevel_Implementation(uint8 NewLevel)
 	SetMovement();
 
 	OnChangedLevel.Broadcast(Level);
-}
+	const EMoveState MoveState = MyOwner->GetMoveState();
 
-void UStatComponent::OnLockApplied()
-{
-	bIsLocked = true;
-	SetMovement();
-}
+	if (MoveState == EMoveState::Run)
+		Speed = RunSpeed;
+	else if (MyOwner->IsLocked())
+		Speed = LockSpeed;
 
-void UStatComponent::OnLockReleased()
-{
-	bIsLocked = false;
-	SetMovement();
-}
-
-void UStatComponent::OnRunApplied()
-{
-	bIsRunned = true;
-	SetMovement();
-}
-
-void UStatComponent::OnRunReleased()
-{
-	bIsRunned = false;
-	SetMovement();
-}
-
-void UStatComponent::SetMovement()
-{
-	auto* Character = Cast<ACharacter>(GetOwner());
-	if (!Character) return;
-
-	auto* Movement = Character->GetCharacterMovement();
-
-	if (bIsRunned)
-	{
-		Movement->MaxWalkSpeed = RunSpeed;
-		Movement->bOrientRotationToMovement = true;
-		Movement->bUseControllerDesiredRotation = false;
-	}
-	else if (bIsLocked)
-	{
-		Movement->MaxWalkSpeed = LockSpeed;
-
-		if (Cast<ULock>(GetBuff(ULock::StaticClass()))->GetLockedTarget())
-		{
-			Movement->bOrientRotationToMovement = false;
-			Movement->bUseControllerDesiredRotation = true;
-		}
-	}
-	else
-	{
-		Movement->MaxWalkSpeed = WalkSpeed;
-		Movement->bOrientRotationToMovement = true;
-		Movement->bUseControllerDesiredRotation = false;
-	}
+	MyOwner->GetCharacterMovement()->MaxWalkSpeed = Speed;
+	OnChangedLevel.Broadcast(Level);
 }
