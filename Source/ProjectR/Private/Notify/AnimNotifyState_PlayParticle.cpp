@@ -8,7 +8,6 @@
 #include "NiagaraFunctionLibrary.h"
 #include "Component/WeaponComponent.h"
 #include "Framework/PRCharacter.h"
-#include "Interface/ComponentOwner.h"
 
 #if WITH_EDITOR
 
@@ -36,8 +35,11 @@ void UAnimNotifyState_PlayParticle::NotifyBegin(USkeletalMeshComponent* MeshComp
 	const bool bHaveParent = GetParentComponent(MeshComp, Parent);
 
 	FName Socket = SocketName;
-	if (!bHaveParent)
-		Socket = AttachParent == EAttachParent::RightWeapon ? TEXT("weapon_r") : TEXT("weapon_l");
+	if (!bHaveParent || (Parent && !Parent->DoesSocketExist(Socket)))
+	{
+		Parent = MeshComp;
+		Socket = AttachParent == EAttachParent::RightWeapon ? TEXT("weapon_r") : TEXT("weapon_l");;
+	}
 
 	if (!Parent || !Parent->DoesSocketExist(Socket)) return;
 	
@@ -51,8 +53,11 @@ void UAnimNotifyState_PlayParticle::NotifyEnd(USkeletalMeshComponent* MeshComp, 
 	const bool bHaveParent = GetParentComponent(MeshComp, Parent);
 	
 	FName Socket = SocketName;
-	if (!bHaveParent)
-		Socket = AttachParent == EAttachParent::RightWeapon ? TEXT("weapon_r") : TEXT("weapon_l");
+	if (!bHaveParent || (Parent && !Parent->DoesSocketExist(Socket)))
+	{
+		Parent = MeshComp;
+		Socket = AttachParent == EAttachParent::RightWeapon ? TEXT("weapon_r") : TEXT("weapon_l");;
+	}
 	
 	if (!Parent || !Parent->DoesSocketExist(Socket)) return;
 
