@@ -104,34 +104,30 @@ void APRPlayerController::Walk()
 
 void APRPlayerController::AttackWeak()
 {
-	APawn* MyPawn = GetPawn();
-	if (MyPawn && MyPawn->GetClass()->ImplementsInterface(UComponentOwner::StaticClass()))
-		return IComponentOwner::Execute_GetWeaponComponent(MyPawn)->Attack(false);
+	if (auto* MyPawn = GetPawn<APRCharacter>())
+		return MyPawn->GetWeaponComponent()->Attack(false);
 }
 
 void APRPlayerController::AttackStrong()
 {
-	APawn* MyPawn = GetPawn();
-	if (MyPawn && MyPawn->GetClass()->ImplementsInterface(UComponentOwner::StaticClass()))
-		return IComponentOwner::Execute_GetWeaponComponent(MyPawn)->Attack(true);
+	if (auto* MyPawn = GetPawn<APRCharacter>())
+		return MyPawn->GetWeaponComponent()->Attack(true);
 }
 
 void APRPlayerController::SwapWeapon(uint8 Index)
 {
-	APawn* MyPawn = GetPawn();
-	if (MyPawn && MyPawn->GetClass()->ImplementsInterface(UComponentOwner::StaticClass()))
-		return IComponentOwner::Execute_GetWeaponComponent(MyPawn)->SwapWeapon(Index);
+	if (auto* MyPawn = GetPawn<APRCharacter>())
+		return MyPawn->GetWeaponComponent()->SwapWeapon(Index);
 }
 
 void APRPlayerController::SwapWeapon(float Value)
 {
-	APawn* MyPawn = GetPawn();
-	if (!MyPawn || MyPawn->GetClass()->ImplementsInterface(UComponentOwner::StaticClass()))
-		return;
+	if (Value == 0.0f) return;
 
-	auto* WeaponComp = IComponentOwner::Execute_GetWeaponComponent(MyPawn);
-	if (!WeaponComp || Value == 0.0f) return;
+	APRCharacter* MyPawn = GetPawn<APRCharacter>();
+	if (!MyPawn) return;
 
+	auto* WeaponComp = MyPawn->GetWeaponComponent();
 	const int32 WeaponNum = WeaponComp->GetWeaponNum();
 	if (WeaponNum == 0) return;
 

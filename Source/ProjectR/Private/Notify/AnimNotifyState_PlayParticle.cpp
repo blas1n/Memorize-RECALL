@@ -102,14 +102,14 @@ bool UAnimNotifyState_PlayParticle::GetParentComponent(USkeletalMeshComponent* M
 		return true;
 	}
 
-	AActor* Owner = MeshComp->GetOwner();
-	if (!Owner || !Owner->GetClass()->ImplementsInterface(UComponentOwner::StaticClass()))
+	auto* Owner = Cast<APRCharacter>(MeshComp->GetOwner());
+	if (!Owner)
 	{
 		Parent = MeshComp;
 		return false;
 	}
 
-	auto* WeaponComp = IComponentOwner::Execute_GetWeaponComponent(Owner);
+	auto* WeaponComp = Owner->GetWeaponComponent();
 	if (AttachParent == EAttachParent::RightWeapon)
 		Parent = WeaponComp->GetRightWeapon();
 	else
