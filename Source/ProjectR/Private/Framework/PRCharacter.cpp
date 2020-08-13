@@ -6,8 +6,9 @@
 #include "Engine/DataTable.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/Controller.h"
+#include "Kismet/KismetMathLibrary.h"
+#include "Net/UnrealNetwork.h"
 #include "UObject/ConstructorHelpers.h"
-#include "Buff/Parry.h"
 #include "Component/StatComponent.h"
 #include "Component/WeaponComponent.h"
 #include "Data/CharacterData.h"
@@ -18,7 +19,7 @@
 APRCharacter::APRCharacter()
 	: Super()
 {
-	PrimaryActorTick.bCanEverTick = false;
+	PrimaryActorTick.bCanEverTick = true;
 
 	bUseControllerRotationPitch = false;
 	bUseControllerRotationYaw = false;
@@ -33,7 +34,7 @@ APRCharacter::APRCharacter()
 	GetCharacterMovement()->bUseControllerDesiredRotation = false;
 	GetCharacterMovement()->bOrientRotationToMovement = true;
 	GetCharacterMovement()->bAllowPhysicsRotationDuringAnimRootMotion = true;
-
+	
 	WeaponComponent = CreateDefaultSubobject<UWeaponComponent>(TEXT("Weapon"));
 	StatComponent = CreateDefaultSubobject<UStatComponent>(TEXT("Stat"));
 
@@ -72,6 +73,25 @@ void APRCharacter::PostEditChangeProperty(FPropertyChangedEvent& PropertyChanged
 }
 
 #endif
+
+void APRCharacter::Tick(float DeltaSeconds)
+{
+	Super::Tick(DeltaSeconds);
+
+	if (!LockTarget || IsMoveInputIgnored())
+		return;
+
+	const FVector TargetLocation = LockTarget->GetActorLocation();
+
+	FVector Loc; FRotator Rot;
+	GetActorEyesViewPoint(Loc, Rot);
+
+	const FRotator ControlLookAt = UKismetMathLibrary::
+		FindLookAtRotation(Loc, TargetLocation);
+
+	if (AController* MyController = GetController())
+		MyController->SetControlRotation(ControlLookAt);
+}
 
 void APRCharacter::PostInitializeComponents()
 {
@@ -116,6 +136,12 @@ bool APRCharacter::ShouldTakeDamage(float Damage, const FDamageEvent& DamageEven
 		&& GetTeamAttitudeTowards(*EventInstigator) != ETeamAttitude::Friendly;
 }
 
+void APRCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+	DOREPLIFETIME(APRCharacter, MoveState);
+}
+
 void APRCharacter::Landed(const FHitResult& Hit)
 {
 	OnLand.Broadcast(Hit);
@@ -131,24 +157,24 @@ void APRCharacter::Initialize()
 		return;
 	}
 
-	UPRStatics::AsyncLoad(Data->Mesh, [this, Data]() mutable
-		{
-			static const auto Rules = FAttachmentTransformRules::KeepRelativeTransform;
+	UPRStatics::AsyncLoad(Data->Mesh, [this, Data]
+	{
+		static const auto Rules = FAttachmentTransformRules::KeepRelativeTransform;
 
-			GetCapsuleComponent()->SetCapsuleHalfHeight(Data->CapsuleHalfHeight);
-			GetCapsuleComponent()->SetCapsuleRadius(Data->CapsuleRadius);
+		GetCapsuleComponent()->SetCapsuleHalfHeight(Data->CapsuleHalfHeight);
+		GetCapsuleComponent()->SetCapsuleRadius(Data->CapsuleRadius);
 
-			GetMesh()->SetSkeletalMesh(Data->Mesh.Get());
-			GetMesh()->SetAnimClass(Data->AnimClass);
+		GetMesh()->SetSkeletalMesh(Data->Mesh.Get());
+		GetMesh()->SetAnimClass(Data->AnimClass);
 
-			const FVector& Location = GetMesh()->GetRelativeLocation();
-			const FRotator& Rotation = GetMesh()->GetRelativeRotation();
+		const FVector& Location = GetMesh()->GetRelativeLocation();
+		const FRotator& Rotation = GetMesh()->GetRelativeRotation();
 
-			GetMesh()->SetRelativeLocationAndRotation(
-				FVector{ Location.X, Location.Y, Data->MeshZ },
-				FRotator{ Rotation.Pitch, Data->MeshYaw, Rotation.Roll }
-			);
-		});
+		GetMesh()->SetRelativeLocationAndRotation(
+			FVector{ Location.X, Location.Y, Data->MeshZ },
+			FRotator{ Rotation.Pitch, Data->MeshYaw, Rotation.Roll }
+		);
+	});
 }
 
 void APRCharacter::GetLookLocationAndRotation_Implementation(FVector& Location, FRotator& Rotation) const
@@ -158,7 +184,23 @@ void APRCharacter::GetLookLocationAndRotation_Implementation(FVector& Location, 
 
 void APRCharacter::Death()
 {
-	WeaponComponent->StopSkill();
+	MoveState = NewMoveState;
+	OnRep_MoveState();
+}
+
+void APRCharacter::ServerLock_Implementation(AActor* NewLockTarget)
+{
+	LockTarget = NewLockTarget;
+	bIsLocked = true;
+	SetMovement();
+}
+
+void APRCharacter::ServerUnlock_Implementation()
+{
+	LockTarget = nullptr;
+	bIsLocked = false;
+	SetMovement();
+}
 
 	bIsDeath = true;
 	SetCanBeDamaged(false);
@@ -171,6 +213,52 @@ void APRCharacter::Death()
 	OnDeath.Broadcast();
 }
 
+void APRCharacter::OnRep_MoveState()
+{
+	SetMovement();
+}
+
+void APRCharacter::OnRep_LockTarget()
+{
+	SetMovement();
+}
+
+void APRCharacter::OnRep_IsLocked()
+{
+	SetMovement();
+}
+
+void APRCharacter::SetMovement()
+{
+	float Speed = StatComponent->GetWalkSpeed();
+	bool bOrientRotationToMovement = true;
+	bool bUseControllerDesiredRotation = false;
+
+	if (MoveState == EMoveState::Run)
+	{
+		Speed = StatComponent->GetRunSpeed();
+	}
+	else if (bIsLocked)
+	{
+		Speed = StatComponent->GetLockSpeed();
+
+		if (LockTarget)
+		{
+			bOrientRotationToMovement = false;
+			bUseControllerDesiredRotation = true;
+		}
+	}
+
+	auto* Movement = GetCharacterMovement();
+	Movement->MaxWalkSpeed = Speed;
+	Movement->bOrientRotationToMovement = bOrientRotationToMovement;
+	Movement->bUseControllerDesiredRotation = bUseControllerDesiredRotation;
+}
+
+void APRCharacter::GetLookLocationAndRotation_Implementation(FVector& Location, FRotator& Rotation) const
+{
+	Super::GetActorEyesViewPoint(Location, Rotation);
+}
 
 bool APRCharacter::IsParryable(float Damage, APRCharacter* Causer)
 {
