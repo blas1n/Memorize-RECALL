@@ -7,7 +7,7 @@
 #include "NiagaraSystem.h"
 #include "NiagaraFunctionLibrary.h"
 #include "Component/WeaponComponent.h"
-#include "Interface/ComponentOwner.h"
+#include "Framework/PRCharacter.h"
 
 #if WITH_EDITOR
 
@@ -32,11 +32,14 @@ void UAnimNotify_PlayParticle::Notify(USkeletalMeshComponent* MeshComp, UAnimSeq
 	if (!Template || Template->IsLooping()) return;
 
 	USceneComponent* Parent = nullptr;
-	const bool bIsRightParent = GetParentComponent(MeshComp, Parent);
+	const bool bHaveParent = GetParentComponent(MeshComp, Parent);
 
 	FName Socket = SocketName;
-	if (!bIsRightParent)
+	if (!bHaveParent || (Parent && !Parent->DoesSocketExist(Socket)))
+	{
+		Parent = MeshComp;
 		Socket = AttachParent == EAttachParent::RightWeapon ? TEXT("weapon_r") : TEXT("weapon_l");;
+	}
 
 	if (Parent)
 	{
