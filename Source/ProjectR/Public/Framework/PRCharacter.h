@@ -14,12 +14,15 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FOnAttack, float, Damage, AActor*
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FOnDamage, float, Damage, AActor*, Target, TSubclassOf<UDamageType>, DamageType);
 
 UCLASS(BlueprintType)
-class PROJECTR_API APRCharacter final : public ACharacter, public IGenericTeamAgentInterface, public IComponentOwner
+class PROJECTR_API APRCharacter final : public ACharacter, public IGenericTeamAgentInterface
 {
 	GENERATED_BODY()
 
 public:
 	APRCharacter();
+
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly)
+	void SetParryingObject(UObject* NewParryingObject);
 
 	FORCEINLINE void GetActorEyesViewPoint(FVector& Location, FRotator& Rotation) const override
 	{
@@ -34,9 +37,6 @@ public:
 protected:
 	UFUNCTION(BlueprintNativeEvent)
 	void GetLookLocationAndRotation(FVector& Location, FRotator& Rotation) const;
-
-	FORCEINLINE UWeaponComponent* GetWeaponComponent_Implementation() const override { return WeaponComponent; }
-	FORCEINLINE UStatComponent* GetStatComponent_Implementation() const override { return StatComponent; }
 
 private:
 #if WITH_EDITOR
@@ -58,6 +58,8 @@ private:
 	void GetLookLocationAndRotation_Implementation(FVector& Location, FRotator& Rotation) const;
 	void Death();
 
+	bool IsParryable(float Damage, APRCharacter* Causer);
+	
 public:
 	UPROPERTY(BlueprintAssignable)
 	FOnDeath OnDeath;
@@ -83,6 +85,10 @@ private:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Data, meta = (AllowPrivateAccess = true))
 	uint8 TeamId;
+
+
+	UPROPERTY(Transient)
+	UObject* ParryingObject;
 
 	UPROPERTY()
 	class UDataTable* CharacterDataTable;
