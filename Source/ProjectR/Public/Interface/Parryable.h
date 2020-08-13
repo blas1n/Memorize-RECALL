@@ -18,9 +18,8 @@ class PROJECTR_API IParryable
 
 public:
 	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
-	bool IsParryable(float Damage, class AController* Instigator,
-		class APRCharacter* Causer) const;
+	bool IsParryable(float Damage, class APRCharacter* Causer) const;
 
 	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
-	void Parry(float Damage, AController* Instigator, APRCharacter* Causer);
+	void Parry(float Damage, APRCharacter* Causer);
 };
