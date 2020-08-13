@@ -177,12 +177,14 @@ void APRCharacter::Initialize()
 	});
 }
 
-void APRCharacter::GetLookLocationAndRotation_Implementation(FVector& Location, FRotator& Rotation) const
+void APRCharacter::Death()
 {
-	Super::GetActorEyesViewPoint(Location, Rotation);
+	check(HasAuthority());
+	WeaponComponent->StopSkill();
+	MulticastDeath();
 }
 
-void APRCharacter::Death()
+void APRCharacter::ServerSetMoveState_Implementation(EMoveState NewMoveState)
 {
 	MoveState = NewMoveState;
 	OnRep_MoveState();
@@ -202,6 +204,8 @@ void APRCharacter::ServerUnlock_Implementation()
 	SetMovement();
 }
 
+void APRCharacter::MulticastDeath_Implementation()
+{
 	bIsDeath = true;
 	SetCanBeDamaged(false);
 	GetController()->UnPossess();

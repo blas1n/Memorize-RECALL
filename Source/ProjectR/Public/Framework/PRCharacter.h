@@ -89,6 +89,9 @@ private:
 
 	void ServerUnlock_Implementation();
 	FORCEINLINE bool ServerUnlock_Validate() const noexcept { return true; }
+
+	void MulticastDeath_Implementation();
+
 	UFUNCTION()
 	void OnRep_MoveState();
 
@@ -101,7 +104,6 @@ private:
 	void SetMovement();
 
 	void GetLookLocationAndRotation_Implementation(FVector& Location, FRotator& Rotation) const;
-	void Death();
 
 	bool IsParryable(float Damage, APRCharacter* Causer);
 	
