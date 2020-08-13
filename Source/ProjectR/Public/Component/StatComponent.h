@@ -22,8 +22,6 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly)
 	void Heal(float Value);
 
-	class UBuff* GetBuff(TSubclassOf<UBuff> BuffClass) const;
-
 	FORCEINLINE uint8 GetLevel() const noexcept { return Level; }
 
 	FORCEINLINE float GetHealth() const noexcept { return Health; }
@@ -35,8 +33,6 @@ public:
 
 private:
 	void BeginPlay() override;
-	void EndPlay(EEndPlayReason::Type EndPlayReason) override;
-	void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 	void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 	UFUNCTION(NetMulticast, Reliable)
@@ -45,18 +41,7 @@ private:
 	void MulticastSetLevel_Implementation(uint8 NewLevel);
 
 	UFUNCTION()
-	void OnLockApplied();
-
-	UFUNCTION()
-	void OnLockReleased();
-
-	UFUNCTION()
-	void OnRunApplied();
-
-	UFUNCTION()
-	void OnRunReleased();
-
-	void SetMovement();
+	void OnRep_Level();
 
 public:
 	FOnChangedLevel OnChangedLevel;
@@ -83,12 +68,6 @@ private:
 	UPROPERTY(Transient, VisibleInstanceOnly, BlueprintReadOnly, Category = Speed, meta = (AllowPrivateAccess = true))
 	float LockSpeed;
 
-	UPROPERTY(Replicated)
-	mutable TArray<UBuff*> Buffs;
-
 	UPROPERTY()
 	class UDataTable* StatDataTable;
-
-	uint8 bIsRunned : 1;
-	uint8 bIsLocked : 1;
 };
