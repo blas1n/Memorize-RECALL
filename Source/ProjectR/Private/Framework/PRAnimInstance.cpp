@@ -2,7 +2,6 @@
 
 #include "Framework/PRAnimInstance.h"
 #include "GameFramework/CharacterMovementComponent.h"
-#include "Buff/Lock.h"
 #include "Framework/PRCharacter.h"
 
 UPRAnimInstance::UPRAnimInstance()
@@ -24,6 +23,6 @@ void UPRAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 	Velocity = User->GetActorRotation().UnrotateVector(Movement->Velocity);
 	Speed = Velocity.Size();
 	
-	bIsLooking = UBuffLibrary::IsActivate<ULock>(User);
+	bIsLooking = User->IsLocked();
 	bIsInAir = Movement->IsFalling();
 }

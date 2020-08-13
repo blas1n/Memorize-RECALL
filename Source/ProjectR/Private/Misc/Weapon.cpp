@@ -10,7 +10,6 @@
 #include "Framework/PRCharacter.h"
 #include "Data/SkillData.h"
 #include "Data/WeaponData.h"
-#include "Interface/ComponentOwner.h"
 #include "Interface/Executable.h"
 #include "Interface/StateExecutable.h"
 #include "Library/PRStatics.h"
@@ -79,8 +78,7 @@ bool UWeapon::Initialize(USkillContext* InContext, int32 InKey)
 
 void UWeapon::BeginPlay()
 {
-	auto* StatComp = IComponentOwner::Execute_GetStatComponent(User);
-	StatComp->OnChangedLevel.AddUObject(this, &UWeapon::InitSkill);
+	User->GetStatComponent()->OnChangedLevel.AddUObject(this, &UWeapon::InitSkill);
 }
 
 void UWeapon::BeginSkill(uint8 Index)
@@ -94,7 +92,7 @@ void UWeapon::BeginSkill(uint8 Index)
 		}
 	}
 
-	IComponentOwner::Execute_GetWeaponComponent(User)->OnEndSkill();
+	User->GetWeaponComponent()->OnEndSkill();
 }
 
 void UWeapon::EndSkill(uint8 Index)

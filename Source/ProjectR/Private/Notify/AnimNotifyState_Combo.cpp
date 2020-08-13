@@ -3,18 +3,16 @@
 #include "Notify/AnimNotifyState_Combo.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "Component/WeaponComponent.h"
-#include "Interface/ComponentOwner.h"
+#include "Framework/PRCharacter.h"
 
 void UAnimNotifyState_Combo::NotifyBegin(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, float TotalDuration)
 {
-	AActor* Owner = MeshComp->GetOwner();
-	if (Owner && Owner->GetClass()->ImplementsInterface(UComponentOwner::StaticClass()))
-		return IComponentOwner::Execute_GetWeaponComponent(Owner)->CheckCombo();
+	if (auto* Owner = Cast<APRCharacter>(MeshComp->GetOwner()))
+		return Owner->GetWeaponComponent()->CheckCombo();
 }
 
 void UAnimNotifyState_Combo::NotifyEnd(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation)
 {
-	AActor* Owner = MeshComp->GetOwner();
-	if (Owner && Owner->GetClass()->ImplementsInterface(UComponentOwner::StaticClass()))
-		return IComponentOwner::Execute_GetWeaponComponent(Owner)->ExecuteCombo();
+	if (auto* Owner = Cast<APRCharacter>(MeshComp->GetOwner()))
+		return Owner->GetWeaponComponent()->ExecuteCombo();
 }

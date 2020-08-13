@@ -3,7 +3,6 @@
 #include "Misc/Skill.h"
 #include "Component/WeaponComponent.h"
 #include "Framework/PRCharacter.h"
-#include "Interface/ComponentOwner.h"
 
 void USkill::Initialize(USkillContext* InContext, UDataAsset* Data)
 {
@@ -30,7 +29,7 @@ void USkill::End()
 	bIsExecute = false;
 	ReceiveEnd();
 
-	IComponentOwner::Execute_GetWeaponComponent(User)->OnEndSkill();
+	User->GetWeaponComponent()->OnEndSkill();
 }
 
 UWorld* USkill::GetWorld() const
