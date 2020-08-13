@@ -32,6 +32,10 @@ public:
 	FORCEINLINE FGenericTeamId GetGenericTeamId() const override { return FGenericTeamId{ TeamId }; }
 	FORCEINLINE void SetGenericTeamId(const FGenericTeamId& NewTeamId) override { TeamId = NewTeamId.GetId(); }
 	FORCEINLINE void SetGenericTeamId(uint8 NewTeamId) { TeamId = NewTeamId; }
+	
+	FORCEINLINE class UWeaponComponent* GetWeaponComponent() const noexcept { return WeaponComponent; }
+	FORCEINLINE class UStatComponent* GetStatComponent() const noexcept { return StatComponent; }
+
 	FORCEINLINE bool IsDeath() const noexcept { return bIsDeath; }
 
 protected:
