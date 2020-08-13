@@ -12,7 +12,7 @@
 #include "Component/WeaponComponent.h"
 #include "Data/CharacterData.h"
 #include "Data/PRDamageType.h"
-#include "Library/BuffLibrary.h"
+#include "Interface/Parryable.h"
 #include "Library/PRStatics.h"
 
 APRCharacter::APRCharacter()
@@ -41,6 +41,25 @@ APRCharacter::APRCharacter()
 	CharacterDataTable = DataTable.Object;
 }
 
+void APRCharacter::SetParryingObject(UObject* NewParryingObject)
+{
+	check(HasAuthority());
+
+	if (!NewParryingObject)
+	{
+		ParryingObject = nullptr;
+		return;
+	}
+
+	check(NewParryingObject->GetClass()->ImplementsInterface(UParryable::StaticClass()));
+	ParryingObject = NewParryingObject;
+}
+
+void APRCharacter::SetMoveState(EMoveState NewMoveState)
+{
+	ServerSetMoveState(NewMoveState);
+}
+
 #if WITH_EDITOR
 
 void APRCharacter::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
@@ -66,12 +85,15 @@ float APRCharacter::TakeDamage(float Damage, const FDamageEvent& DamageEvent,
 	Damage = Super::TakeDamage(Damage, DamageEvent, EventInstigator, DamageCauser);
 	if (Damage <= 0.0f) return Damage;
 
-	auto* Parry = UBuffLibrary::GetBuff<UParry>(this);
 	auto* Character = Cast<APRCharacter>(DamageCauser);
 	const auto* DamageType = Cast<UProjectRDamageType>(DamageEvent.DamageTypeClass.GetDefaultObject());
 
-	if (DamageType->IsWeaponAttack() && Parry && Parry->ParryIfCan(Damage, EventInstigator, Character))
+	if (DamageType->IsWeaponAttack() && IsParryable(Damage, Character))
+	{
+		IParryable::Execute_Parry(ParryingObject, Damage, Character);
 		return 0.0f;
+	}
+		
 
 	StatComponent->Heal(-Damage);
 	if (StatComponent->GetHealth() <= 0.0f) Death();
@@ -147,4 +169,10 @@ void APRCharacter::Death()
 	GetMesh()->SetSimulatePhysics(true);
 
 	OnDeath.Broadcast();
+}
+
+
+bool APRCharacter::IsParryable(float Damage, APRCharacter* Causer)
+{
+	return ParryingObject && IParryable::Execute_IsParryable(ParryingObject, Damage, Causer);
 }
