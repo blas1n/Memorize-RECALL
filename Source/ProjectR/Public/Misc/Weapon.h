@@ -32,6 +32,7 @@ public:
 	void EndExecute(uint8 Index);
 
 	FORCEINLINE const FVisualData& GetVisualData() const noexcept { return VisualData; }
+	FORCEINLINE int32 GetKey() const noexcept { return Key; }
 
 private:
 	void LoadAll(const struct FWeaponData& WeaponData);
