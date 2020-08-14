@@ -40,10 +40,10 @@ public:
 	void EndExecute();
 
 	UFUNCTION(BlueprintCallable)
-	void CheckCombo();
+	void EnableCombo();
 
 	UFUNCTION(BlueprintCallable)
-	void ExecuteCombo();
+	void DisableCombo();
 
 	void OnEndSkill();
 
