@@ -57,11 +57,8 @@ void USkillContext::StopAnimation(UAnimMontage* Animation)
 
 void USkillContext::OnMontageEnded(UAnimMontage* Montage, bool bInterrupted)
 {
-	if (PlayingMontage == Montage)
-	{
+	if (!bInterrupted)
 		OnAnimationEnded.Broadcast();
-		PlayingMontage = nullptr;
-	}
 }
 
 void USkillContext::OnWeaponOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
