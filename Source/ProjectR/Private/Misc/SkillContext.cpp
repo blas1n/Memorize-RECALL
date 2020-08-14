@@ -42,30 +42,23 @@ void USkillContext::PlayAnimation(UAnimMontage* Animation)
 	auto* User = GetTypedOuter<ACharacter>();
 	check(User->HasAuthority() && Animation);
 
-	User->GetMesh()->GetAnimInstance()->OnMontageEnded.AddDynamic(this, &USkillContext::OnMontageEnded);
-	PlayingMontage = Animation;
+	User->GetMesh()->GetAnimInstance()->OnMontageEnded.AddUniqueDynamic(this, &USkillContext::OnMontageEnded);
 	MulticastPlayAnimation(Animation);
 }
 
-void USkillContext::StopAnimation()
+void USkillContext::StopAnimation(UAnimMontage* Animation)
 {
 	auto* User = GetTypedOuter<ACharacter>();
-	check(User->HasAuthority() && PlayingMontage);
+	check(User->HasAuthority() && Animation);
 
 	User->GetMesh()->GetAnimInstance()->OnMontageEnded.RemoveDynamic(this, &USkillContext::OnMontageEnded);
-	
-	UAnimMontage* CurMontage = PlayingMontage;
-	PlayingMontage = nullptr;
-	MulticastStopAnimation(CurMontage);
+	MulticastStopAnimation(Animation);
 }
 
 void USkillContext::OnMontageEnded(UAnimMontage* Montage, bool bInterrupted)
 {
-	if (PlayingMontage == Montage)
-	{
+	if (!bInterrupted)
 		OnAnimationEnded.Broadcast();
-		PlayingMontage = nullptr;
-	}
 }
 
 void USkillContext::OnWeaponOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
@@ -81,5 +74,5 @@ void USkillContext::MulticastPlayAnimation_Implementation(UAnimMontage* Animatio
 
 void USkillContext::MulticastStopAnimation_Implementation(UAnimMontage* Animation)
 {
-	GetTypedOuter<ACharacter>()->StopAnimMontage(PlayingMontage);
+	GetTypedOuter<ACharacter>()->StopAnimMontage(Animation);
 }
