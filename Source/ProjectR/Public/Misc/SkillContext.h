@@ -24,7 +24,7 @@ public:
 	void PlayAnimation(class UAnimMontage* Animation);
 
 	UFUNCTION(BlueprintCallable)
-	void StopAnimation();
+	void StopAnimation(UAnimMontage* Animation);
 
 private:
 	UFUNCTION()
@@ -56,7 +56,4 @@ private:
 
 	UPROPERTY(Transient)
 	UStaticMeshComponent* LeftWeaponComp;
-
-	UPROPERTY(Transient)
-	UAnimMontage* PlayingMontage;
 };

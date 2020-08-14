@@ -22,30 +22,24 @@ UWeaponComponent::UWeaponComponent()
 
 void UWeaponComponent::Attack(bool bIsStrongAttack)
 {
-	if (bCheckCombo)
-	{
-		NextCombo = bIsStrongAttack ? ENextCombo::Strong : ENextCombo::Week;
-		bCheckCombo = false;
-	}
-	else if (!bIsCasting && NextCombo == ENextCombo::None)
-	{
-		ServerAttack(bIsStrongAttack, false);
-		bIsCasting = true;
-	}
+	if (bIsCasting) return;
+
+	bIsCasting = true;
+	ServerAttack(bIsStrongAttack);
 }
 
 void UWeaponComponent::Parry()
 {
-	if (!bIsCasting)
-	{
-		ServerParry();
-		bIsCasting = true;
-	}
+	if (bIsCasting || !bUseParry) return;
+
+	bIsCasting = true;
+	bUseParry = false;
+	ServerParry();
 }
 
 void UWeaponComponent::StopSkill()
 {
-	if (bIsCasting) ServerStopSkill();
+	ServerStopSkill();
 }
 
 void UWeaponComponent::SwapWeapon(uint8 Index)
@@ -61,42 +55,43 @@ void UWeaponComponent::AddWeapon(uint8 Index, int32 Key)
 void UWeaponComponent::Execute()
 {
 	if (GetOwnerRole() == ENetRole::ROLE_Authority && Weapons.IsValidIndex(WeaponIndex))
-		Weapons[WeaponIndex]->Execute(bIsParrying ? 0u : SkillIndex + 1);
+		Weapons[WeaponIndex]->Execute(bNowParry ? 0u : SkillIndex + 1);
 }
 
 void UWeaponComponent::BeginExecute()
 {
 	if (GetOwnerRole() == ENetRole::ROLE_Authority && Weapons.IsValidIndex(WeaponIndex))
-		Weapons[WeaponIndex]->BeginExecute(bIsParrying ? 0u : SkillIndex + 1);
+		Weapons[WeaponIndex]->BeginExecute(bNowParry ? 0u : SkillIndex + 1);
 }
 
 void UWeaponComponent::EndExecute()
 {
 	if (GetOwnerRole() == ENetRole::ROLE_Authority && Weapons.IsValidIndex(WeaponIndex))
-		Weapons[WeaponIndex]->EndExecute(bIsParrying ? 0u : SkillIndex + 1);
+		Weapons[WeaponIndex]->EndExecute(bNowParry ? 0u : SkillIndex + 1);
 }
 
-void UWeaponComponent::CheckCombo()
+void UWeaponComponent::EnableCombo()
 {
-	if (GetOwnerRole() == ENetRole::ROLE_AutonomousProxy)
-		bCheckCombo = true;
+	if (Cast<APawn>(GetOwner())->IsLocallyControlled())
+		bIsCasting = false;
 }
 
-void UWeaponComponent::ExecuteCombo()
+void UWeaponComponent::DisableCombo()
 {
-	bCheckCombo = false;
-	if (NextCombo != ENextCombo::None && GetOwnerRole() == ENetRole::ROLE_AutonomousProxy)
-		ServerAttack(NextCombo == ENextCombo::Strong ? true : false, true);
+	if (Cast<APawn>(GetOwner())->IsLocallyControlled())
+		bIsCasting = true;
 }
 
 void UWeaponComponent::OnEndSkill()
 {
-	if (NextCombo != ENextCombo::None)
-		SkillIndex = 0u;
-	else
-		NextCombo = ENextCombo::None;
+	if (--SkillCount == 0u)
+	{
+		SkillIndex = 255u;
+		ClientEndCast();
+	}
 
-	ClientOnStopSkill();
+	bNowParry = false;
+	ClientResetParrying();
 }
 
 #if WITH_EDITOR
@@ -127,6 +122,7 @@ void UWeaponComponent::BeginPlay()
 
 	if (GetOwnerRole() == ENetRole::ROLE_Authority)
 	{
+		SkillIndex = 255u;
 		for (UWeapon* Weapon : Weapons)
 			Weapon->BeginPlay();
 
@@ -138,8 +134,9 @@ void UWeaponComponent::BeginPlay()
 
 void UWeaponComponent::EndPlay(EEndPlayReason::Type EndPlayReason)
 {
-	for (UWeapon* Weapon : Weapons)
-		Weapon->EndPlay();
+	if (GetOwnerRole() == ENetRole::ROLE_Authority)
+		for (UWeapon* Weapon : Weapons)
+			Weapon->EndPlay();
 
 	auto* User = Cast<APRCharacter>(GetOwner());
 	User->OnDeath.RemoveDynamic(this, &UWeaponComponent::Detach);
@@ -214,38 +211,33 @@ void UWeaponComponent::Initialize()
 	}
 }
 
-void UWeaponComponent::ServerAttack_Implementation(bool bIsStrongAttack, bool bIsCombo)
+void UWeaponComponent::ServerAttack_Implementation(bool bIsStrongAttack)
 {
 	if (!Weapons.IsValidIndex(WeaponIndex)) return;
-	UWeapon* Weapon = Weapons[WeaponIndex];
 
-	if (bIsCombo)
-	{
-		NextCombo = bIsStrongAttack ? ENextCombo::Strong : ENextCombo::Week;
-		ServerStopSkill_Implementation();
-		SkillIndex = (2u * SkillIndex) + 2u;
-	}
+	++SkillCount;
+	ServerStopSkill_Implementation();
 
+	SkillIndex = (SkillIndex == 255u) ? 0u : (2u * SkillIndex) + 2u;
 	if (bIsStrongAttack) ++SkillIndex;
-	Weapon->BeginSkill(SkillIndex + 1);
+
+	Weapons[WeaponIndex]->BeginSkill(SkillIndex + 1u);
 }
 
 void UWeaponComponent::ServerParry_Implementation()
 {
 	if (Weapons.IsValidIndex(WeaponIndex))
 	{
-		Weapons[WeaponIndex]->BeginSkill(0u);
-		bIsParrying = true;
+		++SkillCount;
+		bNowParry = true;
+		Weapons[WeaponIndex]->BeginSkill(0u);	
 	}
 }
 
 void UWeaponComponent::ServerStopSkill_Implementation()
 {
-	if (Weapons.IsValidIndex(WeaponIndex))
-	{
-		Weapons[WeaponIndex]->EndSkill(bIsParrying ? 0u : SkillIndex + 1);
-		bIsParrying = false;
-	}
+	if (SkillCount > 0u && Weapons.IsValidIndex(WeaponIndex))
+		Weapons[WeaponIndex]->EndSkill(bNowParry ? 0u : SkillIndex + 1u);
 }
 
 void UWeaponComponent::ServerSwapWeapon_Implementation(uint8 Index)
@@ -259,6 +251,9 @@ void UWeaponComponent::ServerSwapWeapon_Implementation(uint8 Index)
 
 void UWeaponComponent::ServerAddWeapon_Implementation(uint8 Index, int32 Key)
 {
+	if (bIsCasting || (Weapons.IsValidIndex(Index) && Weapons[Index]->GetKey() == Key))
+		return;
+
 	const int32 BeforeWeaponNum = Weapons.Num();
 	if (Index > BeforeWeaponNum)
 		Weapons.SetNum(Index + 1u);
@@ -276,11 +271,14 @@ void UWeaponComponent::ServerAddWeapon_Implementation(uint8 Index, int32 Key)
 	Weapons[Index] = NewWeapon;
 }
 
-void UWeaponComponent::ClientOnStopSkill_Implementation()
+void UWeaponComponent::ClientEndCast_Implementation()
 {
-	NextCombo = ENextCombo::None;
-	bCheckCombo = false;
 	bIsCasting = false;
+}
+
+void UWeaponComponent::ClientResetParrying_Implementation()
+{
+	bUseParry = false;
 }
 
 void UWeaponComponent::ApplyWeapon(TSubclassOf<UAnimInstance> UnlinkAnim)
