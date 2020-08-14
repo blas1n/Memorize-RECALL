@@ -64,7 +64,7 @@ private:
 	void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 	UFUNCTION(Server, Reliable, WithValidation)
-	void ServerAttack(bool bIsStrongAttack, bool bIsCombo);
+	void ServerAttack(bool bIsStrongAttack);
 
 	UFUNCTION(Server, Reliable, WithValidation)
 	void ServerParry();
@@ -79,13 +79,16 @@ private:
 	void ServerAddWeapon(uint8 Index, int32 Key);
 
 	UFUNCTION(Client, Reliable)
-	void ClientOnStopSkill();
+	void ClientEndCast();
+
+	UFUNCTION(Client, Reliable)
+	void ClientResetParrying();
 
 	UFUNCTION(NetMulticast, Reliable)
 	void MulticastEquipWeapon(TSubclassOf<UAnimInstance> UnlinkAnim);
 
-	void ServerAttack_Implementation(bool bIsStrongAttack, bool bIsCombo);
-	FORCEINLINE bool ServerAttack_Validate(bool bIsStrongAttack, bool bIsCombo) const noexcept { return true; }
+	void ServerAttack_Implementation(bool bIsStrongAttack);
+	FORCEINLINE bool ServerAttack_Validate(bool bIsStrongAttack) const noexcept { return true; }
 
 	void ServerParry_Implementation();
 	FORCEINLINE bool ServerParry_Validate() const noexcept { return true; }
@@ -99,7 +102,8 @@ private:
 	void ServerAddWeapon_Implementation(uint8 Index, int32 Key);
 	FORCEINLINE bool ServerAddWeapon_Validate(uint8 Index, int32 Key) const noexcept { return true; }
 
-	void ClientOnStopSkill_Implementation();
+	void ClientEndCast_Implementation();
+	void ClientResetParrying_Implementation();
 
 	FORCEINLINE void MulticastEquipWeapon_Implementation
 		(TSubclassOf<UAnimInstance> UnlinkAnim) { ApplyWeapon(UnlinkAnim); }
@@ -139,13 +143,9 @@ private:
 
 	uint8 WeaponIndex;
 	uint8 SkillIndex;
+	uint8 SkillCount;
 
-	enum class ENextCombo : uint8
-	{
-		None, Week, Strong
-	} NextCombo;
-
-	uint8 bCheckCombo : 1;
-	uint8 bIsParrying : 1;
 	uint8 bIsCasting : 1;
+	uint8 bUseParry : 1;
+	uint8 bNowParry : 1;
 };
