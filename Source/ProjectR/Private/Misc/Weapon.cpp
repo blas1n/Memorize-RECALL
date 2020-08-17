@@ -136,6 +136,15 @@ void UWeapon::EndExecute(uint8 Index)
 		return IStateExecutable::Execute_EndExecute(Skill);
 }
 
+void UWeapon::TickExecute(uint8 Index, float DeltaSeconds)
+{
+	if (!Skills.IsValidIndex(Index)) return;
+
+	USkill* Skill = Skills[Index];
+	if (Skill && Skill->GetClass()->ImplementsInterface(UStateExecutable::StaticClass()))
+		return IStateExecutable::Execute_TickExecute(Skill, DeltaSeconds);
+}
+
 void UWeapon::LoadAll(const FWeaponData& WeaponData)
 {
 	if (!WeaponData.RightMesh.IsNull()) ++AsyncLoadCount;
