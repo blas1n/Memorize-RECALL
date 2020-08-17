@@ -30,6 +30,7 @@ public:
 	void Execute(uint8 Index);
 	void BeginExecute(uint8 Index);
 	void EndExecute(uint8 Index);
+	void TickExecute(uint8 Index, float DeltaSeconds);
 
 	FORCEINLINE const FVisualData& GetVisualData() const noexcept { return VisualData; }
 	FORCEINLINE int32 GetKey() const noexcept { return Key; }

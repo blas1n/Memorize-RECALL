@@ -22,4 +22,7 @@ public:
 
 	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
 	void EndExecute();
+
+	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
+	void TickExecute(float DeltaSeconds);
 };
