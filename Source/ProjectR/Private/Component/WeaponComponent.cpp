@@ -186,8 +186,6 @@ void UWeaponComponent::Initialize()
 		LeftWeapon->AttachToComponent(MeshComponent, Rules, TEXT("weapon_l"));
 	
 	SkillContext = NewObject<USkillContext>(this);
-	SkillContext->Initialize(RightWeapon, LeftWeapon);
-
 	if (GetOwnerRole() != ENetRole::ROLE_Authority)
 		return;
 
