@@ -70,6 +70,12 @@ void UWeaponComponent::EndExecute()
 		Weapons[WeaponIndex]->EndExecute(bNowParry ? 0u : SkillIndex + 1);
 }
 
+void UWeaponComponent::TickExecute(float DeltaSeconds)
+{
+	if (GetOwnerRole() == ENetRole::ROLE_Authority && Weapons.IsValidIndex(WeaponIndex))
+		Weapons[WeaponIndex]->TickExecute(bNowParry ? 0u : SkillIndex + 1, DeltaSeconds);
+}
+
 void UWeaponComponent::EnableCombo()
 {
 	if (Cast<APawn>(GetOwner())->IsLocallyControlled())
