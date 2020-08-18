@@ -87,8 +87,11 @@ void UWeapon::BeginSkill(uint8 Index)
 	{
 		if (USkill* Skill = Skills[Index])
 		{
-			Skill->Begin();
-			return;
+			if (Skill->CanUseSkill())
+			{
+				Skill->Begin();
+				return;
+			}
 		}
 	}
 
