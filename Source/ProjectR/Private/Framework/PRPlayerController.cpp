@@ -70,7 +70,7 @@ void APRPlayerController::PressDodge()
 
 	if (MyPawn->IsLocked())
 		MyPawn->GetWeaponComponent()->Parry();
-	else
+	else if (!IsMoveInputIgnored())
 		MyPawn->Jump();
 }
 
