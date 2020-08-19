@@ -25,6 +25,12 @@ public:
 	void SetParryingObject(UObject* NewParryingObject);
 
 	UFUNCTION(BlueprintCallable)
+	void Lock(AActor* NewLockTarget);
+
+	UFUNCTION(BlueprintCallable)
+	void Unlock();
+
+	UFUNCTION(BlueprintCallable)
 	void SetMoveState(EMoveState NewMoveState);
 
 	FORCEINLINE void GetActorEyesViewPoint(FVector& Location, FRotator& Rotation) const override
@@ -70,25 +76,25 @@ private:
 	void Death();
 
 	UFUNCTION(Server, Reliable, WithValidation)
-	void ServerSetMoveState(EMoveState NewMoveState);
-
-	UFUNCTION(Server, Reliable, WithValidation)
 	void ServerLock(AActor* NewLockTarget);
 
 	UFUNCTION(Server, Reliable, WithValidation)
 	void ServerUnlock();
 
+	UFUNCTION(Server, Reliable, WithValidation)
+	void ServerSetMoveState(EMoveState NewMoveState);
+
 	UFUNCTION(NetMulticast, Reliable)
 	void MulticastDeath();
-
-	void ServerSetMoveState_Implementation(EMoveState NewMoveState);
-	FORCEINLINE bool ServerSetMoveState_Validate(EMoveState NewMoveState) const noexcept { return true; }
 
 	void ServerLock_Implementation(AActor* NewLockTarget);
 	FORCEINLINE bool ServerLock_Validate(AActor* NewLockTarget) const noexcept { return true; }
 
 	void ServerUnlock_Implementation();
 	FORCEINLINE bool ServerUnlock_Validate() const noexcept { return true; }
+
+	void ServerSetMoveState_Implementation(EMoveState NewMoveState);
+	FORCEINLINE bool ServerSetMoveState_Validate(EMoveState NewMoveState) const noexcept { return true; }
 
 	void MulticastDeath_Implementation();
 

@@ -56,6 +56,16 @@ void APRCharacter::SetParryingObject(UObject* NewParryingObject)
 	ParryingObject = NewParryingObject;
 }
 
+void APRCharacter::Lock(AActor* NewLockTarget)
+{
+	ServerLock(NewLockTarget);
+}
+
+void APRCharacter::Unlock()
+{
+	ServerUnlock();
+}
+
 void APRCharacter::SetMoveState(EMoveState NewMoveState)
 {
 	ServerSetMoveState(NewMoveState);
