@@ -127,6 +127,18 @@ void APRPlayerController::SwapWeapon(float Value)
 	SwapWeapon(static_cast<uint8>(Idx));
 }
 
+void APRPlayerController::Lock()
+{
+	if (APRCharacter* MyPawn = GetPawn<APRCharacter>())
+		MyPawn->Lock(nullptr);
+}
+
+void APRPlayerController::Unlock()
+{
+	if (APRCharacter* MyPawn = GetPawn<APRCharacter>())
+		MyPawn->Unlock();
+}
+
 void APRPlayerController::Interact()
 {
 	OnInteract.Broadcast();
