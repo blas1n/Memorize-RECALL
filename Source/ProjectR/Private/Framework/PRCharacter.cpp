@@ -150,6 +150,8 @@ void APRCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLife
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 	DOREPLIFETIME(APRCharacter, MoveState);
+	DOREPLIFETIME(APRCharacter, LockTarget);
+	DOREPLIFETIME(APRCharacter, bIsLocked);
 }
 
 void APRCharacter::Landed(const FHitResult& Hit)
