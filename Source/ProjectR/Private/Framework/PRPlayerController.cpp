@@ -35,10 +35,10 @@ void APRPlayerController::SetupInputComponent()
 	InputComponent->BindAction<FIndexer>(TEXT("Weapon2"), IE_Pressed, this, &APRPlayerController::SwapWeapon, static_cast<uint8>(1));
 	InputComponent->BindAction<FIndexer>(TEXT("Weapon3"), IE_Pressed, this, &APRPlayerController::SwapWeapon, static_cast<uint8>(2));
 
-	InputComponent->BindAction(TEXT("Interact"), IE_Pressed, this, &APRPlayerController::Interact);
+	InputComponent->BindAction(TEXT("Lock"), IE_Pressed, this, &APRPlayerController::Lock);
+	InputComponent->BindAction(TEXT("Lock"), IE_Released, this, &APRPlayerController::Unlock);
 
-	//InputComponent->BindAction(TEXT("Lock"), IE_Pressed, this, &APRPlayerController::LockOn);
-	//InputComponent->BindAction(TEXT("Lock"), IE_Released, this, &APRPlayerController::LockOff);
+	InputComponent->BindAction(TEXT("Interact"), IE_Pressed, this, &APRPlayerController::Interact);
 }
 
 void APRPlayerController::MoveForward(float Value)
