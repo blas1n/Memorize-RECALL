@@ -199,7 +199,7 @@ void APRCharacter::Death()
 void APRCharacter::ServerSetMoveState_Implementation(EMoveState NewMoveState)
 {
 	MoveState = NewMoveState;
-	OnRep_MoveState();
+	SetMovement();
 }
 
 void APRCharacter::ServerLock_Implementation(AActor* NewLockTarget)
