@@ -33,7 +33,7 @@ bool UWeapon::Initialize(USkillContext* InContext, int32 InKey)
 	User = GetTypedOuter<APRCharacter>();
 	if (!User)
 	{
-		Key = -1;
+		Key = 0;
 		return false;
 	}
 
@@ -41,7 +41,7 @@ bool UWeapon::Initialize(USkillContext* InContext, int32 InKey)
 	if (!Data)
 	{
 		UE_LOG(LogDataTable, Error, TEXT("Cannot found weapon data %d!"), Key);
-		Key = -1;
+		Key = 0;
 		return false;
 	}
 
@@ -170,7 +170,7 @@ void UWeapon::LoadAll(const FWeaponData& WeaponData)
 
 void UWeapon::InitSkill(uint8 Level)
 {
-	if (Key == -1) return;
+	if (Key == 0) return;
 
 	const FString BaseKey = FString::FromInt(Key) + FString::FromInt(Level);
 
