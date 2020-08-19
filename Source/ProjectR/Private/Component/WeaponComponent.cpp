@@ -30,10 +30,10 @@ void UWeaponComponent::Attack(bool bIsStrongAttack)
 
 void UWeaponComponent::Parry()
 {
-	if (bIsCasting || !bUseParry) return;
+	if (bIsCasting || bUseParry) return;
 
 	bIsCasting = true;
-	bUseParry = false;
+	bUseParry = true;
 	ServerParry();
 }
 
