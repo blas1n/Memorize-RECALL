@@ -61,6 +61,9 @@ private:
 
 	FOnAsyncLoadEnded OnAsyncLoadEnded;
 
+	TSubclassOf<USkill> WeakAttackClass;
+	TSubclassOf<USkill> StrongAttackClass;
+	
 	int32 Key;
 	uint8 AsyncLoadCount;
 };
