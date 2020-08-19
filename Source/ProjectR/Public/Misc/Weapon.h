@@ -44,7 +44,7 @@ private:
 	UPROPERTY(Transient)
 	class APRCharacter* User;
 	
-	UPROPERTY()
+	UPROPERTY(Transient)
 	TArray<class USkill*> Skills;
 
 	UPROPERTY(Transient)
