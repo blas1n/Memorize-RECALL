@@ -5,6 +5,7 @@
 #include "Components/SkeletalMeshComponent.h"
 #include "Components/StaticMeshComponent.h"
 #include "Net/UnrealNetwork.h"
+#include "TimerManager.h"
 #include "Framework/PRCharacter.h"
 #include "Misc/SkillContext.h"
 #include "Misc/Weapon.h"
@@ -47,50 +48,59 @@ void UWeaponComponent::AddWeapon(uint8 Index, int32 Key)
 
 void UWeaponComponent::Execute()
 {
-	if (GetOwnerRole() == ENetRole::ROLE_Authority && Weapons.IsValidIndex(WeaponIndex))
+	if (GetOwner()->HasAuthority() && Weapons.IsValidIndex(WeaponIndex))
 		Weapons[WeaponIndex]->Execute(bNowParry ? 0u : SkillIndex + 1);
 }
 
 void UWeaponComponent::BeginExecute()
 {
-	if (GetOwnerRole() == ENetRole::ROLE_Authority && Weapons.IsValidIndex(WeaponIndex))
+	if (GetOwner()->HasAuthority() && Weapons.IsValidIndex(WeaponIndex))
 		Weapons[WeaponIndex]->BeginExecute(bNowParry ? 0u : SkillIndex + 1);
 }
 
 void UWeaponComponent::EndExecute()
 {
-	if (GetOwnerRole() == ENetRole::ROLE_Authority && Weapons.IsValidIndex(WeaponIndex))
+	if (GetOwner()->HasAuthority() && Weapons.IsValidIndex(WeaponIndex))
 		Weapons[WeaponIndex]->EndExecute(bNowParry ? 0u : SkillIndex + 1);
 }
 
 void UWeaponComponent::TickExecute(float DeltaSeconds)
 {
-	if (GetOwnerRole() == ENetRole::ROLE_Authority && Weapons.IsValidIndex(WeaponIndex))
+	if (GetOwner()->HasAuthority() && Weapons.IsValidIndex(WeaponIndex))
 		Weapons[WeaponIndex]->TickExecute(bNowParry ? 0u : SkillIndex + 1, DeltaSeconds);
 }
 
-void UWeaponComponent::EnableCombo()
+void UWeaponComponent::ExecuteCombo()
 {
-	if (Cast<APawn>(GetOwner())->IsLocallyControlled())
-		bIsCasting = false;
-}
+	if (!Cast<APawn>(GetOwner())->HasAuthority()) return;
+	check(Weapons.IsValidIndex(WeaponIndex));
 
-void UWeaponComponent::DisableCombo()
-{
-	if (Cast<APawn>(GetOwner())->IsLocallyControlled())
-		bIsCasting = true;
+	bNowCombo = true;
+	GetWorld()->GetTimerManager().SetTimer(ComboTimer, [this]
+	{
+		bNowCombo = false;
+		if (!bIsCasting)
+		{
+			SkillIndex = 0u;
+			bUseParry = false;
+		}
+	}, Weapons[WeaponIndex]->GetComboDuration(), false);
 }
 
 void UWeaponComponent::OnEndSkill()
 {
-	if (--SkillCount == 0u)
+	bIsCasting = false;
+	if (!bNowCombo)
 	{
-		SkillIndex = 255u;
-		ClientEndCast();
+		SkillIndex = 0u;
+		bUseParry = false;
 	}
 
-	bNowParry = false;
-	ClientResetParrying();
+	if (bNowParry)
+	{
+		GetWorld()->GetTimerManager().UnPauseTimer(ComboTimer);
+		bNowParry = false;
+	}
 }
 
 #if WITH_EDITOR
@@ -121,7 +131,6 @@ void UWeaponComponent::BeginPlay()
 
 	if (GetOwnerRole() == ENetRole::ROLE_Authority)
 	{
-		SkillIndex = 255u;
 		for (UWeapon* Weapon : Weapons)
 			Weapon->BeginPlay();
 
@@ -210,36 +219,43 @@ void UWeaponComponent::Initialize()
 
 void UWeaponComponent::ServerAttack_Implementation(bool bIsStrongAttack)
 {
-	if (!Weapons.IsValidIndex(WeaponIndex)) return;
+	if ((bIsCasting && !bNowCombo) || !Weapons.IsValidIndex(WeaponIndex)) return;
 
-	++SkillCount;
 	ServerStopSkill_Implementation();
 
-	SkillIndex = (SkillIndex == 255u) ? 0u : (2u * SkillIndex) + 2u;
+	if (bNowCombo)
+	{
+		GetWorld()->GetTimerManager().ClearTimer(ComboTimer);
+		SkillIndex = (2u * SkillIndex) + 2u;
+		bNowCombo = false;
+	}
+
 	if (bIsStrongAttack) ++SkillIndex;
 
+	bIsCasting = true;
+	bUseParry = false;
 	Weapons[WeaponIndex]->BeginSkill(SkillIndex + 1u);
 }
 
 void UWeaponComponent::ServerParry_Implementation()
 {
-	if (Weapons.IsValidIndex(WeaponIndex))
+	if ((!bIsCasting || bNowCombo) && !bUseParry && Weapons.IsValidIndex(WeaponIndex))
 	{
-		++SkillCount;
-		bNowParry = true;
+		bIsCasting = bUseParry = bNowParry = true;
+		GetWorld()->GetTimerManager().PauseTimer(ComboTimer);
 		Weapons[WeaponIndex]->BeginSkill(0u);	
 	}
 }
 
 void UWeaponComponent::ServerStopSkill_Implementation()
 {
-	if (SkillCount > 0u && Weapons.IsValidIndex(WeaponIndex))
+	if (Weapons.IsValidIndex(WeaponIndex))
 		Weapons[WeaponIndex]->EndSkill(bNowParry ? 0u : SkillIndex + 1u);
 }
 
 void UWeaponComponent::ServerSwapWeapon_Implementation(uint8 Index)
 {
-	if (WeaponIndex == Index || bIsCasting)
+	if (bIsCasting || WeaponIndex == Index)
 		return;
 
 	EquipWeapon(Weapons[Index], true);
