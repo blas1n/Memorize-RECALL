@@ -43,10 +43,7 @@ public:
 	void TickExecute(float DeltaSeconds);
 
 	UFUNCTION(BlueprintCallable)
-	void EnableCombo();
-
-	UFUNCTION(BlueprintCallable)
-	void DisableCombo();
+	void ExecuteCombo();
 
 	void OnEndSkill();
 
@@ -135,11 +132,13 @@ private:
 	UPROPERTY(Replicated)
 	FVisualData VisualData;
 
+	FTimerHandle ComboTimer;
+
 	uint8 WeaponIndex;
 	uint8 SkillIndex;
-	uint8 SkillCount;
 
 	uint8 bIsCasting : 1;
+	uint8 bNowCombo : 1;
 	uint8 bUseParry : 1;
 	uint8 bNowParry : 1;
 };
