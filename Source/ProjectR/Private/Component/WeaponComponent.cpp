@@ -22,18 +22,11 @@ UWeaponComponent::UWeaponComponent()
 
 void UWeaponComponent::Attack(bool bIsStrongAttack)
 {
-	if (bIsCasting) return;
-
-	bIsCasting = true;
 	ServerAttack(bIsStrongAttack);
 }
 
 void UWeaponComponent::Parry()
 {
-	if (bIsCasting || bUseParry) return;
-
-	bIsCasting = true;
-	bUseParry = true;
 	ServerParry();
 }
 
@@ -44,12 +37,12 @@ void UWeaponComponent::StopSkill()
 
 void UWeaponComponent::SwapWeapon(uint8 Index)
 {
-	if (!bIsCasting) ServerSwapWeapon(Index);
+	ServerSwapWeapon(Index);
 }
 
 void UWeaponComponent::AddWeapon(uint8 Index, int32 Key)
 {
-	if (!bIsCasting) ServerAddWeapon(Index, Key);
+	ServerAddWeapon(Index, Key);
 }
 
 void UWeaponComponent::Execute()
@@ -273,16 +266,6 @@ void UWeaponComponent::ServerAddWeapon_Implementation(uint8 Index, int32 Key)
 		EquipWeapon(NewWeapon, true);
 
 	Weapons[Index] = NewWeapon;
-}
-
-void UWeaponComponent::ClientEndCast_Implementation()
-{
-	bIsCasting = false;
-}
-
-void UWeaponComponent::ClientResetParrying_Implementation()
-{
-	bUseParry = false;
 }
 
 void UWeaponComponent::ApplyWeapon(TSubclassOf<UAnimInstance> UnlinkAnim)
