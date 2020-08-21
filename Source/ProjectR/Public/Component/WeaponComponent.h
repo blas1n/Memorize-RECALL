@@ -81,12 +81,6 @@ private:
 	UFUNCTION(Server, Reliable, WithValidation)
 	void ServerAddWeapon(uint8 Index, int32 Key);
 
-	UFUNCTION(Client, Reliable)
-	void ClientEndCast();
-
-	UFUNCTION(Client, Reliable)
-	void ClientResetParrying();
-
 	UFUNCTION(NetMulticast, Reliable)
 	void MulticastEquipWeapon(TSubclassOf<UAnimInstance> UnlinkAnim);
 
@@ -104,9 +98,6 @@ private:
 
 	void ServerAddWeapon_Implementation(uint8 Index, int32 Key);
 	FORCEINLINE bool ServerAddWeapon_Validate(uint8 Index, int32 Key) const noexcept { return true; }
-
-	void ClientEndCast_Implementation();
-	void ClientResetParrying_Implementation();
 
 	FORCEINLINE void MulticastEquipWeapon_Implementation
 		(TSubclassOf<UAnimInstance> UnlinkAnim) { ApplyWeapon(UnlinkAnim); }
