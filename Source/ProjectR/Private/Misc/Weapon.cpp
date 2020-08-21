@@ -45,6 +45,7 @@ bool UWeapon::Initialize(USkillContext* InContext, int32 InKey)
 		return false;
 	}
 
+	ComboDuration = Data->ComboDuration;
 	WeakAttackClass = Data->WeakAttackClass;
 	StrongAttackClass = Data->StrongAttackClass;
 
