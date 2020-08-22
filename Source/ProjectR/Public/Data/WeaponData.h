@@ -15,6 +15,9 @@ struct FWeaponData : public FTableRowBase
 	uint8 ComboHeight;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float ComboDuration;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TSubclassOf<class USkill> WeakAttackClass;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)

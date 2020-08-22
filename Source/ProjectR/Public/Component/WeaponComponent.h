@@ -43,10 +43,7 @@ public:
 	void TickExecute(float DeltaSeconds);
 
 	UFUNCTION(BlueprintCallable)
-	void EnableCombo();
-
-	UFUNCTION(BlueprintCallable)
-	void DisableCombo();
+	void ExecuteCombo();
 
 	void OnEndSkill();
 
@@ -81,12 +78,6 @@ private:
 	UFUNCTION(Server, Reliable, WithValidation)
 	void ServerAddWeapon(uint8 Index, int32 Key);
 
-	UFUNCTION(Client, Reliable)
-	void ClientEndCast();
-
-	UFUNCTION(Client, Reliable)
-	void ClientResetParrying();
-
 	UFUNCTION(NetMulticast, Reliable)
 	void MulticastEquipWeapon(TSubclassOf<UAnimInstance> UnlinkAnim);
 
@@ -104,9 +95,6 @@ private:
 
 	void ServerAddWeapon_Implementation(uint8 Index, int32 Key);
 	FORCEINLINE bool ServerAddWeapon_Validate(uint8 Index, int32 Key) const noexcept { return true; }
-
-	void ClientEndCast_Implementation();
-	void ClientResetParrying_Implementation();
 
 	FORCEINLINE void MulticastEquipWeapon_Implementation
 		(TSubclassOf<UAnimInstance> UnlinkAnim) { ApplyWeapon(UnlinkAnim); }
@@ -144,11 +132,13 @@ private:
 	UPROPERTY(Replicated)
 	FVisualData VisualData;
 
+	FTimerHandle ComboTimer;
+
 	uint8 WeaponIndex;
 	uint8 SkillIndex;
-	uint8 SkillCount;
 
 	uint8 bIsCasting : 1;
+	uint8 bNowCombo : 1;
 	uint8 bUseParry : 1;
 	uint8 bNowParry : 1;
 };

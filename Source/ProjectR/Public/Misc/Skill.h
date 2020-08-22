@@ -20,6 +20,9 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void End();
 
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
+	bool CanUseSkill() const;
+
 	UWorld* GetWorld() const override;
 
 protected:
@@ -31,6 +34,9 @@ protected:
 
 	UFUNCTION(BlueprintImplementableEvent, meta = (DisplayName = "End"))
 	void ReceiveEnd();
+
+private:
+	bool CanUseSkill_Implementation() const noexcept { return true; }
 
 private:
 	UPROPERTY(Transient, BlueprintReadOnly, Category = Owner, meta = (AllowPrivateAccess = true))
