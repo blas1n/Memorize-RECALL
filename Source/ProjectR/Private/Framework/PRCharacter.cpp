@@ -27,7 +27,7 @@ APRCharacter::APRCharacter()
 
 	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
 	GetCapsuleComponent()->SetCollisionProfileName(TEXT("Pawn"));
-
+	
 	GetCharacterMovement()->JumpZVelocity = 600.f;
 	GetCharacterMovement()->AirControl = 0.1f;
 	GetCharacterMovement()->RotationRate = FRotator(0.0f, 1080.0f, 0.0f);
@@ -152,6 +152,18 @@ void APRCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLife
 	DOREPLIFETIME(APRCharacter, MoveState);
 	DOREPLIFETIME(APRCharacter, LockTarget);
 	DOREPLIFETIME(APRCharacter, bIsLocked);
+}
+
+void APRCharacter::AddMovementInput(FVector WorldDirection, float ScaleValue, bool bForce)
+{
+	Super::AddMovementInput(WorldDirection, ScaleValue, bForce);
+	InputVector += WorldDirection * ScaleValue;
+}
+
+FVector APRCharacter::ConsumeMovementInputVector()
+{
+	InputVector = FVector::ZeroVector;
+	return Super::ConsumeMovementInputVector();
 }
 
 void APRCharacter::Landed(const FHitResult& Hit)
