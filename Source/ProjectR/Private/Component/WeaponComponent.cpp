@@ -89,11 +89,10 @@ void UWeaponComponent::ExecuteCombo()
 
 void UWeaponComponent::OnEndSkill()
 {
-	bIsCasting = false;
 	if (!bNowCombo)
 	{
 		SkillIndex = 0u;
-		bUseParry = false;
+		bIsCasting = bUseParry = false;
 	}
 
 	if (bNowParry)
@@ -241,7 +240,7 @@ void UWeaponComponent::ServerParry_Implementation()
 {
 	if ((!bIsCasting || bNowCombo) && !bUseParry && Weapons.IsValidIndex(WeaponIndex))
 	{
-		bIsCasting = bUseParry = bNowParry = true;
+		bUseParry = bNowParry = true;
 		GetWorld()->GetTimerManager().PauseTimer(ComboTimer);
 		Weapons[WeaponIndex]->BeginSkill(0u);	
 	}
