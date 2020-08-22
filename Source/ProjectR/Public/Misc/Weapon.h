@@ -33,6 +33,7 @@ public:
 	void TickExecute(uint8 Index, float DeltaSeconds);
 
 	FORCEINLINE const FVisualData& GetVisualData() const noexcept { return VisualData; }
+	FORCEINLINE float GetComboDuration() const noexcept { return ComboDuration; }
 	FORCEINLINE int32 GetKey() const noexcept { return Key; }
 
 private:
@@ -44,7 +45,7 @@ private:
 	UPROPERTY(Transient)
 	class APRCharacter* User;
 	
-	UPROPERTY()
+	UPROPERTY(Transient)
 	TArray<class USkill*> Skills;
 
 	UPROPERTY(Transient)
@@ -61,6 +62,10 @@ private:
 
 	FOnAsyncLoadEnded OnAsyncLoadEnded;
 
+	TSubclassOf<USkill> WeakAttackClass;
+	TSubclassOf<USkill> StrongAttackClass;
+	
+	float ComboDuration;
 	int32 Key;
 	uint8 AsyncLoadCount;
 };

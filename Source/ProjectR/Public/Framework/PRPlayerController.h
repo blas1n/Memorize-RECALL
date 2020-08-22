@@ -34,6 +34,9 @@ private:
 	void SwapWeapon(uint8 Index);
 	void SwapWeapon(float Value);
 
+	void Lock();
+	void Unlock();
+
 	void Interact();
 
 	FVector GetDirectionVector(EAxis::Type Axis) const;

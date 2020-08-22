@@ -33,7 +33,7 @@ bool UWeapon::Initialize(USkillContext* InContext, int32 InKey)
 	User = GetTypedOuter<APRCharacter>();
 	if (!User)
 	{
-		Key = -1;
+		Key = 0;
 		return false;
 	}
 
@@ -41,9 +41,13 @@ bool UWeapon::Initialize(USkillContext* InContext, int32 InKey)
 	if (!Data)
 	{
 		UE_LOG(LogDataTable, Error, TEXT("Cannot found weapon data %d!"), Key);
-		Key = -1;
+		Key = 0;
 		return false;
 	}
+
+	ComboDuration = Data->ComboDuration;
+	WeakAttackClass = Data->WeakAttackClass;
+	StrongAttackClass = Data->StrongAttackClass;
 
 	int32 SkillNum = 1;
 	for (uint8 Idx = 1u; Idx <= Data->ComboHeight; ++Idx)
@@ -62,10 +66,10 @@ bool UWeapon::Initialize(USkillContext* InContext, int32 InKey)
 	{
 		if (Skills[Index]) continue;
 
-		if ((Index % 2) && Data->WeakAttackClass)
-			Skills[Index] = NewObject<USkill>(this, Data->WeakAttackClass);
-		else if (Data->StrongAttackClass)
-			Skills[Index] = NewObject<USkill>(this, Data->StrongAttackClass);
+		if ((Index % 2) && WeakAttackClass)
+			Skills[Index] = NewObject<USkill>(this, WeakAttackClass);
+		else if (StrongAttackClass)
+			Skills[Index] = NewObject<USkill>(this, StrongAttackClass);
 	}
 
 	VisualData.UpperAnimInstance = Data->UpperAnimInstance;
@@ -87,8 +91,11 @@ void UWeapon::BeginSkill(uint8 Index)
 	{
 		if (USkill* Skill = Skills[Index])
 		{
-			Skill->Begin();
-			return;
+			if (Skill->CanUseSkill())
+			{
+				Skill->Begin();
+				return;
+			}
 		}
 	}
 
@@ -167,18 +174,33 @@ void UWeapon::LoadAll(const FWeaponData& WeaponData)
 
 void UWeapon::InitSkill(uint8 Level)
 {
-	if (Key == -1) return;
+	if (Key == 0) return;
 
 	const FString BaseKey = FString::FromInt(Key) + FString::FromInt(Level);
-
 	const int32 SkillNum = Skills.Num();
 	for (int32 Idx = 0; Idx < SkillNum; ++Idx)
 	{
-		const FName SkillKey{ *(BaseKey + FString::FromInt(Idx)) };
-		const auto* Data = SkillDataTable->FindRow<FSkillData>(SkillKey, TEXT(""), false);
-		if (!Data) UE_LOG(LogDataTable, Error, TEXT("Cannot found skill data %s!"), *SkillKey.ToString());
+		USkill* Skill = Skills[Idx];
+		if (!Skill) continue;
 
-		if (USkill* Skill = Skills[Idx])
-			Skill->Initialize(Context, Data ? Data->Data : nullptr);
+		const TSubclassOf<USkill> DefaultClass = Idx % 2 ? WeakAttackClass : StrongAttackClass;
+		const int32 Prefix = ((Idx == 0) || Skill->GetClass() == DefaultClass) ? 0 : 1;
+
+		int32 SkillIdx = Idx;
+		if (Prefix == 0 && Idx != 0)
+		{
+			SkillIdx = (static_cast<int32>(FMath::Log2(Idx + 1)) - 1) * 2 + 1;
+			if ((Idx % 2) == 0) ++SkillIdx;
+		}
+
+		const FName SkillKey{ *(BaseKey + FString::FromInt(Prefix) + FString::FromInt(SkillIdx)) };
+		const auto* Data = SkillDataTable->FindRow<FSkillData>(SkillKey, TEXT(""), false);
+		if (!Data)
+		{
+			UE_LOG(LogDataTable, Error, TEXT("Cannot found skill data %s!"), *SkillKey.ToString());
+			continue;
+		}
+
+		Skill->Initialize(Context, Data ? Data->Data : nullptr);
 	}
 }

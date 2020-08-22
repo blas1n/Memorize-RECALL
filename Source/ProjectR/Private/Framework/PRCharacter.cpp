@@ -27,7 +27,7 @@ APRCharacter::APRCharacter()
 
 	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
 	GetCapsuleComponent()->SetCollisionProfileName(TEXT("Pawn"));
-
+	
 	GetCharacterMovement()->JumpZVelocity = 600.f;
 	GetCharacterMovement()->AirControl = 0.1f;
 	GetCharacterMovement()->RotationRate = FRotator(0.0f, 1080.0f, 0.0f);
@@ -54,6 +54,16 @@ void APRCharacter::SetParryingObject(UObject* NewParryingObject)
 
 	check(NewParryingObject->GetClass()->ImplementsInterface(UParryable::StaticClass()));
 	ParryingObject = NewParryingObject;
+}
+
+void APRCharacter::Lock(AActor* NewLockTarget)
+{
+	ServerLock(NewLockTarget);
+}
+
+void APRCharacter::Unlock()
+{
+	ServerUnlock();
 }
 
 void APRCharacter::SetMoveState(EMoveState NewMoveState)
@@ -140,6 +150,20 @@ void APRCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLife
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 	DOREPLIFETIME(APRCharacter, MoveState);
+	DOREPLIFETIME(APRCharacter, LockTarget);
+	DOREPLIFETIME(APRCharacter, bIsLocked);
+}
+
+void APRCharacter::AddMovementInput(FVector WorldDirection, float ScaleValue, bool bForce)
+{
+	Super::AddMovementInput(WorldDirection, ScaleValue, bForce);
+	InputVector += WorldDirection * ScaleValue;
+}
+
+FVector APRCharacter::ConsumeMovementInputVector()
+{
+	InputVector = FVector::ZeroVector;
+	return Super::ConsumeMovementInputVector();
 }
 
 void APRCharacter::Landed(const FHitResult& Hit)
@@ -187,7 +211,7 @@ void APRCharacter::Death()
 void APRCharacter::ServerSetMoveState_Implementation(EMoveState NewMoveState)
 {
 	MoveState = NewMoveState;
-	OnRep_MoveState();
+	SetMovement();
 }
 
 void APRCharacter::ServerLock_Implementation(AActor* NewLockTarget)
