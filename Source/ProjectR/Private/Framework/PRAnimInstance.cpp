@@ -8,7 +8,7 @@ UPRAnimInstance::UPRAnimInstance()
 	: Super()
 {
 	Speed = 0.0f;
-	bIsLooking = false;
+	bIsLocking = false;
 	bIsInAir = false;
 }
 
@@ -23,6 +23,6 @@ void UPRAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 	Velocity = User->GetActorRotation().UnrotateVector(Movement->Velocity);
 	Speed = Velocity.Size();
 	
-	bIsLooking = User->IsLocked();
+	bIsLocking = User->IsLocked();
 	bIsInAir = Movement->IsFalling();
 }
