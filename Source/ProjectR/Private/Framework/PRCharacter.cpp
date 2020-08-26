@@ -173,6 +173,12 @@ void APRCharacter::Landed(const FHitResult& Hit)
 
 void APRCharacter::Initialize()
 {
+	if (!CharacterDataTable)
+	{
+		CharacterKey = 0u;
+		return;
+	}
+
 	const auto* Data = CharacterDataTable->FindRow<FCharacterData>(FName{ *FString::FromInt(CharacterKey) }, TEXT(""), false);
 	if (!Data)
 	{
