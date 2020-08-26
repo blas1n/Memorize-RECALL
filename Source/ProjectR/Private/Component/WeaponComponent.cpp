@@ -197,7 +197,7 @@ void UWeaponComponent::Initialize()
 		return;
 
 	if (!NoWeapon) NoWeapon = NewObject<UWeapon>(GetOwner());
-	NoWeapon->Initialize(SkillContext, 0);
+	NoWeapon->Initialize(SkillContext, 0u);
 
 	Weapons.Empty();
 	int32 WeaponNum = Keies.Num();
