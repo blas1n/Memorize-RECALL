@@ -43,6 +43,8 @@ bool UWeapon::Initialize(USkillContext* InContext, uint8 InKey)
 		return false;
 	}
 
+	if (Key == 0u) return true;
+
 	const auto* Data = WeaponDataTable->FindRow<FWeaponData>(FName{ *FString::FromInt(Key) }, TEXT(""), false);
 	if (!Data)
 	{
