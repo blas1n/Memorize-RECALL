@@ -70,9 +70,6 @@ private:
 
 	void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
-	void AddMovementInput(FVector WorldDirection, float ScaleValue = 1.0f, bool bForce = false) override;
-	FVector ConsumeMovementInputVector() override;
-
 	void Landed(const FHitResult& Hit) override;
 
 	void Initialize();
@@ -141,9 +138,6 @@ private:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Data, meta = (AllowPrivateAccess = true))
 	uint8 TeamId;
-
-	UPROPERTY(Transient, BlueprintReadOnly, meta = (AllowPrivateAccess = true))
-	FVector InputVector;
 
 	UPROPERTY(ReplicatedUsing = OnRep_MoveState)
 	EMoveState MoveState;
