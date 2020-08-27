@@ -154,18 +154,6 @@ void APRCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLife
 	DOREPLIFETIME(APRCharacter, bIsLocked);
 }
 
-void APRCharacter::AddMovementInput(FVector WorldDirection, float ScaleValue, bool bForce)
-{
-	Super::AddMovementInput(WorldDirection, ScaleValue, bForce);
-	InputVector += WorldDirection * ScaleValue;
-}
-
-FVector APRCharacter::ConsumeMovementInputVector()
-{
-	InputVector = FVector::ZeroVector;
-	return Super::ConsumeMovementInputVector();
-}
-
 void APRCharacter::Landed(const FHitResult& Hit)
 {
 	OnLand.Broadcast(Hit);
