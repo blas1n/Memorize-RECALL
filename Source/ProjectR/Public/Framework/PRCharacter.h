@@ -19,7 +19,7 @@ class PROJECTR_API APRCharacter final : public ACharacter, public IGenericTeamAg
 	GENERATED_BODY()
 
 public:
-	APRCharacter();
+	APRCharacter(const FObjectInitializer& ObjectInitializer);
 
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly)
 	void SetParryingObject(UObject* NewParryingObject);
