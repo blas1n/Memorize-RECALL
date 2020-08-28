@@ -19,7 +19,7 @@ class PROJECTR_API APRCharacter final : public ACharacter, public IGenericTeamAg
 	GENERATED_BODY()
 
 public:
-	APRCharacter();
+	APRCharacter(const FObjectInitializer& ObjectInitializer);
 
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly)
 	void SetParryingObject(UObject* NewParryingObject);
@@ -69,9 +69,6 @@ private:
 		AController* EventInstigator, AActor* DamageCauser) const override;
 
 	void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
-
-	void AddMovementInput(FVector WorldDirection, float ScaleValue = 1.0f, bool bForce = false) override;
-	FVector ConsumeMovementInputVector() override;
 
 	void Landed(const FHitResult& Hit) override;
 
@@ -141,9 +138,6 @@ private:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Data, meta = (AllowPrivateAccess = true))
 	uint8 TeamId;
-
-	UPROPERTY(Transient, BlueprintReadOnly, meta = (AllowPrivateAccess = true))
-	FVector InputVector;
 
 	UPROPERTY(ReplicatedUsing = OnRep_MoveState)
 	EMoveState MoveState;

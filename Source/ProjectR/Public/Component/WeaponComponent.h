@@ -118,7 +118,7 @@ private:
 	UStaticMeshComponent* LeftWeapon;
 
 	UPROPERTY(EditAnywhere, Category = Data, meta = (AllowPrivateAccess = true))
-	TArray<int32> Keies;
+	TArray<uint8> Keies;
 
 	UPROPERTY(Transient)
 	TArray<UWeapon*> Weapons;

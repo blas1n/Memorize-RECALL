@@ -25,7 +25,7 @@ UWeapon::UWeapon()
 	SkillDataTable = SkillDataTableFinder.Object;
 }
 
-bool UWeapon::Initialize(USkillContext* InContext, int32 InKey)
+bool UWeapon::Initialize(USkillContext* InContext, uint8 InKey)
 {
 	Context = InContext;
 	Key = InKey;
@@ -33,15 +33,23 @@ bool UWeapon::Initialize(USkillContext* InContext, int32 InKey)
 	User = GetTypedOuter<APRCharacter>();
 	if (!User)
 	{
-		Key = 0;
+		Key = 0u;
 		return false;
 	}
+
+	if (!WeaponDataTable)
+	{
+		Key = 0u;
+		return false;
+	}
+
+	if (Key == 0u) return true;
 
 	const auto* Data = WeaponDataTable->FindRow<FWeaponData>(FName{ *FString::FromInt(Key) }, TEXT(""), false);
 	if (!Data)
 	{
 		UE_LOG(LogDataTable, Error, TEXT("Cannot found weapon data %d!"), Key);
-		Key = 0;
+		Key = 0u;
 		return false;
 	}
 
@@ -174,7 +182,7 @@ void UWeapon::LoadAll(const FWeaponData& WeaponData)
 
 void UWeapon::InitSkill(uint8 Level)
 {
-	if (Key == 0) return;
+	if (Key == 0u || !SkillDataTable) return;
 
 	const FString BaseKey = FString::FromInt(Key) + FString::FromInt(Level);
 	const int32 SkillNum = Skills.Num();

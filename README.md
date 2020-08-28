@@ -1,3 +1,3 @@
 # Memorize: RECALL  
 
-It is out UE4 game project.  
+Optional multiplayer Open-World RPG.  

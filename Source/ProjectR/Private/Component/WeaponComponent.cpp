@@ -193,11 +193,13 @@ void UWeaponComponent::Initialize()
 		LeftWeapon->AttachToComponent(MeshComponent, Rules, TEXT("weapon_l"));
 	
 	SkillContext = NewObject<USkillContext>(this);
+	SkillContext->Initialize(RightWeapon, LeftWeapon);
+
 	if (GetOwnerRole() != ENetRole::ROLE_Authority)
 		return;
 
 	if (!NoWeapon) NoWeapon = NewObject<UWeapon>(GetOwner());
-	NoWeapon->Initialize(SkillContext, 0);
+	NoWeapon->Initialize(SkillContext, 0u);
 
 	Weapons.Empty();
 	int32 WeaponNum = Keies.Num();
