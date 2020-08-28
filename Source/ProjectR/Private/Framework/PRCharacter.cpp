@@ -4,11 +4,11 @@
 #include "Components/CapsuleComponent.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "Engine/DataTable.h"
-#include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/Controller.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Net/UnrealNetwork.h"
 #include "UObject/ConstructorHelpers.h"
+#include "Component/PRMovementComponent.h"
 #include "Component/StatComponent.h"
 #include "Component/WeaponComponent.h"
 #include "Data/CharacterData.h"
@@ -16,8 +16,8 @@
 #include "Interface/Parryable.h"
 #include "Library/PRStatics.h"
 
-APRCharacter::APRCharacter()
-	: Super()
+APRCharacter::APRCharacter(const FObjectInitializer& ObjectInitializer)
+	: Super(ObjectInitializer.SetDefaultSubobjectClass<UPRMovementComponent>(CharacterMovementComponentName))
 {
 	PrimaryActorTick.bCanEverTick = true;
 
@@ -154,18 +154,6 @@ void APRCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLife
 	DOREPLIFETIME(APRCharacter, bIsLocked);
 }
 
-void APRCharacter::AddMovementInput(FVector WorldDirection, float ScaleValue, bool bForce)
-{
-	Super::AddMovementInput(WorldDirection, ScaleValue, bForce);
-	InputVector += WorldDirection * ScaleValue;
-}
-
-FVector APRCharacter::ConsumeMovementInputVector()
-{
-	InputVector = FVector::ZeroVector;
-	return Super::ConsumeMovementInputVector();
-}
-
 void APRCharacter::Landed(const FHitResult& Hit)
 {
 	OnLand.Broadcast(Hit);
@@ -173,6 +161,12 @@ void APRCharacter::Landed(const FHitResult& Hit)
 
 void APRCharacter::Initialize()
 {
+	if (!CharacterDataTable)
+	{
+		CharacterKey = 0u;
+		return;
+	}
+
 	const auto* Data = CharacterDataTable->FindRow<FCharacterData>(FName{ *FString::FromInt(CharacterKey) }, TEXT(""), false);
 	if (!Data)
 	{

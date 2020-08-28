@@ -17,7 +17,7 @@ class PROJECTR_API UWeapon final : public UObject
 	
 public:
 	UWeapon();
-	bool Initialize(class USkillContext* InContext, int32 InKey);
+	bool Initialize(class USkillContext* InContext, uint8 InKey);
 
 	void BeginPlay();
 	void EndPlay() {}
@@ -34,7 +34,7 @@ public:
 
 	FORCEINLINE const FVisualData& GetVisualData() const noexcept { return VisualData; }
 	FORCEINLINE float GetComboDuration() const noexcept { return ComboDuration; }
-	FORCEINLINE int32 GetKey() const noexcept { return Key; }
+	FORCEINLINE uint8 GetKey() const noexcept { return Key; }
 
 private:
 	void LoadAll(const struct FWeaponData& WeaponData);
@@ -66,6 +66,6 @@ private:
 	TSubclassOf<USkill> StrongAttackClass;
 	
 	float ComboDuration;
-	int32 Key;
+	uint8 Key;
 	uint8 AsyncLoadCount;
 };

@@ -62,6 +62,8 @@ void UStatComponent::ServerSetLevel_Implementation(uint8 NewLevel)
 
 void UStatComponent::OnRep_Level()
 {
+	if (!StatDataTable) return;
+
 	const FString Key = FString::FromInt(StatKey) + FString::FromInt(Level);
 	const auto* Data = StatDataTable->FindRow<FStatData>(FName{ *Key }, TEXT(""), false);
 	if (!Data)

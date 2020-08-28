@@ -14,7 +14,6 @@ class PROJECTR_API UProjectRDamageType : public UDamageType
 public:
 	FORCEINLINE bool NeedReaction() const noexcept { return bNeedReaction; }
 	FORCEINLINE bool IsWeaponAttack() const noexcept { return bIsWeaponAttack; }
-	FORCEINLINE bool CanHealByDamage() const noexcept { return bCanHealByDamage; }
 
 private:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (AllowPrivateAccess = true))
@@ -22,7 +21,4 @@ private:
 	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (AllowPrivateAccess = true))
 	uint8 bIsWeaponAttack : 1;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (AllowPrivateAccess = true))
-	uint8 bCanHealByDamage : 1;
 };
