@@ -254,7 +254,7 @@ void UWeaponComponent::ServerStopSkill_Implementation()
 
 void UWeaponComponent::ServerSwapWeapon_Implementation(uint8 Index)
 {
-	if (bIsCasting || WeaponIndex == Index)
+	if ((bIsCasting && !bNowCombo) || WeaponIndex == Index)
 		return;
 
 	EquipWeapon(Weapons[Index], true);
