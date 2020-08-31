@@ -70,36 +70,30 @@ void UWeaponComponent::TickExecute(float DeltaSeconds)
 		Weapons[WeaponIndex]->TickExecute(bNowParry ? 0u : SkillIndex + 1, DeltaSeconds);
 }
 
-void UWeaponComponent::ExecuteCombo()
+void UWeaponComponent::EnableCombo()
 {
-	if (!Cast<APawn>(GetOwner())->HasAuthority()) return;
-	check(Weapons.IsValidIndex(WeaponIndex));
+	if (Cast<APawn>(GetOwner())->HasAuthority()
+		&& Weapons.IsValidIndex(WeaponIndex))
+	{
+		bNowCombo = true;
+	}
+}
 
-	bNowCombo = true;
-	GetWorld()->GetTimerManager().SetTimer(ComboTimer, [this]
+void UWeaponComponent::DisableCombo()
+{
+	if (Cast<APawn>(GetOwner())->HasAuthority()
+		&& Weapons.IsValidIndex(WeaponIndex))
 	{
 		bNowCombo = false;
-		if (!bIsCasting)
-		{
-			SkillIndex = 0u;
-			bUseParry = false;
-		}
-	}, Weapons[WeaponIndex]->GetComboDuration(), false);
+	}
 }
 
 void UWeaponComponent::OnEndSkill()
 {
 	if (!bNowCombo)
-	{
 		SkillIndex = 0u;
-		bIsCasting = bUseParry = false;
-	}
 
-	if (bNowParry)
-	{
-		GetWorld()->GetTimerManager().UnPauseTimer(ComboTimer);
-		bNowParry = false;
-	}
+	bIsCasting = bNowParry = false;
 }
 
 #if WITH_EDITOR
@@ -222,30 +216,31 @@ void UWeaponComponent::ServerAttack_Implementation(bool bIsStrongAttack)
 {
 	if ((bIsCasting && !bNowCombo) || !Weapons.IsValidIndex(WeaponIndex)) return;
 
-	ServerStopSkill_Implementation();
-
 	if (bNowCombo)
 	{
-		GetWorld()->GetTimerManager().ClearTimer(ComboTimer);
 		SkillIndex = (2u * SkillIndex) + 2u;
+		ServerStopSkill_Implementation();
 		bNowCombo = false;
 	}
 
 	if (bIsStrongAttack) ++SkillIndex;
 
 	bIsCasting = true;
-	bUseParry = false;
 	Weapons[WeaponIndex]->BeginSkill(SkillIndex + 1u);
 }
 
 void UWeaponComponent::ServerParry_Implementation()
 {
-	if ((!bIsCasting || bNowCombo) && !bUseParry && Weapons.IsValidIndex(WeaponIndex))
+	if ((bIsCasting && !bNowCombo) || !Weapons.IsValidIndex(WeaponIndex)) return;
+
+	if (bNowCombo)
 	{
-		bUseParry = bNowParry = true;
-		GetWorld()->GetTimerManager().PauseTimer(ComboTimer);
-		Weapons[WeaponIndex]->BeginSkill(0u);	
+		ServerStopSkill_Implementation();
+		bNowCombo = false;
 	}
+
+	bIsCasting = bNowParry = true;
+	Weapons[WeaponIndex]->BeginSkill(0u);
 }
 
 void UWeaponComponent::ServerStopSkill_Implementation()

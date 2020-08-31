@@ -33,7 +33,6 @@ public:
 	void TickExecute(uint8 Index, float DeltaSeconds);
 
 	FORCEINLINE const FVisualData& GetVisualData() const noexcept { return VisualData; }
-	FORCEINLINE float GetComboDuration() const noexcept { return ComboDuration; }
 	FORCEINLINE uint8 GetKey() const noexcept { return Key; }
 
 private:
@@ -65,7 +64,6 @@ private:
 	TSubclassOf<USkill> WeakAttackClass;
 	TSubclassOf<USkill> StrongAttackClass;
 	
-	float ComboDuration;
 	uint8 Key;
 	uint8 AsyncLoadCount;
 };
