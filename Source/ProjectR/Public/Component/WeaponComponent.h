@@ -28,7 +28,10 @@ public:
 	void SwapWeapon(uint8 Index);
 
 	UFUNCTION(BlueprintCallable)
-	void AddWeapon(uint8 Index, int32 Kesy);
+	void ChangeWeapon(uint8 Index, int32 Key);
+
+	UFUNCTION(BlueprintCallable)
+	void AddWeapon(int32 Key);
 
 	UFUNCTION(BlueprintCallable)
 	void Execute();
@@ -79,7 +82,10 @@ private:
 	void ServerSwapWeapon(uint8 Index);
 
 	UFUNCTION(Server, Reliable, WithValidation)
-	void ServerAddWeapon(uint8 Index, int32 Key);
+	void ServerChangeWeapon(uint8 Index, int32 Key);
+
+	UFUNCTION(Server, Reliable, WithValidation)
+	void ServerAddWeapon(int32 Key);
 
 	UFUNCTION(NetMulticast, Reliable)
 	void MulticastEquipWeapon(TSubclassOf<UAnimInstance> UnlinkAnim);
@@ -96,8 +102,11 @@ private:
 	void ServerSwapWeapon_Implementation(uint8 Index);
 	FORCEINLINE bool ServerSwapWeapon_Validate(uint8 Index) const noexcept { return Weapons.Num() > Index; }
 
-	void ServerAddWeapon_Implementation(uint8 Index, int32 Key);
-	FORCEINLINE bool ServerAddWeapon_Validate(uint8 Index, int32 Key) const noexcept { return true; }
+	void ServerChangeWeapon_Implementation(uint8 Index, int32 Key);
+	FORCEINLINE bool ServerChangeWeapon_Validate(uint8 Index, int32 Key) const noexcept { return true; }
+
+	void ServerAddWeapon_Implementation(int32 Key);
+	FORCEINLINE bool ServerAddWeapon_Validate(int32 Key) const noexcept { return true; }
 
 	FORCEINLINE void MulticastEquipWeapon_Implementation
 		(TSubclassOf<UAnimInstance> UnlinkAnim) { ApplyWeapon(UnlinkAnim); }

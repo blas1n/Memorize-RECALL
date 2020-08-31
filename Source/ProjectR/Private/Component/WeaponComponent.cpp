@@ -41,9 +41,14 @@ void UWeaponComponent::SwapWeapon(uint8 Index)
 	ServerSwapWeapon(Index);
 }
 
-void UWeaponComponent::AddWeapon(uint8 Index, int32 Key)
+void UWeaponComponent::ChangeWeapon(uint8 Index, int32 Key)
 {
-	ServerAddWeapon(Index, Key);
+	ServerChangeWeapon(Index, Key);
+}
+
+void UWeaponComponent::AddWeapon(int32 Key)
+{
+	ServerAddWeapon(Key);
 }
 
 void UWeaponComponent::Execute()
@@ -172,7 +177,8 @@ void UWeaponComponent::EquipWeapon(UWeapon* NewWeapon, bool bNeedUnequip)
 		FOnAsyncLoadEndedSingle::CreateLambda([this, NewWeapon, bNeedUnequip]
 		{
 			VisualData = NewWeapon->GetVisualData();
-			MulticastEquipWeapon(Weapons[WeaponIndex]->GetVisualData().UpperAnimInstance);
+			MulticastEquipWeapon(bNeedUnequip ? Weapons[WeaponIndex]
+				->GetVisualData().UpperAnimInstance : nullptr);
 		}
 	));
 }
@@ -261,18 +267,10 @@ void UWeaponComponent::ServerSwapWeapon_Implementation(uint8 Index)
 	WeaponIndex = Index;
 }
 
-void UWeaponComponent::ServerAddWeapon_Implementation(uint8 Index, int32 Key)
+void UWeaponComponent::ServerChangeWeapon_Implementation(uint8 Index, int32 Key)
 {
-	if (bIsCasting || (Weapons.IsValidIndex(Index) && Weapons[Index]->GetKey() == Key))
+	if (bIsCasting || !Weapons.IsValidIndex(Index) || Weapons[Index]->GetKey() == Key)
 		return;
-
-	const int32 BeforeWeaponNum = Weapons.Num();
-	if (Index > BeforeWeaponNum)
-		Weapons.SetNum(Index + 1u);
-
-	const int32 AfterWeaponNum = Weapons.Num();
-	for (int32 Idx = BeforeWeaponNum; Idx < AfterWeaponNum; ++Idx)
-		Weapons[Idx] = NoWeapon;
 
 	auto* NewWeapon = NewObject<UWeapon>(GetOwner());
 	NewWeapon->Initialize(SkillContext, Key);
@@ -281,6 +279,24 @@ void UWeaponComponent::ServerAddWeapon_Implementation(uint8 Index, int32 Key)
 		EquipWeapon(NewWeapon, true);
 
 	Weapons[Index] = NewWeapon;
+}
+
+void UWeaponComponent::ServerAddWeapon_Implementation(int32 Key)
+{
+	if (bIsCasting) return;
+
+	UWeapon* NewWeapon = NoWeapon;
+	
+	if (Key != 0)
+	{
+		NewWeapon = NewObject<UWeapon>(GetOwner());
+		NewWeapon->Initialize(SkillContext, Key);
+	}
+
+	if (Weapons.Num() == 0)
+		EquipWeapon(NewWeapon, false);
+
+	Weapons.Add(NewWeapon);
 }
 
 void UWeaponComponent::ApplyWeapon(TSubclassOf<UAnimInstance> UnlinkAnim)
