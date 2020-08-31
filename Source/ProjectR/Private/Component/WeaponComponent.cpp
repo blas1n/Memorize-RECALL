@@ -91,7 +91,7 @@ void UWeaponComponent::DisableCombo()
 void UWeaponComponent::OnEndSkill()
 {
 	if (!bNowCombo)
-		SkillIndex = 0u;
+		SkillIndex = 255u;
 
 	bIsCasting = bNowParry = false;
 }
@@ -129,6 +129,8 @@ void UWeaponComponent::BeginPlay()
 
 		if (Weapons.Num() > 0)
 			EquipWeapon(Weapons[0], false);
+
+		SkillIndex = 255u;
 	}
 	else ApplyWeapon(nullptr);
 }
@@ -218,11 +220,12 @@ void UWeaponComponent::ServerAttack_Implementation(bool bIsStrongAttack)
 
 	if (bNowCombo)
 	{
-		SkillIndex = (2u * SkillIndex) + 2u;
 		ServerStopSkill_Implementation();
+		
 		bNowCombo = false;
 	}
 
+	SkillIndex = SkillIndex != 255u ? (2u * SkillIndex) + 2u : 0u;
 	if (bIsStrongAttack) ++SkillIndex;
 
 	bIsCasting = true;
