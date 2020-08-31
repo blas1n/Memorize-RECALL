@@ -41,9 +41,14 @@ void UWeaponComponent::SwapWeapon(uint8 Index)
 	ServerSwapWeapon(Index);
 }
 
-void UWeaponComponent::AddWeapon(uint8 Index, int32 Key)
+void UWeaponComponent::ChangeWeapon(uint8 Index, int32 Key)
 {
-	ServerAddWeapon(Index, Key);
+	ServerChangeWeapon(Index, Key);
+}
+
+void UWeaponComponent::AddWeapon(int32 Key)
+{
+	ServerAddWeapon(Key);
 }
 
 void UWeaponComponent::Execute()
@@ -70,36 +75,30 @@ void UWeaponComponent::TickExecute(float DeltaSeconds)
 		Weapons[WeaponIndex]->TickExecute(bNowParry ? 0u : SkillIndex + 1, DeltaSeconds);
 }
 
-void UWeaponComponent::ExecuteCombo()
+void UWeaponComponent::EnableCombo()
 {
-	if (!Cast<APawn>(GetOwner())->HasAuthority()) return;
-	check(Weapons.IsValidIndex(WeaponIndex));
+	if (Cast<APawn>(GetOwner())->HasAuthority()
+		&& Weapons.IsValidIndex(WeaponIndex))
+	{
+		bNowCombo = true;
+	}
+}
 
-	bNowCombo = true;
-	GetWorld()->GetTimerManager().SetTimer(ComboTimer, [this]
+void UWeaponComponent::DisableCombo()
+{
+	if (Cast<APawn>(GetOwner())->HasAuthority()
+		&& Weapons.IsValidIndex(WeaponIndex))
 	{
 		bNowCombo = false;
-		if (!bIsCasting)
-		{
-			SkillIndex = 0u;
-			bUseParry = false;
-		}
-	}, Weapons[WeaponIndex]->GetComboDuration(), false);
+	}
 }
 
 void UWeaponComponent::OnEndSkill()
 {
 	if (!bNowCombo)
-	{
-		SkillIndex = 0u;
-		bIsCasting = bUseParry = false;
-	}
+		SkillIndex = 255u;
 
-	if (bNowParry)
-	{
-		GetWorld()->GetTimerManager().UnPauseTimer(ComboTimer);
-		bNowParry = false;
-	}
+	bIsCasting = bNowParry = false;
 }
 
 #if WITH_EDITOR
@@ -135,6 +134,8 @@ void UWeaponComponent::BeginPlay()
 
 		if (Weapons.Num() > 0)
 			EquipWeapon(Weapons[0], false);
+
+		SkillIndex = 255u;
 	}
 	else ApplyWeapon(nullptr);
 }
@@ -176,7 +177,8 @@ void UWeaponComponent::EquipWeapon(UWeapon* NewWeapon, bool bNeedUnequip)
 		FOnAsyncLoadEndedSingle::CreateLambda([this, NewWeapon, bNeedUnequip]
 		{
 			VisualData = NewWeapon->GetVisualData();
-			MulticastEquipWeapon(Weapons[WeaponIndex]->GetVisualData().UpperAnimInstance);
+			MulticastEquipWeapon(bNeedUnequip ? Weapons[WeaponIndex]
+				->GetVisualData().UpperAnimInstance : nullptr);
 		}
 	));
 }
@@ -222,30 +224,32 @@ void UWeaponComponent::ServerAttack_Implementation(bool bIsStrongAttack)
 {
 	if ((bIsCasting && !bNowCombo) || !Weapons.IsValidIndex(WeaponIndex)) return;
 
-	ServerStopSkill_Implementation();
-
 	if (bNowCombo)
 	{
-		GetWorld()->GetTimerManager().ClearTimer(ComboTimer);
-		SkillIndex = (2u * SkillIndex) + 2u;
+		ServerStopSkill_Implementation();
+		
 		bNowCombo = false;
 	}
 
+	SkillIndex = SkillIndex != 255u ? (2u * SkillIndex) + 2u : 0u;
 	if (bIsStrongAttack) ++SkillIndex;
 
 	bIsCasting = true;
-	bUseParry = false;
 	Weapons[WeaponIndex]->BeginSkill(SkillIndex + 1u);
 }
 
 void UWeaponComponent::ServerParry_Implementation()
 {
-	if ((!bIsCasting || bNowCombo) && !bUseParry && Weapons.IsValidIndex(WeaponIndex))
+	if ((bIsCasting && !bNowCombo) || !Weapons.IsValidIndex(WeaponIndex)) return;
+
+	if (bNowCombo)
 	{
-		bUseParry = bNowParry = true;
-		GetWorld()->GetTimerManager().PauseTimer(ComboTimer);
-		Weapons[WeaponIndex]->BeginSkill(0u);	
+		ServerStopSkill_Implementation();
+		bNowCombo = false;
 	}
+
+	bIsCasting = bNowParry = true;
+	Weapons[WeaponIndex]->BeginSkill(0u);
 }
 
 void UWeaponComponent::ServerStopSkill_Implementation()
@@ -256,25 +260,17 @@ void UWeaponComponent::ServerStopSkill_Implementation()
 
 void UWeaponComponent::ServerSwapWeapon_Implementation(uint8 Index)
 {
-	if (bIsCasting || WeaponIndex == Index)
+	if ((bIsCasting && !bNowCombo) || WeaponIndex == Index)
 		return;
 
 	EquipWeapon(Weapons[Index], true);
 	WeaponIndex = Index;
 }
 
-void UWeaponComponent::ServerAddWeapon_Implementation(uint8 Index, int32 Key)
+void UWeaponComponent::ServerChangeWeapon_Implementation(uint8 Index, int32 Key)
 {
-	if (bIsCasting || (Weapons.IsValidIndex(Index) && Weapons[Index]->GetKey() == Key))
+	if (bIsCasting || !Weapons.IsValidIndex(Index) || Weapons[Index]->GetKey() == Key)
 		return;
-
-	const int32 BeforeWeaponNum = Weapons.Num();
-	if (Index > BeforeWeaponNum)
-		Weapons.SetNum(Index + 1u);
-
-	const int32 AfterWeaponNum = Weapons.Num();
-	for (int32 Idx = BeforeWeaponNum; Idx < AfterWeaponNum; ++Idx)
-		Weapons[Idx] = NoWeapon;
 
 	auto* NewWeapon = NewObject<UWeapon>(GetOwner());
 	NewWeapon->Initialize(SkillContext, Key);
@@ -283,6 +279,24 @@ void UWeaponComponent::ServerAddWeapon_Implementation(uint8 Index, int32 Key)
 		EquipWeapon(NewWeapon, true);
 
 	Weapons[Index] = NewWeapon;
+}
+
+void UWeaponComponent::ServerAddWeapon_Implementation(int32 Key)
+{
+	if (bIsCasting) return;
+
+	UWeapon* NewWeapon = NoWeapon;
+	
+	if (Key != 0)
+	{
+		NewWeapon = NewObject<UWeapon>(GetOwner());
+		NewWeapon->Initialize(SkillContext, Key);
+	}
+
+	if (Weapons.Num() == 0)
+		EquipWeapon(NewWeapon, false);
+
+	Weapons.Add(NewWeapon);
 }
 
 void UWeaponComponent::ApplyWeapon(TSubclassOf<UAnimInstance> UnlinkAnim)

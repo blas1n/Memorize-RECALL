@@ -7,7 +7,6 @@
 #include "SkillContext.generated.h"
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnAnimationEnded);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnHit, AActor*, Target);
 
 UCLASS(BlueprintType)
 class PROJECTR_API USkillContext final : public UNetworkObject
@@ -18,19 +17,12 @@ public:
 	void Initialize(class UStaticMeshComponent* InRightWeapon, UStaticMeshComponent* InLeftWeapon);
 	
 	UFUNCTION(BlueprintCallable)
-	void SetWeaponCollision(bool bEnableRight, bool bEnableLeft);
-	
-	UFUNCTION(BlueprintCallable)
 	void PlayAnimation(class UAnimMontage* Animation);
 
 	UFUNCTION(BlueprintCallable)
 	void StopAnimation(UAnimMontage* Animation);
 
 private:
-	UFUNCTION()
-	void OnWeaponOverlapped(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
-		UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
-
 	UFUNCTION()
 	void OnMontageEnded(UAnimMontage* Montage, bool bInterrupted);
 
@@ -45,15 +37,12 @@ private:
 
 public:
 	UPROPERTY(BlueprintAssignable)
-	FOnHit OnHit;
-
-	UPROPERTY(BlueprintAssignable)
 	FOnAnimationEnded OnAnimationEnded;
 
 private:
-	UPROPERTY(Transient)
+	UPROPERTY(Transient, BlueprintReadOnly, meta = (AllowPrivateAccess = true))
 	UStaticMeshComponent* RightWeapon;
 	
-	UPROPERTY(Transient)
+	UPROPERTY(Transient, BlueprintReadOnly, meta = (AllowPrivateAccess = true))
 	UStaticMeshComponent* LeftWeapon;
 };
