@@ -3,22 +3,12 @@
 #include "Misc/SkillContext.h"
 #include "Animation/AnimInstance.h"
 #include "Components/SkeletalMeshComponent.h"
-#include "Components/StaticMeshComponent.h"
 #include "GameFramework/Character.h"
 
 void USkillContext::Initialize(UStaticMeshComponent* InRightWeapon, UStaticMeshComponent* InLeftWeapon)
 {
 	RightWeapon = InRightWeapon;
 	LeftWeapon = InLeftWeapon;
-
-	RightWeapon->OnComponentBeginOverlap.AddDynamic(this, &USkillContext::OnWeaponOverlapped);
-	LeftWeapon->OnComponentBeginOverlap.AddDynamic(this, &USkillContext::OnWeaponOverlapped);
-}
-
-void USkillContext::SetWeaponCollision(bool bEnableRight, bool bEnableLeft)
-{
-	RightWeapon->SetCollisionEnabled(bEnableRight ? ECollisionEnabled::QueryOnly : ECollisionEnabled::NoCollision);
-	LeftWeapon->SetCollisionEnabled(bEnableLeft ? ECollisionEnabled::QueryOnly : ECollisionEnabled::NoCollision);
 }
 
 void USkillContext::PlayAnimation(UAnimMontage* Animation)
@@ -37,12 +27,6 @@ void USkillContext::StopAnimation(UAnimMontage* Animation)
 
 	User->GetMesh()->GetAnimInstance()->OnMontageEnded.RemoveDynamic(this, &USkillContext::OnMontageEnded);
 	MulticastStopAnimation(Animation);
-}
-
-void USkillContext::OnWeaponOverlapped(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
-	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
-{
-	OnHit.Broadcast(OtherActor);
 }
 
 void USkillContext::OnMontageEnded(UAnimMontage* Montage, bool bInterrupted)
