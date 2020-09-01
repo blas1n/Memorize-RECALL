@@ -240,11 +240,6 @@ void APRCharacter::OnRep_MoveState()
 	SetMovement();
 }
 
-void APRCharacter::OnRep_LockTarget()
-{
-	SetMovement();
-}
-
 void APRCharacter::OnRep_IsLocked()
 {
 	SetMovement();

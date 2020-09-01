@@ -102,9 +102,6 @@ private:
 	void OnRep_MoveState();
 
 	UFUNCTION()
-	void OnRep_LockTarget();
-
-	UFUNCTION()
 	void OnRep_IsLocked();
 
 	void SetMovement();
