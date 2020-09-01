@@ -4,14 +4,19 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/PlayerController.h"
+#include "GenericTeamAgentInterface.h"
 #include "PRPlayerController.generated.h"
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnInteract);
 
 UCLASS(BlueprintType)
-class PROJECTR_API APRPlayerController final : public APlayerController
+class PROJECTR_API APRPlayerController final : public APlayerController, public IGenericTeamAgentInterface
 {
 	GENERATED_BODY()
+
+public:
+	FGenericTeamId GetGenericTeamId() const override;
+	void SetGenericTeamId(const FGenericTeamId& NewTeamId) override;
 
 private:
 	void SetupInputComponent() override;
