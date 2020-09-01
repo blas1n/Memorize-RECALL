@@ -7,8 +7,23 @@
 #include "TimerManager.h"
 #include "Component/WeaponComponent.h"
 #include "Framework/PRCharacter.h"
+#include "Perception/AISenseConfig_Sight.h"
 
 DECLARE_DELEGATE_OneParam(FIndexer, uint8);
+
+FGenericTeamId APRPlayerController::GetGenericTeamId() const
+{
+	if (auto* MyPawn = GetPawn<IGenericTeamAgentInterface>())
+		return MyPawn->GetGenericTeamId();
+
+	return FGenericTeamId::NoTeam;
+}
+
+void APRPlayerController::SetGenericTeamId(const FGenericTeamId& NewTeamId)
+{
+	if (auto* MyPawn = GetPawn<IGenericTeamAgentInterface>())
+		return MyPawn->SetGenericTeamId(NewTeamId);
+}
 
 void APRPlayerController::SetupInputComponent()
 {
