@@ -211,15 +211,21 @@ void APRCharacter::ServerSetMoveState_Implementation(EMoveState NewMoveState)
 void APRCharacter::ServerLock_Implementation(AActor* NewLockTarget)
 {
 	LockTarget = NewLockTarget;
+	
+	const bool bWasLocked = bIsLocked;
 	bIsLocked = true;
-	SetMovement();
+
+	if (!bWasLocked) SetMovement();
 }
 
 void APRCharacter::ServerUnlock_Implementation()
 {
 	LockTarget = nullptr;
+
+	const bool bWasLocked = bIsLocked;
 	bIsLocked = false;
-	SetMovement();
+	
+	if (bWasLocked) SetMovement();
 }
 
 void APRCharacter::MulticastDeath_Implementation()
