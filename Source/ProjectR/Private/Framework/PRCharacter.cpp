@@ -258,12 +258,7 @@ void APRCharacter::SetMovement()
 	else if (bIsLocked)
 	{
 		Speed = StatComponent->GetLockSpeed();
-
-		if (LockTarget)
-		{
-			bOrientRotationToMovement = false;
-			bUseControllerDesiredRotation = true;
-		}
+		bUseControllerDesiredRotation = bOrientRotationToMovement = false;
 	}
 
 	auto* Movement = GetCharacterMovement();
