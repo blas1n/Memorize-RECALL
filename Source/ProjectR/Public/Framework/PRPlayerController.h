@@ -49,4 +49,11 @@ private:
 public:
 	UPROPERTY(BlueprintAssignable)
 	FOnInteract OnInteract;
+
+private:
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = true))
+	class UTargetComponent* Targeter;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = true))
+	class UAIPerceptionComponent* Perception;
 };

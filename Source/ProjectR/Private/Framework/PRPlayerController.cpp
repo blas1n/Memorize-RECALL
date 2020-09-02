@@ -4,12 +4,24 @@
 #include "Engine/World.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
+#include "Perception/AIPerceptionComponent.h"
 #include "TimerManager.h"
+#include "Component/TargetComponent.h"
 #include "Component/WeaponComponent.h"
 #include "Framework/PRCharacter.h"
 #include "Perception/AISenseConfig_Sight.h"
 
 DECLARE_DELEGATE_OneParam(FIndexer, uint8);
+
+APRPlayerController::APRPlayerController()
+	: Super()
+{
+	PrimaryActorTick.bCanEverTick = true;
+	bAllowTickBeforeBeginPlay = false;
+
+	Targeter = CreateDefaultSubobject<UTargetComponent>(TEXT("Targeter"));
+	Perception = CreateDefaultSubobject<UAIPerceptionComponent>(TEXT("Perception"));
+}
 
 FGenericTeamId APRPlayerController::GetGenericTeamId() const
 {
@@ -24,6 +36,14 @@ void APRPlayerController::SetGenericTeamId(const FGenericTeamId& NewTeamId)
 	if (auto* MyPawn = GetPawn<IGenericTeamAgentInterface>())
 		return MyPawn->SetGenericTeamId(NewTeamId);
 }
+
+void APRPlayerController::BeginPlay()
+{
+	Super::BeginPlay();
+
+	Targeter->Initialize(Perception);
+}
+
 
 void APRPlayerController::SetupInputComponent()
 {
@@ -145,7 +165,7 @@ void APRPlayerController::SwapWeapon(float Value)
 void APRPlayerController::Lock()
 {
 	if (APRCharacter* MyPawn = GetPawn<APRCharacter>())
-		MyPawn->Lock(nullptr);
+		MyPawn->Lock(Targeter->GetTargetedActor());
 }
 
 void APRPlayerController::Unlock()
