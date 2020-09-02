@@ -62,6 +62,13 @@ bool UWeapon::Initialize(USkillContext* InContext, uint8 InKey)
 	if (Data->ParryingClass)
 		Skills[0].Skill = NewObject<USkill>(this, Data->ParryingClass);
 
+	if ((AttackClass = Data->AttackClass))
+	{
+		USkill* Attack = NewObject<USkill>(this, AttackClass);
+		for (int32 Index = 1; Index < SkillNum; ++Index)
+			Skills[Index].Skill = Attack;
+	}
+
 	for (const auto& Skill : Data->Skills)
 		if (Skill.Value)
 			Skills[Skill.Key].Skill = NewObject<USkill>(this, Skill.Value);
@@ -176,12 +183,10 @@ void UWeapon::InitSkill(uint8 Level)
 	const int32 SkillNum = Skills.Num();
 	for (int32 Idx = 0; Idx < SkillNum; ++Idx)
 	{
-		USkill* Skill = Skills[Idx];
-		if (!Skill) continue;
-
-		const TSubclassOf<USkill> DefaultClass = Idx % 2 ? WeakAttackClass : StrongAttackClass;
-		const int32 Prefix = ((Idx == 0) || Skill->GetClass() == DefaultClass) ? 0 : 1;
-
+		FUsableSkill& Skill = Skills[Idx];
+		if (!Skill.Skill) continue;
+		
+		const int32 Prefix = ((Idx == 0) || Skill.Skill->GetClass() == AttackClass) ? 0 : 1;
 		int32 SkillIdx = Idx;
 		if (Prefix == 0 && Idx != 0)
 		{
@@ -197,6 +202,6 @@ void UWeapon::InitSkill(uint8 Level)
 			continue;
 		}
 
-		Skill->Initialize(Context, Data ? Data->Data : nullptr);
+		Skill.Data = Data->Data;
 	}
 }
