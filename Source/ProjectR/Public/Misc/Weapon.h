@@ -10,6 +10,19 @@
 DECLARE_DELEGATE(FOnAsyncLoadEndedSingle);
 DECLARE_MULTICAST_DELEGATE(FOnAsyncLoadEnded);
 
+USTRUCT()
+struct FUsableSkill
+{
+	GENERATED_BODY()
+
+	UPROPERTY()
+	class USkill* Skill;
+
+	UPROPERTY()
+	class UDataAsset* Data;
+};
+
+
 UCLASS(BlueprintType)
 class PROJECTR_API UWeapon final : public UObject
 {
@@ -45,7 +58,7 @@ private:
 	class APRCharacter* User;
 	
 	UPROPERTY(Transient)
-	TArray<class USkill*> Skills;
+	TArray<FUsableSkill> Skills;
 
 	UPROPERTY(Transient)
 	USkillContext* Context;

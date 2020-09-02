@@ -57,18 +57,18 @@ bool UWeapon::Initialize(USkillContext* InContext, uint8 InKey)
 	for (uint8 Idx = 1u; Idx <= Data->ComboHeight; ++Idx)
 		SkillNum += static_cast<int32>(FMath::Pow(2, Idx));
 
-	Skills.Init(nullptr, SkillNum);
+	Skills.Init(FUsableSkill{}, SkillNum);
 
 	if (Data->ParryingClass)
-		Skills[0] = NewObject<USkill>(this, Data->ParryingClass);
+		Skills[0].Skill = NewObject<USkill>(this, Data->ParryingClass);
 
 	for (const auto& Skill : Data->Skills)
 		if (Skill.Value)
-			Skills[Skill.Key] = NewObject<USkill>(this, Skill.Value);
+			Skills[Skill.Key].Skill = NewObject<USkill>(this, Skill.Value);
 
-	for (int32 Index = 1; Index < SkillNum; ++Index)
-	{
-		if (Skills[Index]) continue;
+	for (FUsableSkill& Skill : Skills)
+		if (Skill.Skill)
+			Skill.Skill->Initialize();
 
 	VisualData.UpperAnimInstance = Data->UpperAnimInstance;
 	VisualData.RightTransform = Data->RightTransform;
@@ -85,26 +85,24 @@ void UWeapon::BeginPlay()
 
 void UWeapon::BeginSkill(uint8 Index)
 {
-	if (Skills.IsValidIndex(Index))
+	if (!Skills.IsValidIndex(Index))
 	{
-		if (USkill* Skill = Skills[Index])
-		{
-			if (Skill->CanUseSkill())
-			{
-				Skill->Begin();
-				return;
-			}
-		}
+		User->GetWeaponComponent()->OnEndSkill();
+		return;
 	}
 
-	User->GetWeaponComponent()->OnEndSkill();
+	FUsableSkill& Skill = Skills[Index];
+	if (Skill.Skill && Skill.Skill->CanUseSkill())
+		Skill.Skill->Begin(Context, Skill.Data);
 }
 
 void UWeapon::EndSkill(uint8 Index)
 {
-	if (Skills.IsValidIndex(Index))
-		if (USkill* Skill = Skills[Index])
-			Skill->End();
+	if (!Skills.IsValidIndex(Index))
+		return;
+	
+	FUsableSkill& Skill = Skills[Index];
+	if (Skill.Skill) Skill.Skill->End();
 }
 
 void UWeapon::RegisterOnAsyncLoadEnded(const FOnAsyncLoadEndedSingle& Callback)
@@ -118,7 +116,7 @@ void UWeapon::Execute(uint8 Index)
 {
 	if (!Skills.IsValidIndex(Index)) return;
 
-	USkill* Skill = Skills[Index];
+	USkill* Skill = Skills[Index].Skill;
 	if (Skill && Skill->GetClass()->ImplementsInterface(UExecutable::StaticClass()))
 		return IExecutable::Execute_Execute(Skill);
 }
@@ -127,7 +125,7 @@ void UWeapon::BeginExecute(uint8 Index)
 {
 	if (!Skills.IsValidIndex(Index)) return;
 
-	USkill* Skill = Skills[Index];
+	USkill* Skill = Skills[Index].Skill;
 	if (Skill && Skill->GetClass()->ImplementsInterface(UStateExecutable::StaticClass()))
 		return IStateExecutable::Execute_BeginExecute(Skill);
 }
@@ -136,7 +134,7 @@ void UWeapon::EndExecute(uint8 Index)
 {
 	if (!Skills.IsValidIndex(Index)) return;
 
-	USkill* Skill = Skills[Index];
+	USkill* Skill = Skills[Index].Skill;
 	if (Skill && Skill->GetClass()->ImplementsInterface(UStateExecutable::StaticClass()))
 		return IStateExecutable::Execute_EndExecute(Skill);
 }
@@ -145,7 +143,7 @@ void UWeapon::TickExecute(uint8 Index, float DeltaSeconds)
 {
 	if (!Skills.IsValidIndex(Index)) return;
 
-	USkill* Skill = Skills[Index];
+	USkill* Skill = Skills[Index].Skill;
 	if (Skill && Skill->GetClass()->ImplementsInterface(UStateExecutable::StaticClass()))
 		return IStateExecutable::Execute_TickExecute(Skill, DeltaSeconds);
 }
