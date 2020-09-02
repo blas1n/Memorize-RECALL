@@ -53,31 +53,29 @@ bool UWeapon::Initialize(USkillContext* InContext, uint8 InKey)
 		return false;
 	}
 
-	WeakAttackClass = Data->WeakAttackClass;
-	StrongAttackClass = Data->StrongAttackClass;
-
 	int32 SkillNum = 1;
 	for (uint8 Idx = 1u; Idx <= Data->ComboHeight; ++Idx)
 		SkillNum += static_cast<int32>(FMath::Pow(2, Idx));
 
-	Skills.Init(nullptr, SkillNum);
+	Skills.Init(FUsableSkill{}, SkillNum);
 
 	if (Data->ParryingClass)
-		Skills[0] = NewObject<USkill>(this, Data->ParryingClass);
+		Skills[0].Skill = NewObject<USkill>(this, Data->ParryingClass);
+
+	if ((AttackClass = Data->AttackClass))
+	{
+		USkill* Attack = NewObject<USkill>(this, AttackClass);
+		for (int32 Index = 1; Index < SkillNum; ++Index)
+			Skills[Index].Skill = Attack;
+	}
 
 	for (const auto& Skill : Data->Skills)
 		if (Skill.Value)
-			Skills[Skill.Key] = NewObject<USkill>(this, Skill.Value);
+			Skills[Skill.Key].Skill = NewObject<USkill>(this, Skill.Value);
 
-	for (int32 Index = 1; Index < SkillNum; ++Index)
-	{
-		if (Skills[Index]) continue;
-
-		if ((Index % 2) && WeakAttackClass)
-			Skills[Index] = NewObject<USkill>(this, WeakAttackClass);
-		else if (StrongAttackClass)
-			Skills[Index] = NewObject<USkill>(this, StrongAttackClass);
-	}
+	for (FUsableSkill& Skill : Skills)
+		if (Skill.Skill)
+			Skill.Skill->Initialize();
 
 	VisualData.UpperAnimInstance = Data->UpperAnimInstance;
 	VisualData.RightTransform = Data->RightTransform;
@@ -94,26 +92,24 @@ void UWeapon::BeginPlay()
 
 void UWeapon::BeginSkill(uint8 Index)
 {
-	if (Skills.IsValidIndex(Index))
+	if (!Skills.IsValidIndex(Index))
 	{
-		if (USkill* Skill = Skills[Index])
-		{
-			if (Skill->CanUseSkill())
-			{
-				Skill->Begin();
-				return;
-			}
-		}
+		User->GetWeaponComponent()->OnEndSkill();
+		return;
 	}
 
-	User->GetWeaponComponent()->OnEndSkill();
+	FUsableSkill& Skill = Skills[Index];
+	if (Skill.Skill && Skill.Skill->CanUseSkill())
+		Skill.Skill->Begin(Context, Skill.Data);
 }
 
 void UWeapon::EndSkill(uint8 Index)
 {
-	if (Skills.IsValidIndex(Index))
-		if (USkill* Skill = Skills[Index])
-			Skill->End();
+	if (!Skills.IsValidIndex(Index))
+		return;
+	
+	FUsableSkill& Skill = Skills[Index];
+	if (Skill.Skill) Skill.Skill->End();
 }
 
 void UWeapon::RegisterOnAsyncLoadEnded(const FOnAsyncLoadEndedSingle& Callback)
@@ -127,7 +123,7 @@ void UWeapon::Execute(uint8 Index)
 {
 	if (!Skills.IsValidIndex(Index)) return;
 
-	USkill* Skill = Skills[Index];
+	USkill* Skill = Skills[Index].Skill;
 	if (Skill && Skill->GetClass()->ImplementsInterface(UExecutable::StaticClass()))
 		return IExecutable::Execute_Execute(Skill);
 }
@@ -136,7 +132,7 @@ void UWeapon::BeginExecute(uint8 Index)
 {
 	if (!Skills.IsValidIndex(Index)) return;
 
-	USkill* Skill = Skills[Index];
+	USkill* Skill = Skills[Index].Skill;
 	if (Skill && Skill->GetClass()->ImplementsInterface(UStateExecutable::StaticClass()))
 		return IStateExecutable::Execute_BeginExecute(Skill);
 }
@@ -145,7 +141,7 @@ void UWeapon::EndExecute(uint8 Index)
 {
 	if (!Skills.IsValidIndex(Index)) return;
 
-	USkill* Skill = Skills[Index];
+	USkill* Skill = Skills[Index].Skill;
 	if (Skill && Skill->GetClass()->ImplementsInterface(UStateExecutable::StaticClass()))
 		return IStateExecutable::Execute_EndExecute(Skill);
 }
@@ -154,7 +150,7 @@ void UWeapon::TickExecute(uint8 Index, float DeltaSeconds)
 {
 	if (!Skills.IsValidIndex(Index)) return;
 
-	USkill* Skill = Skills[Index];
+	USkill* Skill = Skills[Index].Skill;
 	if (Skill && Skill->GetClass()->ImplementsInterface(UStateExecutable::StaticClass()))
 		return IStateExecutable::Execute_TickExecute(Skill, DeltaSeconds);
 }
@@ -187,12 +183,10 @@ void UWeapon::InitSkill(uint8 Level)
 	const int32 SkillNum = Skills.Num();
 	for (int32 Idx = 0; Idx < SkillNum; ++Idx)
 	{
-		USkill* Skill = Skills[Idx];
-		if (!Skill) continue;
-
-		const TSubclassOf<USkill> DefaultClass = Idx % 2 ? WeakAttackClass : StrongAttackClass;
-		const int32 Prefix = ((Idx == 0) || Skill->GetClass() == DefaultClass) ? 0 : 1;
-
+		FUsableSkill& Skill = Skills[Idx];
+		if (!Skill.Skill) continue;
+		
+		const int32 Prefix = ((Idx == 0) || Skill.Skill->GetClass() == AttackClass) ? 0 : 1;
 		int32 SkillIdx = Idx;
 		if (Prefix == 0 && Idx != 0)
 		{
@@ -208,6 +202,6 @@ void UWeapon::InitSkill(uint8 Level)
 			continue;
 		}
 
-		Skill->Initialize(Context, Data ? Data->Data : nullptr);
+		Skill.Data = Data->Data;
 	}
 }

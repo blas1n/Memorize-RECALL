@@ -12,10 +12,10 @@ class PROJECTR_API USkill final : public UObject
 	GENERATED_BODY()
 	
 public:
-	void Initialize(class USkillContext* InContext, class UDataAsset* Data);
+	void Initialize();
 
 	UFUNCTION(BlueprintCallable)
-	void Begin();
+	void Begin(class USkillContext* Context, class UDataAsset* Data);
 
 	UFUNCTION(BlueprintCallable)
 	void End();
@@ -26,11 +26,8 @@ public:
 	UWorld* GetWorld() const override;
 
 protected:
-	UFUNCTION(BlueprintImplementableEvent, meta = (DisplayName = "Initialize"))
-	void ReceiveInitialize(UDataAsset* Data);
-
 	UFUNCTION(BlueprintImplementableEvent, meta = (DisplayName = "Begin"))
-	void ReceiveBegin();
+	void ReceiveBegin(USkillContext* Context, UDataAsset* Data);
 
 	UFUNCTION(BlueprintImplementableEvent, meta = (DisplayName = "End"))
 	void ReceiveEnd();
@@ -41,9 +38,4 @@ private:
 private:
 	UPROPERTY(Transient, BlueprintReadOnly, Category = Owner, meta = (AllowPrivateAccess = true))
 	class APRCharacter* User;
-
-	UPROPERTY(Transient, BlueprintReadOnly, Category = Owner, meta = (AllowPrivateAccess = true))
-	USkillContext* Context;
-
-	uint8 bIsExecute : 1;
 };

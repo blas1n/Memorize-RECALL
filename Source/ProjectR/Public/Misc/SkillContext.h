@@ -6,7 +6,7 @@
 #include "NetworkObject.h"
 #include "SkillContext.generated.h"
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnAnimationEnded);
+DECLARE_DYNAMIC_DELEGATE(FOnAnimationEnded);
 
 UCLASS(BlueprintType)
 class PROJECTR_API USkillContext final : public UNetworkObject
@@ -17,7 +17,7 @@ public:
 	void Initialize(class UStaticMeshComponent* InRightWeapon, UStaticMeshComponent* InLeftWeapon);
 	
 	UFUNCTION(BlueprintCallable)
-	void PlayAnimation(class UAnimMontage* Animation);
+	void PlayAnimation(class UAnimMontage* Animation, const FOnAnimationEnded& OnAnimationEnded);
 
 	UFUNCTION(BlueprintCallable)
 	void StopAnimation(UAnimMontage* Animation);
@@ -35,14 +35,16 @@ private:
 	void MulticastPlayAnimation_Implementation(UAnimMontage* Animation);
 	void MulticastStopAnimation_Implementation(UAnimMontage* Animation);
 
-public:
-	UPROPERTY(BlueprintAssignable)
-	FOnAnimationEnded OnAnimationEnded;
-
 private:
 	UPROPERTY(Transient, BlueprintReadOnly, meta = (AllowPrivateAccess = true))
 	UStaticMeshComponent* RightWeapon;
 	
 	UPROPERTY(Transient, BlueprintReadOnly, meta = (AllowPrivateAccess = true))
 	UStaticMeshComponent* LeftWeapon;
+
+	UPROPERTY(Transient)
+	class ACharacter* User;
+
+	UPROPERTY(Transient)
+	TMap<UAnimMontage*, FOnAnimationEnded> Callbacks;
 };
