@@ -4,31 +4,19 @@
 #include "Component/WeaponComponent.h"
 #include "Framework/PRCharacter.h"
 
-void USkill::Initialize(USkillContext* InContext, UDataAsset* Data)
+void USkill::Initialize()
 {
 	User = GetTypedOuter<APRCharacter>();
-	Context = InContext;
-
-	ReceiveInitialize(Data);
 }
 
-void USkill::Begin()
+void USkill::Begin(USkillContext* Context, UDataAsset* Data)
 {
-	if (bIsExecute)
-		return;
-
-	bIsExecute = true;
-	ReceiveBegin();
+	ReceiveBegin(Context, Data);
 }
 
 void USkill::End()
 {
-	if (!bIsExecute)
-		return;
-
-	bIsExecute = false;
 	ReceiveEnd();
-
 	User->GetWeaponComponent()->OnEndSkill();
 }
 
