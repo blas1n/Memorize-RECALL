@@ -123,8 +123,7 @@ float APRCharacter::TakeDamage(float Damage, const FDamageEvent& DamageEvent,
 		IParryable::Execute_Parry(ParryingObject, Damage, Character);
 		return 0.0f;
 	}
-		
-
+	
 	StatComponent->Heal(-Damage);
 	if (StatComponent->GetHealth() <= 0.0f) Death();
 
@@ -211,7 +210,7 @@ void APRCharacter::ServerSetMoveState_Implementation(EMoveState NewMoveState)
 void APRCharacter::ServerLock_Implementation(AActor* NewLockTarget)
 {
 	LockTarget = NewLockTarget;
-	
+
 	const bool bWasLocked = bIsLocked;
 	bIsLocked = true;
 
