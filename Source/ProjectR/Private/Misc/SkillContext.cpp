@@ -9,30 +9,40 @@ void USkillContext::Initialize(UStaticMeshComponent* InRightWeapon, UStaticMeshC
 {
 	RightWeapon = InRightWeapon;
 	LeftWeapon = InLeftWeapon;
+
+	User = GetTypedOuter<ACharacter>();
+	check(User);
+
+	if (User->HasAuthority())
+	{
+		User->GetMesh()->GetAnimInstance()->OnMontageEnded
+			.AddUniqueDynamic(this, &USkillContext::OnMontageEnded);
+	}
 }
 
-void USkillContext::PlayAnimation(UAnimMontage* Animation)
+void USkillContext::PlayAnimation(UAnimMontage* Animation, const FOnAnimationEnded& OnAnimationEnded)
 {
-	auto* User = GetTypedOuter<ACharacter>();
-	check(User->HasAuthority() && Animation);
+	check(User->HasAuthority() && Animation && OnAnimationEnded.IsBound());
 
-	User->GetMesh()->GetAnimInstance()->OnMontageEnded.AddUniqueDynamic(this, &USkillContext::OnMontageEnded);
+	Callbacks.Add(Animation, OnAnimationEnded);
 	MulticastPlayAnimation(Animation);
 }
 
 void USkillContext::StopAnimation(UAnimMontage* Animation)
 {
-	auto* User = GetTypedOuter<ACharacter>();
 	check(User->HasAuthority() && Animation);
 
-	User->GetMesh()->GetAnimInstance()->OnMontageEnded.RemoveDynamic(this, &USkillContext::OnMontageEnded);
+	Callbacks.Remove(Animation);
 	MulticastStopAnimation(Animation);
 }
 
 void USkillContext::OnMontageEnded(UAnimMontage* Montage, bool bInterrupted)
 {
-	if (!bInterrupted)
-		OnAnimationEnded.Broadcast();
+	if (bInterrupted) return;
+
+	FOnAnimationEnded Callback;
+	if (Callbacks.RemoveAndCopyValue(Montage, Callback))
+		Callback.Execute();
 }
 
 void USkillContext::MulticastPlayAnimation_Implementation(UAnimMontage* Animation)
