@@ -60,10 +60,8 @@ private:
 	UDataTable* SkillDataTable;
 
 	FOnAsyncLoadEnded OnAsyncLoadEnded;
+	TSubclassOf<USkill> AttackClass;
 
-	TSubclassOf<USkill> WeakAttackClass;
-	TSubclassOf<USkill> StrongAttackClass;
-	
 	uint8 Key;
 	uint8 AsyncLoadCount;
 };

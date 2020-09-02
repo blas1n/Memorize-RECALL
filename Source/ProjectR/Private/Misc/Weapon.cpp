@@ -53,9 +53,6 @@ bool UWeapon::Initialize(USkillContext* InContext, uint8 InKey)
 		return false;
 	}
 
-	WeakAttackClass = Data->WeakAttackClass;
-	StrongAttackClass = Data->StrongAttackClass;
-
 	int32 SkillNum = 1;
 	for (uint8 Idx = 1u; Idx <= Data->ComboHeight; ++Idx)
 		SkillNum += static_cast<int32>(FMath::Pow(2, Idx));
@@ -72,12 +69,6 @@ bool UWeapon::Initialize(USkillContext* InContext, uint8 InKey)
 	for (int32 Index = 1; Index < SkillNum; ++Index)
 	{
 		if (Skills[Index]) continue;
-
-		if ((Index % 2) && WeakAttackClass)
-			Skills[Index] = NewObject<USkill>(this, WeakAttackClass);
-		else if (StrongAttackClass)
-			Skills[Index] = NewObject<USkill>(this, StrongAttackClass);
-	}
 
 	VisualData.UpperAnimInstance = Data->UpperAnimInstance;
 	VisualData.RightTransform = Data->RightTransform;
