@@ -4,11 +4,72 @@
 #include "Engine/World.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
+#include "Perception/AIPerceptionComponent.h"
+#include "Perception/AISenseConfig_Sight.h"
 #include "TimerManager.h"
+#include "Component/TargetComponent.h"
 #include "Component/WeaponComponent.h"
 #include "Framework/PRCharacter.h"
 
 DECLARE_DELEGATE_OneParam(FIndexer, uint8);
+
+APRPlayerController::APRPlayerController()
+	: Super()
+{
+	PrimaryActorTick.bCanEverTick = true;
+	bAllowTickBeforeBeginPlay = false;
+
+	Targeter = CreateDefaultSubobject<UTargetComponent>(TEXT("Targeter"));
+	Perception = CreateDefaultSubobject<UAIPerceptionComponent>(TEXT("Perception"));
+}
+
+FGenericTeamId APRPlayerController::GetGenericTeamId() const
+{
+	if (auto* MyPawn = GetPawn<IGenericTeamAgentInterface>())
+		return MyPawn->GetGenericTeamId();
+
+	return FGenericTeamId::NoTeam;
+}
+
+void APRPlayerController::SetGenericTeamId(const FGenericTeamId& NewTeamId)
+{
+	if (auto* MyPawn = GetPawn<IGenericTeamAgentInterface>())
+		return MyPawn->SetGenericTeamId(NewTeamId);
+}
+
+void APRPlayerController::BeginPlay()
+{
+	Super::BeginPlay();
+
+	Targeter->Initialize(Perception);
+}
+
+void APRPlayerController::Tick(float DeltaSeconds)
+{
+	Super::Tick(DeltaSeconds);
+
+	auto* MyPawn = GetPawn<APRCharacter>();
+	if (!MyPawn || !MyPawn->GetLockTarget()) return;
+
+	float Radius = 0.0f;
+	for (auto Iter = Perception->GetSensesConfigIterator(); Iter; ++Iter)
+	{
+		if (auto* Config = Cast<UAISenseConfig_Sight>(*Iter))
+		{
+			Radius = Config->SightRadius;
+			break;
+		}
+	}
+
+	const FVector TargetLoc = MyPawn->GetLockTarget()->GetActorLocation();
+	const float Dist = FVector::DistSquared(MyPawn->GetActorLocation(), TargetLoc);
+	if (Dist <= Radius) return;
+
+	if (AActor* Target = Targeter->GetTargetedActor())
+		MyPawn->Lock(Target);
+	else
+		MyPawn->Unlock();
+}
 
 void APRPlayerController::SetupInputComponent()
 {
@@ -130,7 +191,7 @@ void APRPlayerController::SwapWeapon(float Value)
 void APRPlayerController::Lock()
 {
 	if (APRCharacter* MyPawn = GetPawn<APRCharacter>())
-		MyPawn->Lock(nullptr);
+		MyPawn->Lock(Targeter->GetTargetedActor());
 }
 
 void APRPlayerController::Unlock()

@@ -88,19 +88,30 @@ void APRCharacter::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
 
-	if (!LockTarget || IsMoveInputIgnored())
-		return;
+	if (!LockTarget) return;
 
-	const FVector TargetLocation = LockTarget->GetActorLocation();
+	if (!IsMoveInputIgnored())
+	{
+		const FVector MyLoc = GetActorLocation();
+		const FVector TargetLoc = LockTarget->GetActorLocation();
 
-	FVector Loc; FRotator Rot;
-	GetActorEyesViewPoint(Loc, Rot);
-
-	const FRotator ControlLookAt = UKismetMathLibrary::
-		FindLookAtRotation(Loc, TargetLocation);
+		FRotator ActorRot = UKismetMathLibrary::FindLookAtRotation(MyLoc, TargetLoc);
+		ActorRot = FMath::Lerp(GetActorRotation(), ActorRot, DeltaSeconds * 10.0f);
+		SetActorRotation(ActorRot);
+	}
 
 	if (AController* MyController = GetController())
-		MyController->SetControlRotation(ControlLookAt);
+	{
+		FVector MyEyeLoc; FRotator MyEyeRot;
+		GetActorEyesViewPoint(MyEyeLoc, MyEyeRot);
+
+		FVector TargetEyeLoc; FRotator TargetEyeRot;
+		LockTarget->GetActorEyesViewPoint(TargetEyeLoc, TargetEyeRot);
+
+		FRotator CtrlRot = UKismetMathLibrary::FindLookAtRotation(MyEyeLoc, TargetEyeLoc);
+		CtrlRot = FMath::Lerp(MyController->GetControlRotation(), CtrlRot, DeltaSeconds * 8.0f);
+		MyController->SetControlRotation(CtrlRot);
+	}
 }
 
 void APRCharacter::PostInitializeComponents()
@@ -123,8 +134,7 @@ float APRCharacter::TakeDamage(float Damage, const FDamageEvent& DamageEvent,
 		IParryable::Execute_Parry(ParryingObject, Damage, Character);
 		return 0.0f;
 	}
-		
-
+	
 	StatComponent->Heal(-Damage);
 	if (StatComponent->GetHealth() <= 0.0f) Death();
 
@@ -211,15 +221,21 @@ void APRCharacter::ServerSetMoveState_Implementation(EMoveState NewMoveState)
 void APRCharacter::ServerLock_Implementation(AActor* NewLockTarget)
 {
 	LockTarget = NewLockTarget;
+
+	const bool bWasLocked = bIsLocked;
 	bIsLocked = true;
-	SetMovement();
+
+	if (!bWasLocked) SetMovement();
 }
 
 void APRCharacter::ServerUnlock_Implementation()
 {
 	LockTarget = nullptr;
+
+	const bool bWasLocked = bIsLocked;
 	bIsLocked = false;
-	SetMovement();
+	
+	if (bWasLocked) SetMovement();
 }
 
 void APRCharacter::MulticastDeath_Implementation()
@@ -236,11 +252,6 @@ void APRCharacter::MulticastDeath_Implementation()
 }
 
 void APRCharacter::OnRep_MoveState()
-{
-	SetMovement();
-}
-
-void APRCharacter::OnRep_LockTarget()
 {
 	SetMovement();
 }
@@ -263,12 +274,7 @@ void APRCharacter::SetMovement()
 	else if (bIsLocked)
 	{
 		Speed = StatComponent->GetLockSpeed();
-
-		if (LockTarget)
-		{
-			bOrientRotationToMovement = false;
-			bUseControllerDesiredRotation = true;
-		}
+		bUseControllerDesiredRotation = bOrientRotationToMovement = false;
 	}
 
 	auto* Movement = GetCharacterMovement();

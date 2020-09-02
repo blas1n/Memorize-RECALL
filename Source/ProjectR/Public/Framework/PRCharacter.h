@@ -102,9 +102,6 @@ private:
 	void OnRep_MoveState();
 
 	UFUNCTION()
-	void OnRep_LockTarget();
-
-	UFUNCTION()
 	void OnRep_IsLocked();
 
 	void SetMovement();
@@ -139,17 +136,17 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Data, meta = (AllowPrivateAccess = true))
 	uint8 TeamId;
 
-	UPROPERTY(ReplicatedUsing = OnRep_MoveState)
-	EMoveState MoveState;
-
-	UPROPERTY(ReplicatedUsing = OnRep_LockTarget)
-	AActor* LockTarget;
-
-	UPROPERTY(ReplicatedUsing = OnRep_IsLocked)
-	uint8 bIsLocked : 1;
-
 	UPROPERTY(Transient)
 	UObject* ParryingObject;
+
+	UPROPERTY(Transient, ReplicatedUsing = OnRep_MoveState)
+	EMoveState MoveState;
+
+	UPROPERTY(Transient, Replicated)
+	AActor* LockTarget;
+
+	UPROPERTY(Transient, ReplicatedUsing = OnRep_IsLocked)
+	uint8 bIsLocked : 1;
 
 	UPROPERTY()
 	class UDataTable* CharacterDataTable;
