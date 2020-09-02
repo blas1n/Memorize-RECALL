@@ -88,19 +88,30 @@ void APRCharacter::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
 
-	if (!LockTarget || IsMoveInputIgnored())
-		return;
+	if (!LockTarget) return;
 
-	const FVector TargetLocation = LockTarget->GetActorLocation();
+	if (!IsMoveInputIgnored())
+	{
+		const FVector MyLoc = GetActorLocation();
+		const FVector TargetLoc = LockTarget->GetActorLocation();
 
-	FVector Loc; FRotator Rot;
-	GetActorEyesViewPoint(Loc, Rot);
-
-	const FRotator ControlLookAt = UKismetMathLibrary::
-		FindLookAtRotation(Loc, TargetLocation);
+		FRotator ActorRot = UKismetMathLibrary::FindLookAtRotation(MyLoc, TargetLoc);
+		ActorRot = FMath::Lerp(GetActorRotation(), ActorRot, DeltaSeconds * 10.0f);
+		SetActorRotation(ActorRot);
+	}
 
 	if (AController* MyController = GetController())
-		MyController->SetControlRotation(ControlLookAt);
+	{
+		FVector MyEyeLoc; FRotator MyEyeRot;
+		GetActorEyesViewPoint(MyEyeLoc, MyEyeRot);
+
+		FVector TargetEyeLoc; FRotator TargetEyeRot;
+		LockTarget->GetActorEyesViewPoint(TargetEyeLoc, TargetEyeRot);
+
+		FRotator CtrlRot = UKismetMathLibrary::FindLookAtRotation(MyEyeLoc, TargetEyeLoc);
+		CtrlRot = FMath::Lerp(MyController->GetControlRotation(), CtrlRot, DeltaSeconds * 8.0f);
+		MyController->SetControlRotation(CtrlRot);
+	}
 }
 
 void APRCharacter::PostInitializeComponents()
