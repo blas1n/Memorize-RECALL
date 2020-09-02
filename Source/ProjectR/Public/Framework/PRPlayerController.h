@@ -15,10 +15,14 @@ class PROJECTR_API APRPlayerController final : public APlayerController, public 
 	GENERATED_BODY()
 
 public:
+	APRPlayerController();
+	
 	FGenericTeamId GetGenericTeamId() const override;
 	void SetGenericTeamId(const FGenericTeamId& NewTeamId) override;
 
 private:
+	void BeginPlay() override;
+	void Tick(float DeltaSeconds) override;
 	void SetupInputComponent() override;
 
 	void MoveForward(float Value);

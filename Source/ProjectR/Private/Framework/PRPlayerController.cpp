@@ -5,11 +5,11 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Perception/AIPerceptionComponent.h"
+#include "Perception/AISenseConfig_Sight.h"
 #include "TimerManager.h"
 #include "Component/TargetComponent.h"
 #include "Component/WeaponComponent.h"
 #include "Framework/PRCharacter.h"
-#include "Perception/AISenseConfig_Sight.h"
 
 DECLARE_DELEGATE_OneParam(FIndexer, uint8);
 
@@ -44,6 +44,32 @@ void APRPlayerController::BeginPlay()
 	Targeter->Initialize(Perception);
 }
 
+void APRPlayerController::Tick(float DeltaSeconds)
+{
+	Super::Tick(DeltaSeconds);
+
+	auto* MyPawn = GetPawn<APRCharacter>();
+	if (!MyPawn || !MyPawn->GetLockTarget()) return;
+
+	float Radius = 0.0f;
+	for (auto Iter = Perception->GetSensesConfigIterator(); Iter; ++Iter)
+	{
+		if (auto* Config = Cast<UAISenseConfig_Sight>(*Iter))
+		{
+			Radius = Config->SightRadius;
+			break;
+		}
+	}
+
+	const FVector TargetLoc = MyPawn->GetLockTarget()->GetActorLocation();
+	const float Dist = FVector::DistSquared(MyPawn->GetActorLocation(), TargetLoc);
+	if (Dist <= Radius) return;
+
+	if (AActor* Target = Targeter->GetTargetedActor())
+		MyPawn->Lock(Target);
+	else
+		MyPawn->Unlock();
+}
 
 void APRPlayerController::SetupInputComponent()
 {
