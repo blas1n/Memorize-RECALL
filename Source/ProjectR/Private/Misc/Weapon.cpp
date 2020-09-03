@@ -2,6 +2,8 @@
 
 #include "Misc/Weapon.h"
 #include "Animation/AnimInstance.h"
+#include "Animation/BlendSpace.h"
+#include "Animation/BlendSpace1D.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "Engine/StaticMesh.h"
 #include "UObject/ConstructorHelpers.h"
@@ -27,29 +29,29 @@ UWeapon::UWeapon()
 
 bool UWeapon::Initialize(USkillContext* InContext, uint8 InKey)
 {
+	if (InKey == 255u) return false;
+
 	Context = InContext;
 	Key = InKey;
 
 	User = GetTypedOuter<APRCharacter>();
 	if (!User)
 	{
-		Key = 0u;
+		Key = 255u;
 		return false;
 	}
 
 	if (!WeaponDataTable)
 	{
-		Key = 0u;
+		Key = 255u;
 		return false;
 	}
-
-	if (Key == 0u) return true;
 
 	const auto* Data = WeaponDataTable->FindRow<FWeaponData>(FName{ *FString::FromInt(Key) }, TEXT(""), false);
 	if (!Data)
 	{
 		UE_LOG(LogDataTable, Error, TEXT("Cannot found weapon data %d!"), Key);
-		Key = 0u;
+		Key = 255u;
 		return false;
 	}
 
@@ -77,7 +79,6 @@ bool UWeapon::Initialize(USkillContext* InContext, uint8 InKey)
 		if (Skill.Skill)
 			Skill.Skill->Initialize();
 
-	VisualData.UpperAnimInstance = Data->UpperAnimInstance;
 	VisualData.RightTransform = Data->RightTransform;
 	VisualData.LeftTransform = Data->LeftTransform;
 
@@ -101,6 +102,8 @@ void UWeapon::BeginSkill(uint8 Index)
 	FUsableSkill& Skill = Skills[Index];
 	if (Skill.Skill && Skill.Skill->CanUseSkill())
 		Skill.Skill->Begin(Context, Skill.Data);
+	else 
+		User->GetWeaponComponent()->OnEndSkill();
 }
 
 void UWeapon::EndSkill(uint8 Index)
@@ -159,6 +162,9 @@ void UWeapon::LoadAll(const FWeaponData& WeaponData)
 {
 	if (!WeaponData.RightMesh.IsNull()) ++AsyncLoadCount;
 	if (!WeaponData.LeftMesh.IsNull()) ++AsyncLoadCount;
+	if (!WeaponData.NotLockAnim.IsNull()) ++AsyncLoadCount;
+	if (!WeaponData.LockAnim.IsNull()) ++AsyncLoadCount;
+	if (!WeaponData.AirAnim.IsNull()) ++AsyncLoadCount;
 
 	UPRStatics::AsyncLoad(WeaponData.RightMesh, [this, &RightMeshPtr = WeaponData.RightMesh]
 	{
@@ -173,11 +179,32 @@ void UWeapon::LoadAll(const FWeaponData& WeaponData)
 		if (--AsyncLoadCount == 0u)
 			OnAsyncLoadEnded.Broadcast();
 	});
+
+	UPRStatics::AsyncLoad(WeaponData.NotLockAnim, [this, &NotLockPtr = WeaponData.NotLockAnim]
+	{
+		VisualData.AnimData.NotLock = NotLockPtr.Get();
+		if (--AsyncLoadCount == 0u)
+			OnAsyncLoadEnded.Broadcast();
+	});
+
+	UPRStatics::AsyncLoad(WeaponData.LockAnim, [this, &LockPtr = WeaponData.LockAnim]
+	{
+		VisualData.AnimData.Lock = LockPtr.Get();
+		if (--AsyncLoadCount == 0u)
+			OnAsyncLoadEnded.Broadcast();
+	});
+
+	UPRStatics::AsyncLoad(WeaponData.AirAnim, [this, &AirPtr = WeaponData.AirAnim]
+	{
+		VisualData.AnimData.Air = AirPtr.Get();
+		if (--AsyncLoadCount == 0u)
+			OnAsyncLoadEnded.Broadcast();
+	});
 }
 
 void UWeapon::InitSkill(uint8 Level)
 {
-	if (Key == 0u || !SkillDataTable) return;
+	if (Key == 255u || !SkillDataTable) return;
 
 	const FString BaseKey = FString::FromInt(Key) + FString::FromInt(Level);
 	const int32 SkillNum = Skills.Num();

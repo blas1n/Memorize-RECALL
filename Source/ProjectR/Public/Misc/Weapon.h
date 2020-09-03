@@ -22,7 +22,6 @@ struct FUsableSkill
 	class UDataAsset* Data;
 };
 
-
 UCLASS(BlueprintType)
 class PROJECTR_API UWeapon final : public UObject
 {
