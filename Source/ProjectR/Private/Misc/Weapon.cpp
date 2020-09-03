@@ -102,6 +102,8 @@ void UWeapon::BeginSkill(uint8 Index)
 	FUsableSkill& Skill = Skills[Index];
 	if (Skill.Skill && Skill.Skill->CanUseSkill())
 		Skill.Skill->Begin(Context, Skill.Data);
+	else 
+		User->GetWeaponComponent()->OnEndSkill();
 }
 
 void UWeapon::EndSkill(uint8 Index)
