@@ -159,6 +159,7 @@ bool APRCharacter::ShouldTakeDamage(float Damage, const FDamageEvent& DamageEven
 void APRCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
 	DOREPLIFETIME(APRCharacter, MoveState);
 	DOREPLIFETIME(APRCharacter, LockTarget);
 	DOREPLIFETIME(APRCharacter, bIsLocked);
