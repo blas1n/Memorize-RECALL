@@ -137,6 +137,7 @@ void UWeaponComponent::BeginPlay()
 	if (Weapons.Num() > 0)
 		EquipWeapon(Weapons[0], false);
 
+	SkillContext->Initialize(RightWeapon, LeftWeapon);
 	SkillIndex = 255u;
 }
 
@@ -191,12 +192,11 @@ void UWeaponComponent::Initialize()
 
 	if (MeshComponent->DoesSocketExist(TEXT("weapon_l")))
 		LeftWeapon->AttachToComponent(MeshComponent, Rules, TEXT("weapon_l"));
-	
-	SkillContext = NewObject<USkillContext>(this);
-	SkillContext->Initialize(RightWeapon, LeftWeapon);
 
 	if (GetOwnerRole() != ENetRole::ROLE_Authority)
 		return;
+
+	SkillContext = NewObject<USkillContext>(this);
 
 	if (!NoWeapon) NoWeapon = NewObject<UWeapon>(GetOwner());
 	NoWeapon->Initialize(SkillContext, 0u);
