@@ -36,5 +36,14 @@ struct FWeaponData : public FTableRowBase
 	FTransform LeftTransform;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	TSubclassOf<class UAnimInstance> UpperAnimInstance;
+	TAssetPtr<class UBlendSpace1D> NotLockAnim;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TAssetPtr<class UBlendSpace> LockAnim;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TAssetPtr<class UAnimSequence> AirAnim;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TAssetPtr<class UAnimSequence> AirEndAnim;
 };

@@ -177,8 +177,7 @@ void UWeaponComponent::EquipWeapon(UWeapon* NewWeapon, bool bNeedUnequip)
 		FOnAsyncLoadEndedSingle::CreateLambda([this, NewWeapon, bNeedUnequip]
 		{
 			VisualData = NewWeapon->GetVisualData();
-			MulticastEquipWeapon(bNeedUnequip ? Weapons[WeaponIndex]
-				->GetVisualData().UpperAnimInstance : nullptr);
+			OnRep_VisualData();
 		}
 	));
 }
@@ -299,14 +298,12 @@ void UWeaponComponent::ServerAddWeapon_Implementation(int32 Key)
 	Weapons.Add(NewWeapon);
 }
 
-void UWeaponComponent::ApplyWeapon(TSubclassOf<UAnimInstance> UnlinkAnim)
+void UWeaponComponent::OnRep_VisualData()
 {
-	if (auto* AnimInstance = Cast<ACharacter>(GetOwner())->GetMesh()->GetAnimInstance())
+	if (auto* AnimInstance = Cast<UPRAnimInstance>
+		(Cast<ACharacter>(GetOwner())->GetMesh()->GetAnimInstance()))
 	{
-		if (UnlinkAnim.Get())
-			AnimInstance->UnlinkAnimClassLayers(Weapons[WeaponIndex]->GetVisualData().UpperAnimInstance);
-
-		AnimInstance->LinkAnimClassLayers(VisualData.UpperAnimInstance);
+		AnimInstance->SetAnimData(VisualData.AnimData);
 	}
 	
 	RightWeapon->SetStaticMesh(VisualData.RightMesh);

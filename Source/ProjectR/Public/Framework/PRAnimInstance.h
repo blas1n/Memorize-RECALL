@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Animation/AnimInstance.h"
+#include "Data/AnimData.h"
 #include "PRAnimInstance.generated.h"
 
 UCLASS()
@@ -13,6 +14,8 @@ class PROJECTR_API UPRAnimInstance final : public UAnimInstance
 
 public:
 	UPRAnimInstance();
+
+	FORCEINLINE void SetAnimData(const FAnimData& InAnimData) noexcept { AnimData = InAnimData; }
 
 private:
 	void NativeUpdateAnimation(float DeltaSeconds) override;

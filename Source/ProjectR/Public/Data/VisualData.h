@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "UObject/ObjectMacros.h"
+#include "Data/AnimData.h"
 #include "VisualData.generated.h"
 
 USTRUCT(Atomic)
@@ -24,5 +24,5 @@ struct FVisualData
 	FTransform LeftTransform;
 
 	UPROPERTY()
-	TSubclassOf<class UAnimInstance> UpperAnimInstance;
+	FAnimData AnimData;
 };
