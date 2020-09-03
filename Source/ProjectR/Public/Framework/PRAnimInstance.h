@@ -22,7 +22,7 @@ private:
 	FVector Velocity;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Pawn, meta = (AllowPrivateAccess = true))
-	float Speed;
+	FVector2D Velocity;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Pawn, meta = (AllowPrivateAccess = true))
 	uint8 bIsLocking : 1;
