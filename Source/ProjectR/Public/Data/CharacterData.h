@@ -15,7 +15,7 @@ struct FCharacterData : public FTableRowBase
 	TAssetPtr<class USkeletalMesh> Mesh;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	TSubclassOf<class UAnimInstance> AnimClass;
+	TSubclassOf<class UPRAnimInstance> AnimClass;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float CapsuleHalfHeight;

@@ -87,9 +87,6 @@ private:
 	UFUNCTION(Server, Reliable, WithValidation)
 	void ServerAddWeapon(int32 Key);
 
-	UFUNCTION(NetMulticast, Reliable)
-	void MulticastEquipWeapon(TSubclassOf<UAnimInstance> UnlinkAnim);
-
 	void ServerAttack_Implementation(bool bIsStrongAttack);
 	FORCEINLINE bool ServerAttack_Validate(bool bIsStrongAttack) const noexcept { return true; }
 
@@ -108,14 +105,12 @@ private:
 	void ServerAddWeapon_Implementation(int32 Key);
 	FORCEINLINE bool ServerAddWeapon_Validate(int32 Key) const noexcept { return true; }
 
-	FORCEINLINE void MulticastEquipWeapon_Implementation
-		(TSubclassOf<UAnimInstance> UnlinkAnim) { ApplyWeapon(UnlinkAnim); }
-
 	UStaticMeshComponent* CreateWeaponComponent(const FName& Name);
 	void EquipWeapon(class UWeapon* NewWeapon, bool bNeedUnequip);
 	void Initialize();
 
-	void ApplyWeapon(TSubclassOf<UAnimInstance> UnlinkAnim);
+	UFUNCTION()
+	void OnRep_VisualData();
 
 	UFUNCTION()
 	void Detach();
@@ -138,10 +133,10 @@ private:
 	UPROPERTY(Transient)
 	UWeapon* NoWeapon;
 	
-	UPROPERTY(Replicated)
+	UPROPERTY(Transient)
 	class USkillContext* SkillContext;
 
-	UPROPERTY(Replicated)
+	UPROPERTY(ReplicatedUsing = OnRep_VisualData, Transient)
 	FVisualData VisualData;
 
 	uint8 WeaponIndex;

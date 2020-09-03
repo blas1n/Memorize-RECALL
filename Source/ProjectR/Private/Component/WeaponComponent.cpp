@@ -7,6 +7,7 @@
 #include "Net/UnrealNetwork.h"
 #include "TimerManager.h"
 #include "Framework/PRCharacter.h"
+#include "Framework/PRAnimInstance.h"
 #include "Misc/SkillContext.h"
 #include "Misc/Weapon.h"
 
@@ -127,17 +128,17 @@ void UWeaponComponent::BeginPlay()
 	auto* User = Cast<APRCharacter>(GetOwner());
 	User->OnDeath.AddDynamic(this, &UWeaponComponent::Detach);
 
-	if (GetOwnerRole() == ENetRole::ROLE_Authority)
-	{
-		for (UWeapon* Weapon : Weapons)
-			Weapon->BeginPlay();
+	if (GetOwnerRole() != ENetRole::ROLE_Authority)
+		return;
+	
+	for (UWeapon* Weapon : Weapons)
+		Weapon->BeginPlay();
 
-		if (Weapons.Num() > 0)
-			EquipWeapon(Weapons[0], false);
+	if (Weapons.Num() > 0)
+		EquipWeapon(Weapons[0], false);
 
-		SkillIndex = 255u;
-	}
-	else ApplyWeapon(nullptr);
+	SkillContext->Initialize(RightWeapon, LeftWeapon);
+	SkillIndex = 255u;
 }
 
 void UWeaponComponent::EndPlay(EEndPlayReason::Type EndPlayReason)
@@ -155,7 +156,6 @@ void UWeaponComponent::EndPlay(EEndPlayReason::Type EndPlayReason)
 void UWeaponComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
-	DOREPLIFETIME(UWeaponComponent, SkillContext);
 	DOREPLIFETIME(UWeaponComponent, VisualData);
 }
 
@@ -177,8 +177,7 @@ void UWeaponComponent::EquipWeapon(UWeapon* NewWeapon, bool bNeedUnequip)
 		FOnAsyncLoadEndedSingle::CreateLambda([this, NewWeapon, bNeedUnequip]
 		{
 			VisualData = NewWeapon->GetVisualData();
-			MulticastEquipWeapon(bNeedUnequip ? Weapons[WeaponIndex]
-				->GetVisualData().UpperAnimInstance : nullptr);
+			OnRep_VisualData();
 		}
 	));
 }
@@ -193,12 +192,11 @@ void UWeaponComponent::Initialize()
 
 	if (MeshComponent->DoesSocketExist(TEXT("weapon_l")))
 		LeftWeapon->AttachToComponent(MeshComponent, Rules, TEXT("weapon_l"));
-	
-	SkillContext = NewObject<USkillContext>(this);
-	SkillContext->Initialize(RightWeapon, LeftWeapon);
 
 	if (GetOwnerRole() != ENetRole::ROLE_Authority)
 		return;
+
+	SkillContext = NewObject<USkillContext>(this);
 
 	if (!NoWeapon) NoWeapon = NewObject<UWeapon>(GetOwner());
 	NoWeapon->Initialize(SkillContext, 0u);
@@ -299,14 +297,12 @@ void UWeaponComponent::ServerAddWeapon_Implementation(int32 Key)
 	Weapons.Add(NewWeapon);
 }
 
-void UWeaponComponent::ApplyWeapon(TSubclassOf<UAnimInstance> UnlinkAnim)
+void UWeaponComponent::OnRep_VisualData()
 {
-	if (auto* AnimInstance = Cast<ACharacter>(GetOwner())->GetMesh()->GetAnimInstance())
+	if (auto* AnimInstance = Cast<UPRAnimInstance>
+		(Cast<ACharacter>(GetOwner())->GetMesh()->GetAnimInstance()))
 	{
-		if (UnlinkAnim.Get())
-			AnimInstance->UnlinkAnimClassLayers(Weapons[WeaponIndex]->GetVisualData().UpperAnimInstance);
-
-		AnimInstance->LinkAnimClassLayers(VisualData.UpperAnimInstance);
+		AnimInstance->SetAnimData(VisualData.AnimData);
 	}
 	
 	RightWeapon->SetStaticMesh(VisualData.RightMesh);
