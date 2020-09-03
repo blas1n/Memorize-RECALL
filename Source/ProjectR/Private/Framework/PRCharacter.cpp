@@ -13,6 +13,7 @@
 #include "Component/WeaponComponent.h"
 #include "Data/CharacterData.h"
 #include "Data/PRDamageType.h"
+#include "Framework/PRAnimInstance.h"
 #include "Interface/Parryable.h"
 #include "Library/PRStatics.h"
 
@@ -44,15 +45,9 @@ APRCharacter::APRCharacter(const FObjectInitializer& ObjectInitializer)
 
 void APRCharacter::SetParryingObject(UObject* NewParryingObject)
 {
-	check(HasAuthority());
+	check(HasAuthority() && (!NewParryingObject ||
+		NewParryingObject->GetClass()->ImplementsInterface(UParryable::StaticClass())));
 
-	if (!NewParryingObject)
-	{
-		ParryingObject = nullptr;
-		return;
-	}
-
-	check(NewParryingObject->GetClass()->ImplementsInterface(UParryable::StaticClass()));
 	ParryingObject = NewParryingObject;
 }
 
