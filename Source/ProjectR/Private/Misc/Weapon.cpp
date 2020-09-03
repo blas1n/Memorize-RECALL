@@ -2,6 +2,8 @@
 
 #include "Misc/Weapon.h"
 #include "Animation/AnimInstance.h"
+#include "Animation/BlendSpace.h"
+#include "Animation/BlendSpace1D.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "Engine/StaticMesh.h"
 #include "UObject/ConstructorHelpers.h"
@@ -77,7 +79,6 @@ bool UWeapon::Initialize(USkillContext* InContext, uint8 InKey)
 		if (Skill.Skill)
 			Skill.Skill->Initialize();
 
-	VisualData.UpperAnimInstance = Data->UpperAnimInstance;
 	VisualData.RightTransform = Data->RightTransform;
 	VisualData.LeftTransform = Data->LeftTransform;
 
@@ -159,6 +160,10 @@ void UWeapon::LoadAll(const FWeaponData& WeaponData)
 {
 	if (!WeaponData.RightMesh.IsNull()) ++AsyncLoadCount;
 	if (!WeaponData.LeftMesh.IsNull()) ++AsyncLoadCount;
+	if (!WeaponData.NotLockAnim.IsNull()) ++AsyncLoadCount;
+	if (!WeaponData.LockAnim.IsNull()) ++AsyncLoadCount;
+	if (!WeaponData.AirAnim.IsNull()) ++AsyncLoadCount;
+	if (!WeaponData.AirEndAnim.IsNull()) ++AsyncLoadCount;
 
 	UPRStatics::AsyncLoad(WeaponData.RightMesh, [this, &RightMeshPtr = WeaponData.RightMesh]
 	{
@@ -170,6 +175,34 @@ void UWeapon::LoadAll(const FWeaponData& WeaponData)
 	UPRStatics::AsyncLoad(WeaponData.LeftMesh, [this, &LeftMeshPtr = WeaponData.LeftMesh]
 	{
 		VisualData.LeftMesh = LeftMeshPtr.Get();
+		if (--AsyncLoadCount == 0u)
+			OnAsyncLoadEnded.Broadcast();
+	});
+
+	UPRStatics::AsyncLoad(WeaponData.NotLockAnim, [this, &NotLockPtr = WeaponData.NotLockAnim]
+	{
+		VisualData.AnimData.NotLock = NotLockPtr.Get();
+		if (--AsyncLoadCount == 0u)
+			OnAsyncLoadEnded.Broadcast();
+	});
+
+	UPRStatics::AsyncLoad(WeaponData.LockAnim, [this, &LockPtr = WeaponData.LockAnim]
+	{
+		VisualData.AnimData.Lock = LockPtr.Get();
+		if (--AsyncLoadCount == 0u)
+			OnAsyncLoadEnded.Broadcast();
+	});
+
+	UPRStatics::AsyncLoad(WeaponData.AirAnim, [this, &AirPtr = WeaponData.AirAnim]
+	{
+		VisualData.AnimData.Air = AirPtr.Get();
+		if (--AsyncLoadCount == 0u)
+			OnAsyncLoadEnded.Broadcast();
+	});
+
+	UPRStatics::AsyncLoad(WeaponData.AirEndAnim, [this, &AirEndPtr = WeaponData.AirEndAnim]
+	{
+		VisualData.AnimData.AirEnd = AirEndPtr.Get();
 		if (--AsyncLoadCount == 0u)
 			OnAsyncLoadEnded.Broadcast();
 	});
