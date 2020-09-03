@@ -155,7 +155,6 @@ void UWeaponComponent::EndPlay(EEndPlayReason::Type EndPlayReason)
 void UWeaponComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
-	DOREPLIFETIME(UWeaponComponent, SkillContext);
 	DOREPLIFETIME(UWeaponComponent, VisualData);
 }
 

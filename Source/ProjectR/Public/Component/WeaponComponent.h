@@ -133,7 +133,7 @@ private:
 	UPROPERTY(Transient)
 	UWeapon* NoWeapon;
 	
-	UPROPERTY(Replicated, Transient)
+	UPROPERTY(Transient)
 	class USkillContext* SkillContext;
 
 	UPROPERTY(ReplicatedUsing = OnRep_VisualData, Transient)
