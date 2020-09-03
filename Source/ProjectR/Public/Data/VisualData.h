@@ -6,7 +6,7 @@
 #include "Data/AnimData.h"
 #include "VisualData.generated.h"
 
-USTRUCT(Atomic)
+USTRUCT()
 struct FVisualData
 {
 	GENERATED_BODY()
