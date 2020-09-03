@@ -7,6 +7,7 @@
 #include "Net/UnrealNetwork.h"
 #include "TimerManager.h"
 #include "Framework/PRCharacter.h"
+#include "Framework/PRAnimInstance.h"
 #include "Misc/SkillContext.h"
 #include "Misc/Weapon.h"
 
@@ -127,17 +128,16 @@ void UWeaponComponent::BeginPlay()
 	auto* User = Cast<APRCharacter>(GetOwner());
 	User->OnDeath.AddDynamic(this, &UWeaponComponent::Detach);
 
-	if (GetOwnerRole() == ENetRole::ROLE_Authority)
-	{
-		for (UWeapon* Weapon : Weapons)
-			Weapon->BeginPlay();
+	if (GetOwnerRole() != ENetRole::ROLE_Authority)
+		return;
+	
+	for (UWeapon* Weapon : Weapons)
+		Weapon->BeginPlay();
 
-		if (Weapons.Num() > 0)
-			EquipWeapon(Weapons[0], false);
+	if (Weapons.Num() > 0)
+		EquipWeapon(Weapons[0], false);
 
-		SkillIndex = 255u;
-	}
-	else ApplyWeapon(nullptr);
+	SkillIndex = 255u;
 }
 
 void UWeaponComponent::EndPlay(EEndPlayReason::Type EndPlayReason)
