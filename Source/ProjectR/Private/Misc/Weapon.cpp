@@ -163,7 +163,6 @@ void UWeapon::LoadAll(const FWeaponData& WeaponData)
 	if (!WeaponData.NotLockAnim.IsNull()) ++AsyncLoadCount;
 	if (!WeaponData.LockAnim.IsNull()) ++AsyncLoadCount;
 	if (!WeaponData.AirAnim.IsNull()) ++AsyncLoadCount;
-	if (!WeaponData.AirEndAnim.IsNull()) ++AsyncLoadCount;
 
 	UPRStatics::AsyncLoad(WeaponData.RightMesh, [this, &RightMeshPtr = WeaponData.RightMesh]
 	{
@@ -196,13 +195,6 @@ void UWeapon::LoadAll(const FWeaponData& WeaponData)
 	UPRStatics::AsyncLoad(WeaponData.AirAnim, [this, &AirPtr = WeaponData.AirAnim]
 	{
 		VisualData.AnimData.Air = AirPtr.Get();
-		if (--AsyncLoadCount == 0u)
-			OnAsyncLoadEnded.Broadcast();
-	});
-
-	UPRStatics::AsyncLoad(WeaponData.AirEndAnim, [this, &AirEndPtr = WeaponData.AirEndAnim]
-	{
-		VisualData.AnimData.AirEnd = AirEndPtr.Get();
 		if (--AsyncLoadCount == 0u)
 			OnAsyncLoadEnded.Broadcast();
 	});
