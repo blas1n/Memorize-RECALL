@@ -43,7 +43,4 @@ struct FWeaponData : public FTableRowBase
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TAssetPtr<class UAnimSequence> AirAnim;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	TAssetPtr<class UAnimSequence> AirEndAnim;
 };

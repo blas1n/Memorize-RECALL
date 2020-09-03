@@ -19,7 +19,4 @@ struct FAnimData
 
 	UPROPERTY(BlueprintReadWrite)
 	class UAnimSequence* Air;
-
-	UPROPERTY(BlueprintReadWrite)
-	UAnimSequence* AirEnd;
 };
