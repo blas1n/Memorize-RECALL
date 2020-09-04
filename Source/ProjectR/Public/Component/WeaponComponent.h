@@ -106,7 +106,7 @@ private:
 	FORCEINLINE bool ServerAddWeapon_Validate(int32 Key) const noexcept { return true; }
 
 	UStaticMeshComponent* CreateWeaponComponent(const FName& Name);
-	void EquipWeapon(class UWeapon* NewWeapon, bool bNeedUnequip);
+	void EquipWeapon(class UWeapon* NewWeapon);
 	void Initialize();
 
 	UFUNCTION()

@@ -135,7 +135,7 @@ void UWeaponComponent::BeginPlay()
 		Weapon->BeginPlay();
 
 	if (Weapons.Num() > 0)
-		EquipWeapon(Weapons[0], false);
+		EquipWeapon(Weapons[0]);
 
 	SkillContext->Initialize(RightWeapon, LeftWeapon);
 	SkillIndex = 255u;
@@ -169,12 +169,12 @@ UStaticMeshComponent* UWeaponComponent::CreateWeaponComponent(const FName& Name)
 	return Component;
 }
 
-void UWeaponComponent::EquipWeapon(UWeapon* NewWeapon, bool bNeedUnequip)
+void UWeaponComponent::EquipWeapon(UWeapon* NewWeapon)
 {
 	if (!NewWeapon) return;
 
 	NewWeapon->RegisterOnAsyncLoadEnded(
-		FOnAsyncLoadEndedSingle::CreateLambda([this, NewWeapon, bNeedUnequip]
+		FOnAsyncLoadEndedSingle::CreateLambda([this, NewWeapon]
 		{
 			VisualData = NewWeapon->GetVisualData();
 			OnRep_VisualData();
@@ -225,7 +225,6 @@ void UWeaponComponent::ServerAttack_Implementation(bool bIsStrongAttack)
 	if (bNowCombo)
 	{
 		ServerStopSkill_Implementation();
-		
 		bNowCombo = false;
 	}
 
@@ -261,7 +260,7 @@ void UWeaponComponent::ServerSwapWeapon_Implementation(uint8 Index)
 	if ((bIsCasting && !bNowCombo) || WeaponIndex == Index)
 		return;
 
-	EquipWeapon(Weapons[Index], true);
+	EquipWeapon(Weapons[Index]);
 	WeaponIndex = Index;
 }
 
@@ -274,7 +273,7 @@ void UWeaponComponent::ServerChangeWeapon_Implementation(uint8 Index, int32 Key)
 	NewWeapon->Initialize(SkillContext, Key);
 
 	if (Index == WeaponIndex)
-		EquipWeapon(NewWeapon, true);
+		EquipWeapon(NewWeapon);
 
 	Weapons[Index] = NewWeapon;
 }
@@ -292,7 +291,7 @@ void UWeaponComponent::ServerAddWeapon_Implementation(int32 Key)
 	}
 
 	if (Weapons.Num() == 0)
-		EquipWeapon(NewWeapon, false);
+		EquipWeapon(NewWeapon);
 
 	Weapons.Add(NewWeapon);
 }
