@@ -19,8 +19,8 @@ public:
 	void Attack(bool bIsStrongAttack);
 
 	UFUNCTION(BlueprintCallable)
-	void Parry();
-
+	void Dodge();
+	
 	UFUNCTION(BlueprintCallable)
 	void StopSkill();
 
@@ -73,7 +73,7 @@ private:
 	void ServerAttack(bool bIsStrongAttack);
 
 	UFUNCTION(Server, Reliable, WithValidation)
-	void ServerParry();
+	void ServerDodge();
 
 	UFUNCTION(Server, Reliable, WithValidation)
 	void ServerStopSkill();
@@ -90,8 +90,8 @@ private:
 	void ServerAttack_Implementation(bool bIsStrongAttack);
 	FORCEINLINE bool ServerAttack_Validate(bool bIsStrongAttack) const noexcept { return true; }
 
-	void ServerParry_Implementation();
-	FORCEINLINE bool ServerParry_Validate() const noexcept { return true; }
+	void ServerDodge_Implementation();
+	FORCEINLINE bool ServerDodge_Validate() const noexcept { return true; }
 
 	void ServerStopSkill_Implementation();
 	FORCEINLINE bool ServerStopSkill_Validate() const noexcept { return true; }
@@ -106,7 +106,7 @@ private:
 	FORCEINLINE bool ServerAddWeapon_Validate(int32 Key) const noexcept { return true; }
 
 	UStaticMeshComponent* CreateWeaponComponent(const FName& Name);
-	void EquipWeapon(class UWeapon* NewWeapon, bool bNeedUnequip);
+	void EquipWeapon(class UWeapon* NewWeapon);
 	void Initialize();
 
 	UFUNCTION()
@@ -144,5 +144,5 @@ private:
 
 	uint8 bIsCasting : 1;
 	uint8 bNowCombo : 1;
-	uint8 bNowParry : 1;
+	uint8 bNowDodge : 1;
 };
