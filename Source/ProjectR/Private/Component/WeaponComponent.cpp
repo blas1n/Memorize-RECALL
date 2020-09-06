@@ -237,7 +237,7 @@ void UWeaponComponent::ServerAttack_Implementation(bool bIsStrongAttack)
 
 void UWeaponComponent::ServerDodge_Implementation()
 {
-	if ((bIsCasting && !bNowCombo) || !Weapons.IsValidIndex(WeaponIndex)) return;
+	if (bNowDodge || (bIsCasting && !bNowCombo) || !Weapons.IsValidIndex(WeaponIndex)) return;
 
 	if (bNowCombo)
 	{
