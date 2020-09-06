@@ -27,9 +27,9 @@ void UWeaponComponent::Attack(bool bIsStrongAttack)
 	ServerAttack(bIsStrongAttack);
 }
 
-void UWeaponComponent::Parry()
+void UWeaponComponent::Dodge()
 {
-	ServerParry();
+	ServerDodge();
 }
 
 void UWeaponComponent::StopSkill()
@@ -55,25 +55,25 @@ void UWeaponComponent::AddWeapon(int32 Key)
 void UWeaponComponent::Execute()
 {
 	if (GetOwner()->HasAuthority() && Weapons.IsValidIndex(WeaponIndex))
-		Weapons[WeaponIndex]->Execute(bNowParry ? 0u : SkillIndex + 1);
+		Weapons[WeaponIndex]->Execute(bNowDodge ? 0u : SkillIndex + 1);
 }
 
 void UWeaponComponent::BeginExecute()
 {
 	if (GetOwner()->HasAuthority() && Weapons.IsValidIndex(WeaponIndex))
-		Weapons[WeaponIndex]->BeginExecute(bNowParry ? 0u : SkillIndex + 1);
+		Weapons[WeaponIndex]->BeginExecute(bNowDodge ? 0u : SkillIndex + 1);
 }
 
 void UWeaponComponent::EndExecute()
 {
 	if (GetOwner()->HasAuthority() && Weapons.IsValidIndex(WeaponIndex))
-		Weapons[WeaponIndex]->EndExecute(bNowParry ? 0u : SkillIndex + 1);
+		Weapons[WeaponIndex]->EndExecute(bNowDodge ? 0u : SkillIndex + 1);
 }
 
 void UWeaponComponent::TickExecute(float DeltaSeconds)
 {
 	if (GetOwner()->HasAuthority() && Weapons.IsValidIndex(WeaponIndex))
-		Weapons[WeaponIndex]->TickExecute(bNowParry ? 0u : SkillIndex + 1, DeltaSeconds);
+		Weapons[WeaponIndex]->TickExecute(bNowDodge ? 0u : SkillIndex + 1, DeltaSeconds);
 }
 
 void UWeaponComponent::EnableCombo()
@@ -99,7 +99,7 @@ void UWeaponComponent::OnEndSkill()
 	if (!bNowCombo)
 		SkillIndex = 255u;
 
-	bIsCasting = bNowParry = false;
+	bIsCasting = bNowDodge = false;
 }
 
 #if WITH_EDITOR
@@ -235,7 +235,7 @@ void UWeaponComponent::ServerAttack_Implementation(bool bIsStrongAttack)
 	Weapons[WeaponIndex]->BeginSkill(SkillIndex + 1u);
 }
 
-void UWeaponComponent::ServerParry_Implementation()
+void UWeaponComponent::ServerDodge_Implementation()
 {
 	if ((bIsCasting && !bNowCombo) || !Weapons.IsValidIndex(WeaponIndex)) return;
 
@@ -245,14 +245,14 @@ void UWeaponComponent::ServerParry_Implementation()
 		bNowCombo = false;
 	}
 
-	bIsCasting = bNowParry = true;
+	bIsCasting = bNowDodge = true;
 	Weapons[WeaponIndex]->BeginSkill(0u);
 }
 
 void UWeaponComponent::ServerStopSkill_Implementation()
 {
 	if (Weapons.IsValidIndex(WeaponIndex))
-		Weapons[WeaponIndex]->EndSkill(bNowParry ? 0u : SkillIndex + 1u);
+		Weapons[WeaponIndex]->EndSkill(bNowDodge ? 0u : SkillIndex + 1u);
 }
 
 void UWeaponComponent::ServerSwapWeapon_Implementation(uint8 Index)

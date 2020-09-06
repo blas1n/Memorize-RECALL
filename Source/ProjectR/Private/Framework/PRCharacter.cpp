@@ -14,7 +14,6 @@
 #include "Data/CharacterData.h"
 #include "Data/PRDamageType.h"
 #include "Framework/PRAnimInstance.h"
-#include "Interface/Parryable.h"
 #include "Library/PRStatics.h"
 
 APRCharacter::APRCharacter(const FObjectInitializer& ObjectInitializer)
@@ -41,14 +40,6 @@ APRCharacter::APRCharacter(const FObjectInitializer& ObjectInitializer)
 
 	static ConstructorHelpers::FObjectFinder<UDataTable> DataTable(TEXT("DataTable'/Game/Data/DataTable/DT_CharacterData.DT_CharacterData'"));
 	CharacterDataTable = DataTable.Object;
-}
-
-void APRCharacter::SetParryingObject(UObject* NewParryingObject)
-{
-	check(HasAuthority() && (!NewParryingObject ||
-		NewParryingObject->GetClass()->ImplementsInterface(UParryable::StaticClass())));
-
-	ParryingObject = NewParryingObject;
 }
 
 void APRCharacter::Lock(AActor* NewLockTarget)
@@ -120,15 +111,6 @@ float APRCharacter::TakeDamage(float Damage, const FDamageEvent& DamageEvent,
 {	
 	Damage = Super::TakeDamage(Damage, DamageEvent, EventInstigator, DamageCauser);
 	if (Damage <= 0.0f) return Damage;
-
-	auto* Character = Cast<APRCharacter>(DamageCauser);
-	const auto* DamageType = Cast<UProjectRDamageType>(DamageEvent.DamageTypeClass.GetDefaultObject());
-
-	if (DamageType->IsWeaponAttack() && IsParryable(Damage, Character))
-	{
-		IParryable::Execute_Parry(ParryingObject, Damage, Character);
-		return 0.0f;
-	}
 	
 	StatComponent->Heal(-Damage);
 	if (StatComponent->GetHealth() <= 0.0f) Death();
@@ -282,9 +264,4 @@ void APRCharacter::SetMovement()
 void APRCharacter::GetLookLocationAndRotation_Implementation(FVector& Location, FRotator& Rotation) const
 {
 	Super::GetActorEyesViewPoint(Location, Rotation);
-}
-
-bool APRCharacter::IsParryable(float Damage, APRCharacter* Causer)
-{
-	return ParryingObject && IParryable::Execute_IsParryable(ParryingObject, Damage, Causer);
 }
