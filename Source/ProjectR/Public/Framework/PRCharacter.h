@@ -21,9 +21,6 @@ class PROJECTR_API APRCharacter final : public ACharacter, public IGenericTeamAg
 public:
 	APRCharacter(const FObjectInitializer& ObjectInitializer);
 
-	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly)
-	void SetParryingObject(UObject* NewParryingObject);
-
 	UFUNCTION(BlueprintCallable)
 	void Lock(AActor* NewLockTarget);
 
@@ -135,9 +132,6 @@ private:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Data, meta = (AllowPrivateAccess = true))
 	uint8 TeamId;
-
-	UPROPERTY(Transient)
-	UObject* ParryingObject;
 
 	UPROPERTY(Transient, ReplicatedUsing = OnRep_MoveState)
 	EMoveState MoveState;
