@@ -27,9 +27,9 @@ void UWeaponComponent::Attack(bool bIsStrongAttack)
 	ServerAttack(bIsStrongAttack);
 }
 
-void UWeaponComponent::Parry()
+void UWeaponComponent::Dodge()
 {
-	ServerParry();
+	ServerDodge();
 }
 
 void UWeaponComponent::StopSkill()
@@ -55,25 +55,25 @@ void UWeaponComponent::AddWeapon(int32 Key)
 void UWeaponComponent::Execute()
 {
 	if (GetOwner()->HasAuthority() && Weapons.IsValidIndex(WeaponIndex))
-		Weapons[WeaponIndex]->Execute(bNowParry ? 0u : SkillIndex + 1);
+		Weapons[WeaponIndex]->Execute(bNowDodge ? 0u : SkillIndex + 1);
 }
 
 void UWeaponComponent::BeginExecute()
 {
 	if (GetOwner()->HasAuthority() && Weapons.IsValidIndex(WeaponIndex))
-		Weapons[WeaponIndex]->BeginExecute(bNowParry ? 0u : SkillIndex + 1);
+		Weapons[WeaponIndex]->BeginExecute(bNowDodge ? 0u : SkillIndex + 1);
 }
 
 void UWeaponComponent::EndExecute()
 {
 	if (GetOwner()->HasAuthority() && Weapons.IsValidIndex(WeaponIndex))
-		Weapons[WeaponIndex]->EndExecute(bNowParry ? 0u : SkillIndex + 1);
+		Weapons[WeaponIndex]->EndExecute(bNowDodge ? 0u : SkillIndex + 1);
 }
 
 void UWeaponComponent::TickExecute(float DeltaSeconds)
 {
 	if (GetOwner()->HasAuthority() && Weapons.IsValidIndex(WeaponIndex))
-		Weapons[WeaponIndex]->TickExecute(bNowParry ? 0u : SkillIndex + 1, DeltaSeconds);
+		Weapons[WeaponIndex]->TickExecute(bNowDodge ? 0u : SkillIndex + 1, DeltaSeconds);
 }
 
 void UWeaponComponent::EnableCombo()
@@ -99,7 +99,7 @@ void UWeaponComponent::OnEndSkill()
 	if (!bNowCombo)
 		SkillIndex = 255u;
 
-	bIsCasting = bNowParry = false;
+	bIsCasting = bNowDodge = false;
 }
 
 #if WITH_EDITOR
@@ -135,7 +135,7 @@ void UWeaponComponent::BeginPlay()
 		Weapon->BeginPlay();
 
 	if (Weapons.Num() > 0)
-		EquipWeapon(Weapons[0], false);
+		EquipWeapon(Weapons[0]);
 
 	SkillContext->Initialize(RightWeapon, LeftWeapon);
 	SkillIndex = 255u;
@@ -169,12 +169,12 @@ UStaticMeshComponent* UWeaponComponent::CreateWeaponComponent(const FName& Name)
 	return Component;
 }
 
-void UWeaponComponent::EquipWeapon(UWeapon* NewWeapon, bool bNeedUnequip)
+void UWeaponComponent::EquipWeapon(UWeapon* NewWeapon)
 {
 	if (!NewWeapon) return;
 
 	NewWeapon->RegisterOnAsyncLoadEnded(
-		FOnAsyncLoadEndedSingle::CreateLambda([this, NewWeapon, bNeedUnequip]
+		FOnAsyncLoadEndedSingle::CreateLambda([this, NewWeapon]
 		{
 			VisualData = NewWeapon->GetVisualData();
 			OnRep_VisualData();
@@ -225,7 +225,6 @@ void UWeaponComponent::ServerAttack_Implementation(bool bIsStrongAttack)
 	if (bNowCombo)
 	{
 		ServerStopSkill_Implementation();
-		
 		bNowCombo = false;
 	}
 
@@ -236,9 +235,9 @@ void UWeaponComponent::ServerAttack_Implementation(bool bIsStrongAttack)
 	Weapons[WeaponIndex]->BeginSkill(SkillIndex + 1u);
 }
 
-void UWeaponComponent::ServerParry_Implementation()
+void UWeaponComponent::ServerDodge_Implementation()
 {
-	if ((bIsCasting && !bNowCombo) || !Weapons.IsValidIndex(WeaponIndex)) return;
+	if (bNowDodge || (bIsCasting && !bNowCombo) || !Weapons.IsValidIndex(WeaponIndex)) return;
 
 	if (bNowCombo)
 	{
@@ -246,14 +245,14 @@ void UWeaponComponent::ServerParry_Implementation()
 		bNowCombo = false;
 	}
 
-	bIsCasting = bNowParry = true;
+	bIsCasting = bNowDodge = true;
 	Weapons[WeaponIndex]->BeginSkill(0u);
 }
 
 void UWeaponComponent::ServerStopSkill_Implementation()
 {
 	if (Weapons.IsValidIndex(WeaponIndex))
-		Weapons[WeaponIndex]->EndSkill(bNowParry ? 0u : SkillIndex + 1u);
+		Weapons[WeaponIndex]->EndSkill(bNowDodge ? 0u : SkillIndex + 1u);
 }
 
 void UWeaponComponent::ServerSwapWeapon_Implementation(uint8 Index)
@@ -261,7 +260,7 @@ void UWeaponComponent::ServerSwapWeapon_Implementation(uint8 Index)
 	if ((bIsCasting && !bNowCombo) || WeaponIndex == Index)
 		return;
 
-	EquipWeapon(Weapons[Index], true);
+	EquipWeapon(Weapons[Index]);
 	WeaponIndex = Index;
 }
 
@@ -274,7 +273,7 @@ void UWeaponComponent::ServerChangeWeapon_Implementation(uint8 Index, int32 Key)
 	NewWeapon->Initialize(SkillContext, Key);
 
 	if (Index == WeaponIndex)
-		EquipWeapon(NewWeapon, true);
+		EquipWeapon(NewWeapon);
 
 	Weapons[Index] = NewWeapon;
 }
@@ -292,7 +291,7 @@ void UWeaponComponent::ServerAddWeapon_Implementation(int32 Key)
 	}
 
 	if (Weapons.Num() == 0)
-		EquipWeapon(NewWeapon, false);
+		EquipWeapon(NewWeapon);
 
 	Weapons.Add(NewWeapon);
 }
