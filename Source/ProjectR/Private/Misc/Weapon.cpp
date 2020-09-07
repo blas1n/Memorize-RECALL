@@ -61,8 +61,8 @@ bool UWeapon::Initialize(USkillContext* InContext, uint8 InKey)
 
 	Skills.Init(FUsableSkill{}, SkillNum);
 
-	if (Data->ParryingClass)
-		Skills[0].Skill = NewObject<USkill>(this, Data->ParryingClass);
+	if (Data->DodgingClass)
+		Skills[0].Skill = NewObject<USkill>(this, Data->DodgingClass);
 
 	if ((AttackClass = Data->AttackClass))
 	{

@@ -18,7 +18,7 @@ struct FWeaponData : public FTableRowBase
 	TSubclassOf<class USkill> AttackClass;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	TSubclassOf<USkill> ParryingClass;
+	TSubclassOf<USkill> DodgingClass;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TMap<uint8, TSubclassOf<USkill>> Skills;
