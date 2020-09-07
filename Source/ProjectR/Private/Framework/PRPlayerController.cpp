@@ -190,8 +190,14 @@ void APRPlayerController::SwapWeapon(float Value)
 
 void APRPlayerController::Lock()
 {
-	if (APRCharacter* MyPawn = GetPawn<APRCharacter>())
-		MyPawn->Lock(Targeter->GetTargetedActor());
+	auto* MyPawn = GetPawn<APRCharacter>();
+	if (!MyPawn) return;
+	
+	AActor* Target = Targeter->GetTargetedActor();
+	MyPawn->Lock(Target);
+
+	if (!Target)
+		SetControlRotation(FRotator{ 0.0f, MyPawn->GetActorRotation().Yaw, 0.0f });
 }
 
 void APRPlayerController::Unlock()
