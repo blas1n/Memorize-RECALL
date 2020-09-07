@@ -16,6 +16,9 @@ public:
 	UWeaponComponent();
 
 	UFUNCTION(BlueprintCallable)
+	void SetComponents(const TArray<class UPrimitiveComponent*>& InComponents);
+
+	UFUNCTION(BlueprintCallable)
 	void Attack(bool bIsStrongAttack);
 
 	UFUNCTION(BlueprintCallable)
@@ -122,6 +125,9 @@ private:
 
 	UPROPERTY(EditAnywhere, Category = Data, meta = (AllowPrivateAccess = true))
 	TArray<uint8> Keies;
+
+	UPROPERTY(Transient)
+	TArray<UPrimitiveComponent*> Components;
 
 	UPROPERTY(Transient)
 	TArray<UWeapon*> Weapons;
