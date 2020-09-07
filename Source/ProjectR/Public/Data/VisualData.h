@@ -18,10 +18,16 @@ struct FVisualData
 	FTransform RightTransform;
 
 	UPROPERTY()
+	class UAnimationAsset* RightTrail;
+
+	UPROPERTY()
 	USkeletalMesh* LeftMesh;
 
 	UPROPERTY()
 	FTransform LeftTransform;
+
+	UPROPERTY()
+	UAnimationAsset* LeftTrail;
 
 	UPROPERTY()
 	FAnimData AnimData;

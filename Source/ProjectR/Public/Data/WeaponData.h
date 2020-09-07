@@ -30,10 +30,16 @@ struct FWeaponData : public FTableRowBase
 	FTransform RightTransform;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TAssetPtr<class UAnimationAsset> RightTrail;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TAssetPtr<USkeletalMesh> LeftMesh;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FTransform LeftTransform;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TAssetPtr<UAnimationAsset> LeftTrail;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TAssetPtr<class UBlendSpace1D> NotLockAnim;

@@ -156,6 +156,14 @@ void UWeapon::LoadAll(const FWeaponData& WeaponData)
 	if (!WeaponData.NotLockAnim.IsNull()) ++AsyncLoadCount;
 	if (!WeaponData.LockAnim.IsNull()) ++AsyncLoadCount;
 	if (!WeaponData.AirAnim.IsNull()) ++AsyncLoadCount;
+	if (!WeaponData.RightTrail.IsNull()) ++AsyncLoadCount;
+	if (!WeaponData.LeftTrail.IsNull()) ++AsyncLoadCount;
+
+	if (AsyncLoadCount == 0u)
+	{
+		OnAsyncLoadEnded.Broadcast();
+		return;
+	}
 
 	UPRStatics::AsyncLoad(WeaponData.RightMesh, [this, &RightMeshPtr = WeaponData.RightMesh]
 	{
@@ -188,6 +196,20 @@ void UWeapon::LoadAll(const FWeaponData& WeaponData)
 	UPRStatics::AsyncLoad(WeaponData.AirAnim, [this, &AirPtr = WeaponData.AirAnim]
 	{
 		VisualData.AnimData.Air = AirPtr.Get();
+		if (--AsyncLoadCount == 0u)
+			OnAsyncLoadEnded.Broadcast();
+	});
+
+	UPRStatics::AsyncLoad(WeaponData.RightTrail, [this, &RightTrailPtr = WeaponData.RightTrail]
+	{
+		VisualData.RightTrail = RightTrailPtr.Get();
+		if (--AsyncLoadCount == 0u)
+			OnAsyncLoadEnded.Broadcast();
+	});
+
+	UPRStatics::AsyncLoad(WeaponData.LeftTrail, [this, &LeftTrailPtr = WeaponData.LeftTrail]
+	{
+		VisualData.LeftTrail = LeftTrailPtr.Get();
 		if (--AsyncLoadCount == 0u)
 			OnAsyncLoadEnded.Broadcast();
 	});

@@ -33,9 +33,22 @@ APRCharacter::APRCharacter(const FObjectInitializer& ObjectInitializer)
 	GetCharacterMovement()->bUseControllerDesiredRotation = false;
 	GetCharacterMovement()->bOrientRotationToMovement = true;
 	GetCharacterMovement()->bAllowPhysicsRotationDuringAnimRootMotion = true;
-	
+
 	WeaponComponent = CreateDefaultSubobject<UWeaponComponent>(TEXT("Weapon"));
 	StatComponent = CreateDefaultSubobject<UStatComponent>(TEXT("Stat"));
+
+	RightWeapon = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("RightWeapon"));
+	RightWeapon->SetupAttachment(GetMesh());
+	RightWeapon->SetCollisionProfileName(TEXT("Weapon"));
+	RightWeapon->SetAnimationMode(EAnimationMode::AnimationSingleNode);
+
+	LeftWeapon = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("LeftWeapon"));
+	LeftWeapon->SetupAttachment(GetMesh());
+	LeftWeapon->SetCollisionProfileName(TEXT("Weapon"));
+	LeftWeapon->SetAnimationMode(EAnimationMode::AnimationSingleNode);
+
+	WeaponComponent->SetRightWeapon(RightWeapon);
+	WeaponComponent->SetLeftWeapon(LeftWeapon);
 
 	static ConstructorHelpers::FObjectFinder<UDataTable> DataTable(TEXT("DataTable'/Game/Data/DataTable/DT_CharacterData.DT_CharacterData'"));
 	CharacterDataTable = DataTable.Object;
@@ -179,6 +192,9 @@ void APRCharacter::Initialize()
 			FVector{ Location.X, Location.Y, Data->MeshZ },
 			FRotator{ Rotation.Pitch, Data->MeshYaw, Rotation.Roll }
 		);
+
+		RightWeapon->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetIncludingScale, TEXT("hand_r"));
+		LeftWeapon->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetIncludingScale, TEXT("hand_l"));
 	});
 }
 
