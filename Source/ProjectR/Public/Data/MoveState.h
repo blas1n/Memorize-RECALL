@@ -6,8 +6,7 @@
 #include "MoveState.generated.h"
 
 UENUM(BlueprintType)
-enum class EMoveState : uint8
+enum class EMoveState : uint8 // Can add other state. (Ex. Crouch)
 {
-	// Can add other state like crouch.
 	Walk, Run,
 };

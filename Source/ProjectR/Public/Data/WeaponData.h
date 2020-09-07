@@ -18,19 +18,19 @@ struct FWeaponData : public FTableRowBase
 	TSubclassOf<class USkill> AttackClass;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	TSubclassOf<USkill> ParryingClass;
+	TSubclassOf<USkill> DodgingClass;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TMap<uint8, TSubclassOf<USkill>> Skills;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	TAssetPtr<class UStaticMesh> RightMesh;
+	TAssetPtr<class USkeletalMesh> RightMesh;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FTransform RightTransform;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	TAssetPtr<UStaticMesh> LeftMesh;
+	TAssetPtr<USkeletalMesh> LeftMesh;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FTransform LeftTransform;

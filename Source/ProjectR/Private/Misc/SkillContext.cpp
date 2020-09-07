@@ -5,24 +5,25 @@
 #include "Components/SkeletalMeshComponent.h"
 #include "GameFramework/Character.h"
 
-void USkillContext::Initialize(UStaticMeshComponent* InRightWeapon, UStaticMeshComponent* InLeftWeapon)
+void USkillContext::Initialize(const TArray<UPrimitiveComponent*>& InComponents)
 {
-	RightWeapon = InRightWeapon;
-	LeftWeapon = InLeftWeapon;
+	auto* User = GetTypedOuter<ACharacter>();
+	check(User && User->HasAuthority());
+	
+	User->GetMesh()->GetAnimInstance()->OnMontageEnded
+		.AddUniqueDynamic(this, &USkillContext::OnMontageEnded);
 
-	User = GetTypedOuter<ACharacter>();
-	check(User);
-
-	if (User->HasAuthority())
+	Components = InComponents;
+	for (auto* Component : Components)
 	{
-		User->GetMesh()->GetAnimInstance()->OnMontageEnded
-			.AddUniqueDynamic(this, &USkillContext::OnMontageEnded);
+		Component->SetGenerateOverlapEvents(false);
+		Component->OnComponentBeginOverlap.AddUniqueDynamic(this, &USkillContext::OnOverlap);
 	}
 }
 
 void USkillContext::PlayAnimation(UAnimMontage* Animation, const FOnAnimationEnded& OnAnimationEnded)
 {
-	check(User->HasAuthority() && Animation && OnAnimationEnded.IsBound());
+	check(GetTypedOuter<AActor>()->HasAuthority() && Animation && OnAnimationEnded.IsBound());
 
 	Callbacks.Add(Animation, OnAnimationEnded);
 	MulticastPlayAnimation(Animation);
@@ -30,10 +31,27 @@ void USkillContext::PlayAnimation(UAnimMontage* Animation, const FOnAnimationEnd
 
 void USkillContext::StopAnimation(UAnimMontage* Animation)
 {
-	check(User->HasAuthority() && Animation);
+	check(GetTypedOuter<AActor>()->HasAuthority() && Animation);
 
 	Callbacks.Remove(Animation);
 	MulticastStopAnimation(Animation);
+}
+
+void USkillContext::SetCollision(int32 AttackPart)
+{
+	const int32 Num = Components.Num();
+	for (int32 Idx = 0; Idx < Num; ++Idx)
+	{
+		const bool bIsEnable = AttackPart & (1 << Idx);
+		Components[Idx]->SetGenerateOverlapEvents(bIsEnable);
+	}
+}
+
+void USkillContext::OnOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
+	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+	if (GetTypedOuter<AActor>() != OtherActor)
+		OnHit.Broadcast(OtherActor);
 }
 
 void USkillContext::OnMontageEnded(UAnimMontage* Montage, bool bInterrupted)

@@ -12,7 +12,6 @@
 #include "Component/StatComponent.h"
 #include "Component/WeaponComponent.h"
 #include "Data/CharacterData.h"
-#include "Data/PRDamageType.h"
 #include "Framework/PRAnimInstance.h"
 #include "Library/PRStatics.h"
 
