@@ -43,9 +43,6 @@ public:
 	void EndExecute();
 
 	UFUNCTION(BlueprintCallable)
-	void TickExecute(float DeltaSeconds);
-
-	UFUNCTION(BlueprintCallable)
 	void EnableCombo();
 
 	UFUNCTION(BlueprintCallable)
