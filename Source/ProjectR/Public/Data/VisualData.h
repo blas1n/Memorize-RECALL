@@ -12,13 +12,13 @@ struct FVisualData
 	GENERATED_BODY()
 
 	UPROPERTY()
-	class UStaticMesh* RightMesh;
+	class USkeletalMesh* RightMesh;
 
 	UPROPERTY()
 	FTransform RightTransform;
 
 	UPROPERTY()
-	UStaticMesh* LeftMesh;
+	USkeletalMesh* LeftMesh;
 
 	UPROPERTY()
 	FTransform LeftTransform;

@@ -61,8 +61,8 @@ bool UWeapon::Initialize(USkillContext* InContext, uint8 InKey)
 
 	Skills.Init(FUsableSkill{}, SkillNum);
 
-	if (Data->ParryingClass)
-		Skills[0].Skill = NewObject<USkill>(this, Data->ParryingClass);
+	if (Data->DodgingClass)
+		Skills[0].Skill = NewObject<USkill>(this, Data->DodgingClass);
 
 	if ((AttackClass = Data->AttackClass))
 	{
@@ -147,15 +147,6 @@ void UWeapon::EndExecute(uint8 Index)
 	USkill* Skill = Skills[Index].Skill;
 	if (Skill && Skill->GetClass()->ImplementsInterface(UStateExecutable::StaticClass()))
 		return IStateExecutable::Execute_EndExecute(Skill);
-}
-
-void UWeapon::TickExecute(uint8 Index, float DeltaSeconds)
-{
-	if (!Skills.IsValidIndex(Index)) return;
-
-	USkill* Skill = Skills[Index].Skill;
-	if (Skill && Skill->GetClass()->ImplementsInterface(UStateExecutable::StaticClass()))
-		return IStateExecutable::Execute_TickExecute(Skill, DeltaSeconds);
 }
 
 void UWeapon::LoadAll(const FWeaponData& WeaponData)

@@ -16,6 +16,9 @@ public:
 	UWeaponComponent();
 
 	UFUNCTION(BlueprintCallable)
+	void SetComponents(const TArray<class UPrimitiveComponent*>& InComponents);
+
+	UFUNCTION(BlueprintCallable)
 	void Attack(bool bIsStrongAttack);
 
 	UFUNCTION(BlueprintCallable)
@@ -43,9 +46,6 @@ public:
 	void EndExecute();
 
 	UFUNCTION(BlueprintCallable)
-	void TickExecute(float DeltaSeconds);
-
-	UFUNCTION(BlueprintCallable)
 	void EnableCombo();
 
 	UFUNCTION(BlueprintCallable)
@@ -53,8 +53,8 @@ public:
 
 	void OnEndSkill();
 
-	FORCEINLINE class UStaticMeshComponent* GetRightWeapon() const noexcept { return RightWeapon; }
-	FORCEINLINE UStaticMeshComponent* GetLeftWeapon() const noexcept { return LeftWeapon; }
+	FORCEINLINE void SetRightWeapon(class USkeletalMeshComponent* InRightWeapon) noexcept { RightWeapon = InRightWeapon; }
+	FORCEINLINE void SetLeftWeapon(USkeletalMeshComponent* InLeftWeapon) noexcept { LeftWeapon = InLeftWeapon; }
 
 	FORCEINLINE int32 GetWeaponNum() const noexcept { return Weapons.Num(); }
 	FORCEINLINE uint8 GetWeaponIndex() const noexcept { return WeaponIndex; }
@@ -105,7 +105,6 @@ private:
 	void ServerAddWeapon_Implementation(int32 Key);
 	FORCEINLINE bool ServerAddWeapon_Validate(int32 Key) const noexcept { return true; }
 
-	UStaticMeshComponent* CreateWeaponComponent(const FName& Name);
 	void EquipWeapon(class UWeapon* NewWeapon);
 	void Initialize();
 
@@ -115,17 +114,20 @@ private:
 	UFUNCTION()
 	void Detach();
 
-	void DetachOnce(class UStaticMeshComponent* Weapon);
+	void DetachOnce(USkeletalMeshComponent* Weapon);
 
 private:
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = true))
-	UStaticMeshComponent* RightWeapon;
+	UPROPERTY(BlueprintReadWrite, meta = (AllowPrivateAccess = true))
+	USkeletalMeshComponent* RightWeapon;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = true))
-	UStaticMeshComponent* LeftWeapon;
+	UPROPERTY(BlueprintReadWrite, meta = (AllowPrivateAccess = true))
+	USkeletalMeshComponent* LeftWeapon;
 
 	UPROPERTY(EditAnywhere, Category = Data, meta = (AllowPrivateAccess = true))
 	TArray<uint8> Keies;
+
+	UPROPERTY(Transient)
+	TArray<UPrimitiveComponent*> Components;
 
 	UPROPERTY(Transient)
 	TArray<UWeapon*> Weapons;

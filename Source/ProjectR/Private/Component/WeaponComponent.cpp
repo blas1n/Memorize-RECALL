@@ -17,9 +17,14 @@ UWeaponComponent::UWeaponComponent()
 	PrimaryComponentTick.bCanEverTick = false;
 	bWantsInitializeComponent = true;
 	SetIsReplicatedByDefault(true);
+}
 
-	RightWeapon = CreateWeaponComponent(TEXT("RightWeapon"));
-	LeftWeapon = CreateWeaponComponent(TEXT("LeftWeapon"));
+void UWeaponComponent::SetComponents(const TArray<UPrimitiveComponent*>& InComponents)
+{
+	Components = InComponents;
+
+	if (HasBegunPlay())
+		SkillContext->Initialize(Components);
 }
 
 void UWeaponComponent::Attack(bool bIsStrongAttack)
@@ -68,12 +73,6 @@ void UWeaponComponent::EndExecute()
 {
 	if (GetOwner()->HasAuthority() && Weapons.IsValidIndex(WeaponIndex))
 		Weapons[WeaponIndex]->EndExecute(bNowDodge ? 0u : SkillIndex + 1);
-}
-
-void UWeaponComponent::TickExecute(float DeltaSeconds)
-{
-	if (GetOwner()->HasAuthority() && Weapons.IsValidIndex(WeaponIndex))
-		Weapons[WeaponIndex]->TickExecute(bNowDodge ? 0u : SkillIndex + 1, DeltaSeconds);
 }
 
 void UWeaponComponent::EnableCombo()
@@ -134,10 +133,8 @@ void UWeaponComponent::BeginPlay()
 	for (UWeapon* Weapon : Weapons)
 		Weapon->BeginPlay();
 
-	if (Weapons.Num() > 0)
-		EquipWeapon(Weapons[0]);
-
-	SkillContext->Initialize(RightWeapon, LeftWeapon);
+	EquipWeapon(Weapons.Num() > 0 ? Weapons[0] : NoWeapon);
+	SkillContext->Initialize(Components);
 	SkillIndex = 255u;
 }
 
@@ -159,16 +156,6 @@ void UWeaponComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Out
 	DOREPLIFETIME(UWeaponComponent, VisualData);
 }
 
-UStaticMeshComponent* UWeaponComponent::CreateWeaponComponent(const FName& Name)
-{
-	auto* Component = CreateDefaultSubobject<UStaticMeshComponent>(Name);
-	Component->CanCharacterStepUpOn = ECanBeCharacterBase::ECB_No;
-	Component->SetMobility(EComponentMobility::Movable);
-	Component->SetCollisionProfileName(TEXT("Weapon"));
-	Component->SetGenerateOverlapEvents(true);
-	return Component;
-}
-
 void UWeaponComponent::EquipWeapon(UWeapon* NewWeapon)
 {
 	if (!NewWeapon) return;
@@ -184,15 +171,6 @@ void UWeaponComponent::EquipWeapon(UWeapon* NewWeapon)
 
 void UWeaponComponent::Initialize()
 {
-	auto* MeshComponent = CastChecked<ACharacter>(GetOwner())->GetMesh();
-	const auto Rules = FAttachmentTransformRules::KeepRelativeTransform;
-
-	if (MeshComponent->DoesSocketExist(TEXT("weapon_r")))
-		RightWeapon->AttachToComponent(MeshComponent, Rules, TEXT("weapon_r"));
-
-	if (MeshComponent->DoesSocketExist(TEXT("weapon_l")))
-		LeftWeapon->AttachToComponent(MeshComponent, Rules, TEXT("weapon_l"));
-
 	if (GetOwnerRole() != ENetRole::ROLE_Authority)
 		return;
 
@@ -304,11 +282,17 @@ void UWeaponComponent::OnRep_VisualData()
 		AnimInstance->SetAnimData(VisualData.AnimData);
 	}
 	
-	RightWeapon->SetStaticMesh(VisualData.RightMesh);
-	RightWeapon->SetRelativeTransform(VisualData.RightTransform);
+	if (RightWeapon)
+	{
+		RightWeapon->SetSkeletalMesh(VisualData.RightMesh);
+		RightWeapon->SetRelativeTransform(VisualData.RightTransform);
+	}
 
-	LeftWeapon->SetStaticMesh(VisualData.LeftMesh);
-	LeftWeapon->SetRelativeTransform(VisualData.LeftTransform);
+	if (LeftWeapon)
+	{
+		LeftWeapon->SetSkeletalMesh(VisualData.LeftMesh);
+		LeftWeapon->SetRelativeTransform(VisualData.LeftTransform);
+	}
 }
 
 void UWeaponComponent::Detach()
@@ -317,7 +301,7 @@ void UWeaponComponent::Detach()
 	DetachOnce(LeftWeapon);
 }
 
-void UWeaponComponent::DetachOnce(UStaticMeshComponent* Weapon)
+void UWeaponComponent::DetachOnce(USkeletalMeshComponent* Weapon)
 {
 	Weapon->SetCollisionProfileName(TEXT("Ragdoll"));
 	Weapon->SetSimulatePhysics(true);
