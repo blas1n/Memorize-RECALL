@@ -132,8 +132,7 @@ void UWeaponComponent::BeginPlay()
 	
 	for (UWeapon* Weapon : Weapons)
 		Weapon->BeginPlay();
-
-	EquipWeapon(Weapons.Num() > 0 ? Weapons[0] : NoWeapon);
+	
 	SkillContext->Initialize(Components);
 	SkillIndex = 255u;
 }
@@ -194,6 +193,8 @@ void UWeaponComponent::Initialize()
 		--WeaponNum;
 		--Idx;
 	}
+
+	EquipWeapon(Weapons.Num() > 0 ? Weapons[0] : NoWeapon);
 }
 
 void UWeaponComponent::ServerAttack_Implementation(bool bIsStrongAttack)
