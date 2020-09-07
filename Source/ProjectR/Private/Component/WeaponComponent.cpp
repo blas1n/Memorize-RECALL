@@ -286,12 +286,14 @@ void UWeaponComponent::OnRep_VisualData()
 	{
 		RightWeapon->SetSkeletalMesh(VisualData.RightMesh);
 		RightWeapon->SetRelativeTransform(VisualData.RightTransform);
+		RightWeapon->OverrideAnimationData(VisualData.RightTrail, true, false);
 	}
 
 	if (LeftWeapon)
 	{
 		LeftWeapon->SetSkeletalMesh(VisualData.LeftMesh);
 		LeftWeapon->SetRelativeTransform(VisualData.LeftTransform);
+		LeftWeapon->OverrideAnimationData(VisualData.LeftTrail, true, false);
 	}
 }
 
