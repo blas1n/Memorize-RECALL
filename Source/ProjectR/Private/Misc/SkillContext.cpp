@@ -15,7 +15,10 @@ void USkillContext::Initialize(const TArray<UPrimitiveComponent*>& InComponents)
 
 	Components = InComponents;
 	for (auto* Component : Components)
+	{
+		Component->SetGenerateOverlapEvents(false);
 		Component->OnComponentBeginOverlap.AddUniqueDynamic(this, &USkillContext::OnOverlap);
+	}
 }
 
 void USkillContext::PlayAnimation(UAnimMontage* Animation, const FOnAnimationEnded& OnAnimationEnded)
@@ -39,15 +42,16 @@ void USkillContext::SetCollision(int32 AttackPart)
 	const int32 Num = Components.Num();
 	for (int32 Idx = 0; Idx < Num; ++Idx)
 	{
-		const bool bIsEnable = AttackPart & (1 << static_cast<int32>(Idx + 1));
-		Components[Idx]->SetCollisionEnabled(bIsEnable ? ECollisionEnabled::QueryOnly : ECollisionEnabled::NoCollision);
+		const bool bIsEnable = AttackPart & (1 << Idx);
+		Components[Idx]->SetGenerateOverlapEvents(bIsEnable);
 	}
 }
 
 void USkillContext::OnOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
 	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	OnHit.Broadcast(OtherActor);
+	if (GetTypedOuter<AActor>() != OtherActor)
+		OnHit.Broadcast(OtherActor);
 }
 
 void USkillContext::OnMontageEnded(UAnimMontage* Montage, bool bInterrupted)
