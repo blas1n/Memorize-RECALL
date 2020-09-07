@@ -311,7 +311,7 @@ void UWeaponComponent::Detach()
 	DetachOnce(LeftWeapon);
 }
 
-void UWeaponComponent::DetachOnce(UStaticMeshComponent* Weapon)
+void UWeaponComponent::DetachOnce(USkeletalMeshComponent* Weapon)
 {
 	Weapon->SetCollisionProfileName(TEXT("Ragdoll"));
 	Weapon->SetSimulatePhysics(true);

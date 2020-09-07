@@ -24,13 +24,13 @@ struct FWeaponData : public FTableRowBase
 	TMap<uint8, TSubclassOf<USkill>> Skills;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	TAssetPtr<class UStaticMesh> RightMesh;
+	TAssetPtr<class USkeletalMesh> RightMesh;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FTransform RightTransform;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	TAssetPtr<UStaticMesh> LeftMesh;
+	TAssetPtr<USkeletalMesh> LeftMesh;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FTransform LeftTransform;
