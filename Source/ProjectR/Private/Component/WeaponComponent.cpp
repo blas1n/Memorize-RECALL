@@ -70,12 +70,6 @@ void UWeaponComponent::EndExecute()
 		Weapons[WeaponIndex]->EndExecute(bNowDodge ? 0u : SkillIndex + 1);
 }
 
-void UWeaponComponent::TickExecute(float DeltaSeconds)
-{
-	if (GetOwner()->HasAuthority() && Weapons.IsValidIndex(WeaponIndex))
-		Weapons[WeaponIndex]->TickExecute(bNowDodge ? 0u : SkillIndex + 1, DeltaSeconds);
-}
-
 void UWeaponComponent::EnableCombo()
 {
 	if (Cast<APawn>(GetOwner())->HasAuthority()
