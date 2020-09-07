@@ -117,14 +117,14 @@ private:
 	void DetachOnce(USkeletalMeshComponent* Weapon);
 
 private:
-	UPROPERTY(BlueprintReadWrite, meta = (AllowPrivateAccess = true))
-	USkeletalMeshComponent* RightWeapon;
-
-	UPROPERTY(BlueprintReadWrite, meta = (AllowPrivateAccess = true))
-	USkeletalMeshComponent* LeftWeapon;
-
 	UPROPERTY(EditAnywhere, Category = Data, meta = (AllowPrivateAccess = true))
 	TArray<uint8> Keies;
+
+	UPROPERTY(Transient, BlueprintReadOnly, meta = (AllowPrivateAccess = true))
+	USkeletalMeshComponent* RightWeapon;
+
+	UPROPERTY(Transient, BlueprintReadOnly, meta = (AllowPrivateAccess = true))
+	USkeletalMeshComponent* LeftWeapon;
 
 	UPROPERTY(Transient)
 	TArray<UPrimitiveComponent*> Components;
