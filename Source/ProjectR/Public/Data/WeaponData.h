@@ -27,19 +27,19 @@ struct FWeaponData : public FTableRowBase
 	TAssetPtr<class USkeletalMesh> RightMesh;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	FTransform RightTransform;
+	TSubclassOf<class UAnimInstance> RightAnim;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	TAssetPtr<class UAnimationAsset> RightTrail;
+	FTransform RightTransform;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TAssetPtr<USkeletalMesh> LeftMesh;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	FTransform LeftTransform;
+	TSubclassOf<UAnimInstance> LeftAnim;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	TAssetPtr<UAnimationAsset> LeftTrail;
+	FTransform LeftTransform;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TAssetPtr<class UBlendSpace1D> NotLockAnim;

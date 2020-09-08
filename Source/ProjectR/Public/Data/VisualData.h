@@ -15,19 +15,19 @@ struct FVisualData
 	class USkeletalMesh* RightMesh;
 
 	UPROPERTY()
-	FTransform RightTransform;
+	TSubclassOf<class UAnimInstance> RightAnim;
 
 	UPROPERTY()
-	class UAnimationAsset* RightTrail;
+	FTransform RightTransform;
 
 	UPROPERTY()
 	USkeletalMesh* LeftMesh;
 
 	UPROPERTY()
-	FTransform LeftTransform;
+	TSubclassOf<UAnimInstance> LeftAnim;
 
 	UPROPERTY()
-	UAnimationAsset* LeftTrail;
+	FTransform LeftTransform;
 
 	UPROPERTY()
 	FAnimData AnimData;

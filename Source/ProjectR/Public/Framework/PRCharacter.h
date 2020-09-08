@@ -10,8 +10,8 @@
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnDeath);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnLand, const FHitResult&, Hit);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FOnAttack, float, Damage, AActor*, Target, TSubclassOf<UDamageType>, DamageType);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FOnDamage, float, Damage, AActor*, Target, TSubclassOf<UDamageType>, DamageType);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnAttack, float, Damage, AActor*, Target);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnDamage, float, Damage, AActor*, Target);
 
 UCLASS(BlueprintType)
 class PROJECTR_API APRCharacter final : public ACharacter, public IGenericTeamAgentInterface
@@ -128,10 +128,10 @@ private:
 	UStatComponent* StatComponent;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = true))
-	USkeletalMeshComponent* RightWeapon;
+	class UWeaponMeshComponent* RightWeapon;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = true))
-	USkeletalMeshComponent* LeftWeapon;
+	UWeaponMeshComponent* LeftWeapon;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Data, meta = (AllowPrivateAccess = true))
 	uint8 CharacterKey;
