@@ -27,9 +27,6 @@ private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = true))
 	FVector2D Velocity;
 
-	UPROPERTY(EditAnywhere, meta = (AllowPrivateAccess = true))
-	float BlendDuration;
-
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = true))
 	float BlendRatio;
 

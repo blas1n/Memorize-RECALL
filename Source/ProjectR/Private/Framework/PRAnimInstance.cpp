@@ -8,7 +8,6 @@
 UPRAnimInstance::UPRAnimInstance()
 	: Super()
 {
-	BlendDuration = 0.5f;
 	bIsLocking = false;
 	bIsInAir = false;
 }
@@ -28,8 +27,12 @@ void UPRAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 		BlendRatio = 1.0f;
 	}
 
-	if (BlendRatio > 0.0f)
-		BlendRatio = FMath::Max(BlendRatio - DeltaSeconds * (1.0f / BlendDuration), 0.0f);
+	const float SwapDuration = User->GetWeaponComponent()->GetWeaponSwapDuration();
+	if (BlendRatio > 0.0f && SwapDuration > 0.0f)
+	{
+		BlendRatio = FMath::Max(BlendRatio - DeltaSeconds *
+			(1.0f / SwapDuration), 0.0f);
+	}
 
 	const auto* Movement = User->GetCharacterMovement();
 	Velocity = FVector2D{ User->GetActorRotation().UnrotateVector(Movement->Velocity) };
