@@ -2,6 +2,7 @@
 
 #include "Framework/PRAnimInstance.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "Component/WeaponComponent.h"
 #include "Framework/PRCharacter.h"
 
 UPRAnimInstance::UPRAnimInstance()
@@ -18,9 +19,11 @@ void UPRAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 	const auto* User = Cast<APRCharacter>(TryGetPawnOwner());
 	if (!User) return;
 
+	AnimData = User->GetWeaponComponent()->GetAnimData();
+
 	const auto* Movement = User->GetCharacterMovement();
 	Velocity = FVector2D{ User->GetActorRotation().UnrotateVector(Movement->Velocity) };
-	
+
 	bIsLocking = User->IsLocked();
 	bIsInAir = Movement->IsFalling();
 }
