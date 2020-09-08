@@ -277,12 +277,6 @@ void UWeaponComponent::ServerAddWeapon_Implementation(int32 Key)
 
 void UWeaponComponent::OnRep_VisualData()
 {
-	if (auto* AnimInstance = Cast<UPRAnimInstance>
-		(Cast<ACharacter>(GetOwner())->GetMesh()->GetAnimInstance()))
-	{
-		AnimInstance->SetAnimData(VisualData.AnimData);
-	}
-	
 	if (RightWeapon)
 	{
 		RightWeapon->SetSkeletalMesh(VisualData.RightMesh);

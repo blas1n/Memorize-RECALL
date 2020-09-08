@@ -56,6 +56,8 @@ public:
 	FORCEINLINE void SetRightWeapon(class USkeletalMeshComponent* InRightWeapon) noexcept { RightWeapon = InRightWeapon; }
 	FORCEINLINE void SetLeftWeapon(USkeletalMeshComponent* InLeftWeapon) noexcept { LeftWeapon = InLeftWeapon; }
 
+	FORCEINLINE const FAnimData& GetAnimData() const noexcept { return VisualData.AnimData; }
+
 	FORCEINLINE int32 GetWeaponNum() const noexcept { return Weapons.Num(); }
 	FORCEINLINE uint8 GetWeaponIndex() const noexcept { return WeaponIndex; }
 
