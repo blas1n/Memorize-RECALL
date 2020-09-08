@@ -15,6 +15,15 @@ private:
 
 	FVector ConsumeInputVector() override;
 
+	UFUNCTION(Server, Reliable, WithValidation)
+	void ServerSetLastInputVector(FVector InLastInputVector);
+
+	FORCEINLINE void ServerSetLastInputVector_Implementation
+		(FVector InLastInputVector) noexcept { LastInputVector = InLastInputVector;	}
+
+	FORCEINLINE bool ServerSetLastInputVector_Validate
+		(FVector InLastInputVector) const noexcept { return true; }
+
 private:
 	UPROPERTY(Transient, BlueprintReadOnly, meta = (AllowPrivateAccess = true))
 	FVector LastInputVector;
