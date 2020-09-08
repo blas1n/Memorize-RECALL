@@ -16,7 +16,7 @@ void UPRAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 {
 	Super::NativeUpdateAnimation(DeltaSeconds);
 
-	const auto* User = Cast<APRCharacter>(TryGetPawnOwner());
+	const auto* User = Cast<APRCharacter>(GetOwningActor());
 	if (!User) return;
 
 	AnimData = User->GetWeaponComponent()->GetAnimData();
