@@ -11,12 +11,14 @@ void UPRMovementComponent::AddInputVector(FVector WorldVector, bool bForce)
 
 FVector UPRMovementComponent::ConsumeInputVector()
 {
-	if (GetOwnerRole() == ROLE_AutonomousProxy)
+	if (GetOwner()->HasLocalNetOwner())
 	{
 		LastInputVector = InputVector;
 		InputVector = FVector::ZeroVector;
-		ServerSetLastInputVector(LastInputVector);
 	}
+
+	if (GetOwnerRole() == ROLE_AutonomousProxy)
+		ServerSetLastInputVector(LastInputVector);
 
 	return Super::ConsumeInputVector();
 }
