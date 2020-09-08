@@ -11,6 +11,7 @@
 #include "Component/PRMovementComponent.h"
 #include "Component/StatComponent.h"
 #include "Component/WeaponComponent.h"
+#include "Component/WeaponMeshComponent.h"
 #include "Data/CharacterData.h"
 #include "Framework/PRAnimInstance.h"
 #include "Library/PRStatics.h"
@@ -37,18 +38,13 @@ APRCharacter::APRCharacter(const FObjectInitializer& ObjectInitializer)
 	WeaponComponent = CreateDefaultSubobject<UWeaponComponent>(TEXT("Weapon"));
 	StatComponent = CreateDefaultSubobject<UStatComponent>(TEXT("Stat"));
 
-	RightWeapon = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("RightWeapon"));
+	RightWeapon = CreateDefaultSubobject<UWeaponMeshComponent>(TEXT("RightWeapon"));
 	RightWeapon->SetupAttachment(GetMesh());
-	RightWeapon->SetCollisionProfileName(TEXT("Weapon"));
-	RightWeapon->SetAnimationMode(EAnimationMode::AnimationSingleNode);
 
-	LeftWeapon = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("LeftWeapon"));
+	LeftWeapon = CreateDefaultSubobject<UWeaponMeshComponent>(TEXT("LeftWeapon"));
 	LeftWeapon->SetupAttachment(GetMesh());
-	LeftWeapon->SetCollisionProfileName(TEXT("Weapon"));
-	LeftWeapon->SetAnimationMode(EAnimationMode::AnimationSingleNode);
 
-	WeaponComponent->SetRightWeapon(RightWeapon);
-	WeaponComponent->SetLeftWeapon(LeftWeapon);
+	WeaponComponent->SetWeaponComponent(RightWeapon, LeftWeapon);
 
 	static ConstructorHelpers::FObjectFinder<UDataTable> DataTable(TEXT("DataTable'/Game/Data/DataTable/DT_CharacterData.DT_CharacterData'"));
 	CharacterDataTable = DataTable.Object;
@@ -129,8 +125,8 @@ float APRCharacter::TakeDamage(float Damage, const FDamageEvent& DamageEvent,
 
 	if (auto* InstigatorPawn = EventInstigator->GetPawn<APRCharacter>())
 	{
-		InstigatorPawn->OnAttack.Broadcast(Damage, this, DamageEvent.DamageTypeClass);
-		OnDamage.Broadcast(Damage, InstigatorPawn, DamageEvent.DamageTypeClass);
+		InstigatorPawn->OnAttack.Broadcast(Damage, this);
+		OnDamage.Broadcast(Damage, InstigatorPawn);
 	}
 
 	return Damage;

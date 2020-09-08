@@ -128,10 +128,10 @@ private:
 	UStatComponent* StatComponent;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = true))
-	USkeletalMeshComponent* RightWeapon;
+	class UWeaponMeshComponent* RightWeapon;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = true))
-	USkeletalMeshComponent* LeftWeapon;
+	UWeaponMeshComponent* LeftWeapon;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Data, meta = (AllowPrivateAccess = true))
 	uint8 CharacterKey;
