@@ -6,6 +6,7 @@
 #include "Components/StaticMeshComponent.h"
 #include "Net/UnrealNetwork.h"
 #include "TimerManager.h"
+#include "Component/WeaponMeshComponent.h"
 #include "Framework/PRCharacter.h"
 #include "Framework/PRAnimInstance.h"
 #include "Misc/SkillContext.h"
@@ -99,6 +100,13 @@ void UWeaponComponent::OnEndSkill()
 		SkillIndex = 255u;
 
 	bIsCasting = bNowDodge = false;
+}
+
+void UWeaponComponent::SetWeaponComponent(UWeaponMeshComponent* InRightWeapon,
+	UWeaponMeshComponent* InLeftWeapon) noexcept
+{
+	RightWeapon = InRightWeapon;
+	LeftWeapon = InLeftWeapon;
 }
 
 #if WITH_EDITOR
@@ -277,32 +285,12 @@ void UWeaponComponent::ServerAddWeapon_Implementation(int32 Key)
 
 void UWeaponComponent::OnRep_VisualData()
 {
-	if (RightWeapon)
-	{
-		RightWeapon->SetSkeletalMesh(VisualData.RightMesh);
-		RightWeapon->SetRelativeTransform(VisualData.RightTransform);
-		RightWeapon->OverrideAnimationData(VisualData.RightTrail, true, false);
-	}
-
-	if (LeftWeapon)
-	{
-		LeftWeapon->SetSkeletalMesh(VisualData.LeftMesh);
-		LeftWeapon->SetRelativeTransform(VisualData.LeftTransform);
-		LeftWeapon->OverrideAnimationData(VisualData.LeftTrail, true, false);
-	}
+	RightWeapon->SetWeapon(VisualData.RightMesh, VisualData.RightAnim, VisualData.RightTransform);
+	LeftWeapon->SetWeapon(VisualData.LeftMesh, VisualData.LeftAnim, VisualData.LeftTransform);
 }
 
 void UWeaponComponent::Detach()
 {
-	DetachOnce(RightWeapon);
-	DetachOnce(LeftWeapon);
-}
-
-void UWeaponComponent::DetachOnce(USkeletalMeshComponent* Weapon)
-{
-	Weapon->SetCollisionProfileName(TEXT("Ragdoll"));
-	Weapon->SetSimulatePhysics(true);
-
-	auto Rules = FDetachmentTransformRules::KeepWorldTransform;
-	Weapon->DetachFromComponent(Rules);
+	RightWeapon->Detach();
+	LeftWeapon->Detach();
 }
