@@ -53,8 +53,10 @@ public:
 
 	void OnEndSkill();
 
-	FORCEINLINE void SetRightWeapon(class USkeletalMeshComponent* InRightWeapon) noexcept { RightWeapon = InRightWeapon; }
-	FORCEINLINE void SetLeftWeapon(USkeletalMeshComponent* InLeftWeapon) noexcept { LeftWeapon = InLeftWeapon; }
+	void SetWeaponComponent(class UWeaponMeshComponent* InRightWeapon,
+		UWeaponMeshComponent* InLeftWeapon) noexcept;
+
+	FORCEINLINE const FAnimData& GetAnimData() const noexcept { return VisualData.AnimData; }
 
 	FORCEINLINE int32 GetWeaponNum() const noexcept { return Weapons.Num(); }
 	FORCEINLINE uint8 GetWeaponIndex() const noexcept { return WeaponIndex; }
@@ -114,17 +116,15 @@ private:
 	UFUNCTION()
 	void Detach();
 
-	void DetachOnce(USkeletalMeshComponent* Weapon);
-
 private:
 	UPROPERTY(EditAnywhere, Category = Data, meta = (AllowPrivateAccess = true))
 	TArray<uint8> Keies;
 
 	UPROPERTY(Transient, BlueprintReadOnly, meta = (AllowPrivateAccess = true))
-	USkeletalMeshComponent* RightWeapon;
+	UWeaponMeshComponent* RightWeapon;
 
 	UPROPERTY(Transient, BlueprintReadOnly, meta = (AllowPrivateAccess = true))
-	USkeletalMeshComponent* LeftWeapon;
+	UWeaponMeshComponent* LeftWeapon;
 
 	UPROPERTY(Transient)
 	TArray<UPrimitiveComponent*> Components;
