@@ -11,6 +11,7 @@ UWeaponMeshComponent::UWeaponMeshComponent()
 void UWeaponMeshComponent::SetWeapon(USkeletalMesh* Mesh,
 	TSubclassOf<UAnimInstance> Anim, const FTransform& Transform)
 {
+	SetAnimClass(nullptr); // It need to validate skeletal mesh
 	SetSkeletalMesh(Mesh);
 	SetAnimClass(Anim);
 	SetRelativeTransform(Transform);
