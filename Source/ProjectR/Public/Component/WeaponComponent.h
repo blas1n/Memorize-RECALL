@@ -120,7 +120,7 @@ private:
 	UPROPERTY(EditAnywhere, Category = Data, meta = (AllowPrivateAccess = true))
 	TArray<uint8> Keies;
 
-	UPROPERTY(EditAnywhere, Category = Data, meta = (AllowPrivateAccess = true))
+	UPROPERTY(EditAnywhere, Category = Data, meta = (AllowPrivateAccess = true, ClmapMin = "0.01"))
 	float WeaponSwapDuration;
 
 	UPROPERTY(Transient, BlueprintReadOnly, meta = (AllowPrivateAccess = true))
