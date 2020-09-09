@@ -14,6 +14,13 @@ void UWeaponMeshComponent::SetWeapon(USkeletalMesh* Mesh,
 {
 	if (Mesh == SkeletalMesh) return;
 
+	if (!HasBegunPlay())
+	{
+		SetMesh(Mesh, Anim, Transform.GetLocation(), Transform.GetRotation());
+		SetRelativeScale3D(Transform.GetScale3D());
+		return;
+	}
+
 	bNowDecrease = SkeletalMesh != nullptr;
 	bNeedFast = bNowDecrease && (Mesh != nullptr);
 
