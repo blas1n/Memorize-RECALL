@@ -18,6 +18,8 @@ UWeaponComponent::UWeaponComponent()
 	PrimaryComponentTick.bCanEverTick = false;
 	bWantsInitializeComponent = true;
 	SetIsReplicatedByDefault(true);
+
+	WeaponSwapDuration = 0.2f;
 }
 
 void UWeaponComponent::SetComponents(const TArray<UPrimitiveComponent*>& InComponents)
