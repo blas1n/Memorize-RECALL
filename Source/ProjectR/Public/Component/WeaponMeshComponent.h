@@ -23,6 +23,29 @@ public:
 	void SetTrail(bool bOnTrail);
 
 private:
+	void TickComponent(float DeltaTime, ELevelTick TickType,
+		FActorComponentTickFunction* ThisTickFunction) override;
+
+	void SetMesh(USkeletalMesh* Mesh, TSubclassOf<UAnimInstance> Anim,
+		const FVector& Loc, const FQuat& Rot);
+
+	bool SetScaleIfNeed(const FVector& A, const FVector& B);
+
+private:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = true))
 	uint8 bEnableTrail : 1;
+
+	UPROPERTY(EditAnywhere, meta = (AllowPrivateAccess = true))
+	UMaterialInterface* SwapMaterial;
+
+	UPROPERTY(Transient)
+	USkeletalMesh* OriginalMesh;
+
+	TSubclassOf<UAnimInstance> OriginalAnim;
+	FTransform OriginalTransform;
+	FVector BeforeScale;
+
+	float SwapRatio;
+	uint8 bNeedFast : 1;
+	uint8 bNowDecrease : 1;
 };
