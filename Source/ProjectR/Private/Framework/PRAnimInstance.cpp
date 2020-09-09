@@ -18,8 +18,21 @@ void UPRAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 
 	const auto* User = Cast<APRCharacter>(GetOwningActor());
 	if (!User) return;
+	
+	auto CurAnimData = User->GetWeaponComponent()->GetAnimData();
+	if (AnimData.NotLock != CurAnimData.NotLock || CurAnimData.Lock != CurAnimData.Lock || CurAnimData.Air != CurAnimData.Air)
+	{
+		AnimData = MoveTemp(CurAnimData);
+		SavePoseSnapshot(TEXT("Pose"));
+		BlendRatio = 1.0f;
+	}
 
-	AnimData = User->GetWeaponComponent()->GetAnimData();
+	const float SwapDuration = User->GetWeaponComponent()->GetWeaponSwapDuration();
+	if (BlendRatio > 0.0f && SwapDuration > 0.0f)
+	{
+		BlendRatio = FMath::Max(BlendRatio - DeltaSeconds *
+			(1.0f / SwapDuration), 0.0f);
+	}
 
 	const auto* Movement = User->GetCharacterMovement();
 	Velocity = FVector2D{ User->GetActorRotation().UnrotateVector(Movement->Velocity) };
