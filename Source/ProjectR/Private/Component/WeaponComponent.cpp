@@ -18,8 +18,9 @@ UWeaponComponent::UWeaponComponent()
 	PrimaryComponentTick.bCanEverTick = false;
 	bWantsInitializeComponent = true;
 	SetIsReplicatedByDefault(true);
-
+	
 	WeaponSwapDuration = 0.2f;
+	SkillIndex = 255u;
 }
 
 void UWeaponComponent::SetComponents(const TArray<UPrimitiveComponent*>& InComponents)
@@ -63,37 +64,44 @@ void UWeaponComponent::AddWeapon(int32 Key)
 void UWeaponComponent::Execute()
 {
 	if (GetOwner()->HasAuthority() && Weapons.IsValidIndex(WeaponIndex))
-		Weapons[WeaponIndex]->Execute(bNowDodge ? 0u : SkillIndex + 1);
+		Weapons[WeaponIndex]->Execute(CombatState == ECombatState::Dodge ? 0u : SkillIndex + 1);
 }
 
 void UWeaponComponent::BeginExecute()
 {
 	if (GetOwner()->HasAuthority() && Weapons.IsValidIndex(WeaponIndex))
-		Weapons[WeaponIndex]->BeginExecute(bNowDodge ? 0u : SkillIndex + 1);
+		Weapons[WeaponIndex]->BeginExecute(CombatState == ECombatState::Dodge ? 0u : SkillIndex + 1);
 }
 
 void UWeaponComponent::EndExecute()
 {
 	if (GetOwner()->HasAuthority() && Weapons.IsValidIndex(WeaponIndex))
-		Weapons[WeaponIndex]->EndExecute(bNowDodge ? 0u : SkillIndex + 1);
+		Weapons[WeaponIndex]->EndExecute(CombatState == ECombatState::Dodge ? 0u : SkillIndex + 1);
 }
 
 void UWeaponComponent::EnableCombo()
 {
-	if (Cast<APawn>(GetOwner())->HasAuthority()
+	if (GetOwner()->HasAuthority()
 		&& Weapons.IsValidIndex(WeaponIndex))
 	{
 		bNowCombo = true;
+		OnEnableCombo.Broadcast();
 	}
 }
 
 void UWeaponComponent::DisableCombo()
 {
-	if (Cast<APawn>(GetOwner())->HasAuthority()
+	if (GetOwner()->HasAuthority()
 		&& Weapons.IsValidIndex(WeaponIndex))
 	{
 		bNowCombo = false;
+		OnDisableCombo.Broadcast();
 	}
+}
+
+void UWeaponComponent::SetLevel(uint8 InLevel)
+{
+	ServerSetLevel(InLevel);
 }
 
 void UWeaponComponent::OnEndSkill()
@@ -101,7 +109,8 @@ void UWeaponComponent::OnEndSkill()
 	if (!bNowCombo)
 		SkillIndex = 255u;
 
-	bIsCasting = bNowDodge = false;
+	CombatState = ECombatState::None;
+	OnStopSkill.Broadcast();
 }
 
 void UWeaponComponent::SetWeaponComponent(UWeaponMeshComponent* InRightWeapon,
@@ -139,22 +148,17 @@ void UWeaponComponent::BeginPlay()
 
 	if (GetOwnerRole() != ENetRole::ROLE_Authority)
 		return;
-	
-	for (UWeapon* Weapon : Weapons)
-		Weapon->BeginPlay();
-	
+
 	SkillContext->Initialize(Components);
-	SkillIndex = 255u;
+
+	for (auto* Weapon : Weapons)
+		Weapon->InitSkill(Level);
 }
 
 void UWeaponComponent::EndPlay(EEndPlayReason::Type EndPlayReason)
 {
-	if (GetOwnerRole() == ENetRole::ROLE_Authority)
-		for (UWeapon* Weapon : Weapons)
-			Weapon->EndPlay();
-
-	auto* User = Cast<APRCharacter>(GetOwner());
-	User->OnDeath.RemoveDynamic(this, &UWeaponComponent::Detach);
+	Cast<APRCharacter>(GetOwner())->OnDeath.
+		RemoveDynamic(this, &UWeaponComponent::Detach);
 
 	Super::EndPlay(EndPlayReason);
 }
@@ -162,7 +166,9 @@ void UWeaponComponent::EndPlay(EEndPlayReason::Type EndPlayReason)
 void UWeaponComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
 	DOREPLIFETIME(UWeaponComponent, VisualData);
+	DOREPLIFETIME(UWeaponComponent, Level);
 }
 
 void UWeaponComponent::EquipWeapon(UWeapon* NewWeapon)
@@ -209,7 +215,8 @@ void UWeaponComponent::Initialize()
 
 void UWeaponComponent::ServerAttack_Implementation(bool bIsStrongAttack)
 {
-	if ((bIsCasting && !bNowCombo) || !Weapons.IsValidIndex(WeaponIndex)) return;
+	if ((CombatState != ECombatState::None && !bNowCombo)
+		|| !Weapons.IsValidIndex(WeaponIndex)) return;
 
 	if (bNowCombo)
 	{
@@ -220,33 +227,36 @@ void UWeaponComponent::ServerAttack_Implementation(bool bIsStrongAttack)
 	SkillIndex = SkillIndex != 255u ? (2u * SkillIndex) + 2u : 0u;
 	if (bIsStrongAttack) ++SkillIndex;
 
-	bIsCasting = true;
+	CombatState = ECombatState::Attack;
 	Weapons[WeaponIndex]->BeginSkill(SkillIndex + 1u);
+	OnAttack.Broadcast();
 }
 
 void UWeaponComponent::ServerDodge_Implementation()
 {
-	if (bNowDodge || (bIsCasting && !bNowCombo) || !Weapons.IsValidIndex(WeaponIndex)) return;
+	if (CombatState == ECombatState::Dodge || (CombatState != ECombatState::None
+		&& !bNowCombo) || !Weapons.IsValidIndex(WeaponIndex)) return;
 
 	if (bNowCombo)
 	{
 		ServerStopSkill_Implementation();
 		bNowCombo = false;
 	}
-
-	bIsCasting = bNowDodge = true;
+	
+	CombatState = ECombatState::Dodge;
 	Weapons[WeaponIndex]->BeginSkill(0u);
+	OnDodge.Broadcast();
 }
 
 void UWeaponComponent::ServerStopSkill_Implementation()
 {
 	if (Weapons.IsValidIndex(WeaponIndex))
-		Weapons[WeaponIndex]->EndSkill(bNowDodge ? 0u : SkillIndex + 1u);
+		Weapons[WeaponIndex]->EndSkill(CombatState == ECombatState::Dodge ? 0u : SkillIndex + 1u);
 }
 
 void UWeaponComponent::ServerSwapWeapon_Implementation(uint8 Index)
 {
-	if ((bIsCasting && !bNowCombo) || WeaponIndex == Index)
+	if ((CombatState != ECombatState::None && !bNowCombo) || WeaponIndex == Index)
 		return;
 
 	EquipWeapon(Weapons[Index]);
@@ -255,7 +265,7 @@ void UWeaponComponent::ServerSwapWeapon_Implementation(uint8 Index)
 
 void UWeaponComponent::ServerChangeWeapon_Implementation(uint8 Index, int32 Key)
 {
-	if (bIsCasting || !Weapons.IsValidIndex(Index) || Weapons[Index]->GetKey() == Key)
+	if (CombatState != ECombatState::None || !Weapons.IsValidIndex(Index) || Weapons[Index]->GetKey() == Key)
 		return;
 
 	auto* NewWeapon = NewObject<UWeapon>(GetOwner());
@@ -269,7 +279,7 @@ void UWeaponComponent::ServerChangeWeapon_Implementation(uint8 Index, int32 Key)
 
 void UWeaponComponent::ServerAddWeapon_Implementation(int32 Key)
 {
-	if (bIsCasting) return;
+	if (CombatState != ECombatState::None) return;
 
 	UWeapon* NewWeapon = NoWeapon;
 	
