@@ -5,13 +5,10 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "GenericTeamAgentInterface.h"
-#include "Data/MoveState.h"
 #include "PRCharacter.generated.h"
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnDeath);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnLand, const FHitResult&, Hit);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnAttack, float, Damage, AActor*, Target);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnDamage, float, Damage, AActor*, Target);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnDamaged, float, Damage, APRCharacter*, Target);
 
 UCLASS(BlueprintType)
 class PROJECTR_API APRCharacter final : public ACharacter, public IGenericTeamAgentInterface
@@ -67,8 +64,6 @@ private:
 
 	void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
-	void Landed(const FHitResult& Hit) override;
-
 	void Initialize();
 	void Death();
 
@@ -112,13 +107,7 @@ public:
 	FOnDeath OnDeath;
 
 	UPROPERTY(BlueprintAssignable)
-	FOnLand OnLand;
-
-	UPROPERTY(BlueprintAssignable)
-	FOnAttack OnAttack;
-
-	UPROPERTY(BlueprintAssignable)
-	FOnDamage OnDamage;
+	FOnDamaged OnDamaged;
 
 private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = true))

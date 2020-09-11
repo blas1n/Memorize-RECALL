@@ -125,8 +125,8 @@ float APRCharacter::TakeDamage(float Damage, const FDamageEvent& DamageEvent,
 
 	if (auto* InstigatorPawn = EventInstigator->GetPawn<APRCharacter>())
 	{
-		InstigatorPawn->OnAttack.Broadcast(Damage, this);
-		OnDamage.Broadcast(Damage, InstigatorPawn);
+		OnDamaged.Broadcast(Damage, InstigatorPawn);
+		UAISense_Damage::ReportDamageEvent(GetWorld(), this, InstigatorPawn,
 	}
 
 	return Damage;
@@ -148,11 +148,6 @@ void APRCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLife
 	DOREPLIFETIME(APRCharacter, MoveState);
 	DOREPLIFETIME(APRCharacter, LockTarget);
 	DOREPLIFETIME(APRCharacter, bIsLocked);
-}
-
-void APRCharacter::Landed(const FHitResult& Hit)
-{
-	OnLand.Broadcast(Hit);
 }
 
 void APRCharacter::Initialize()
