@@ -23,15 +23,9 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void Unlock();
-
+	
 	UFUNCTION(BlueprintCallable)
 	void SetMoveState(EMoveState NewMoveState);
-
-	FORCEINLINE void GetActorEyesViewPoint(FVector& Location, FRotator& Rotation) const override
-	{
-		GetLookLocationAndRotation(Location, Rotation);
-	}
-	
 	FORCEINLINE FGenericTeamId GetGenericTeamId() const override { return FGenericTeamId{ TeamId }; }
 	FORCEINLINE void SetGenericTeamId(const FGenericTeamId& NewTeamId) override { TeamId = NewTeamId.GetId(); }
 	FORCEINLINE void SetGenericTeamId(uint8 NewTeamId) { TeamId = NewTeamId; }
@@ -43,10 +37,6 @@ public:
 	FORCEINLINE AActor* GetLockTarget() const noexcept { return LockTarget; }
 	FORCEINLINE bool IsLocked() const noexcept { return bIsLocked; }
 	FORCEINLINE bool IsDeath() const noexcept { return bIsDeath; }
-
-protected:
-	UFUNCTION(BlueprintNativeEvent)
-	void GetLookLocationAndRotation(FVector& Location, FRotator& Rotation) const;
 
 private:
 #if WITH_EDITOR
@@ -97,9 +87,6 @@ private:
 	void OnRep_IsLocked();
 
 	void SetMovement();
-
-	void GetLookLocationAndRotation_Implementation(FVector& Location, FRotator& Rotation) const;
-
 	bool IsParryable(float Damage, APRCharacter* Causer);
 	
 public:

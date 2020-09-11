@@ -267,7 +267,6 @@ void APRCharacter::SetMovement()
 	Movement->bUseControllerDesiredRotation = bUseControllerDesiredRotation;
 }
 
-void APRCharacter::GetLookLocationAndRotation_Implementation(FVector& Location, FRotator& Rotation) const
-{
-	Super::GetActorEyesViewPoint(Location, Rotation);
+	RightWeapon->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, TEXT("weapon_r"));
+	LeftWeapon->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, TEXT("weapon_l"));
 }
