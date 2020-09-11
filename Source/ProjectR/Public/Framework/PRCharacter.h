@@ -24,8 +24,6 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void Unlock();
 	
-	UFUNCTION(BlueprintCallable)
-	void SetMoveState(EMoveState NewMoveState);
 	FORCEINLINE FGenericTeamId GetGenericTeamId() const override { return FGenericTeamId{ TeamId }; }
 	FORCEINLINE void SetGenericTeamId(const FGenericTeamId& NewTeamId) override { TeamId = NewTeamId.GetId(); }
 	FORCEINLINE void SetGenericTeamId(uint8 NewTeamId) { TeamId = NewTeamId; }
