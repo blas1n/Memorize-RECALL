@@ -14,6 +14,8 @@ void UWeaponMeshComponent::SetWeapon(USkeletalMesh* Mesh,
 {
 	if (Mesh == SkeletalMesh) return;
 
+	if (!Mesh) bEnableTrail = false;
+
 	if (!HasBegunPlay())
 	{
 		SetMesh(Mesh, Anim, Transform.GetLocation(), Transform.GetRotation());
@@ -35,7 +37,7 @@ void UWeaponMeshComponent::SetWeapon(USkeletalMesh* Mesh,
 	{
 		SetMesh(Mesh, Anim, Transform.GetLocation(), Transform.GetRotation());
 		OriginalTransform.SetScale3D(Transform.GetScale3D());
-		SetRelativeScale3D(FVector::ZeroVector);
+		SetRelativeScale3D(FVector{ 0.01f });
 	}
 
 	SetMaterial(0, SwapMaterial);
@@ -49,11 +51,6 @@ void UWeaponMeshComponent::Detach()
 
 	const auto Rules = FDetachmentTransformRules::KeepWorldTransform;
 	DetachFromComponent(Rules);
-}
-
-void UWeaponMeshComponent::SetTrail(bool bOnTrail)
-{
-	bEnableTrail = bOnTrail;
 }
 
 void UWeaponMeshComponent::TickComponent(float DeltaTime, ELevelTick TickType,
@@ -77,20 +74,18 @@ void UWeaponMeshComponent::TickComponent(float DeltaTime, ELevelTick TickType,
 
 	if (bNowDecrease)
 	{
-		if (SetScaleIfNeed(FVector::ZeroVector, BeforeScale))
+		if (SetScaleIfNeed(FVector{ 0.01f }, BeforeScale))
 			return;
 
 		SetMesh(OriginalMesh, OriginalAnim, OriginalTransform.GetLocation(), OriginalTransform.GetRotation());
-		SetRelativeScale3D(FVector::ZeroVector);
-		
+		bNowDecrease = false;
+
 		if (OriginalMesh)
-		{
-			bNowDecrease = false;
 			SwapRatio = 1.0f;
-		}
-		else EmptyOverrideMaterials();
+		else
+			EmptyOverrideMaterials();
 	}
-	else if (!SetScaleIfNeed(OriginalTransform.GetScale3D(), FVector::ZeroVector))
+	else if (!SetScaleIfNeed(OriginalTransform.GetScale3D(), FVector{ 0.01f }))
 	{
 		SetRelativeScale3D(OriginalTransform.GetScale3D());
 		EmptyOverrideMaterials();
@@ -100,9 +95,8 @@ void UWeaponMeshComponent::TickComponent(float DeltaTime, ELevelTick TickType,
 void UWeaponMeshComponent::SetMesh(USkeletalMesh* Mesh,
 	TSubclassOf<UAnimInstance> Anim, const FVector& Loc, const FQuat& Rot)
 {
-	SetAnimClass(nullptr); // It need to validate skeletal mesh
-	SetSkeletalMesh(Mesh);
 	SetAnimClass(Anim);
+	SetSkeletalMesh(Mesh);
 	SetRelativeLocationAndRotation(Loc, Rot);
 }
 
