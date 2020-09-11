@@ -7,7 +7,6 @@
 #include "Components/SkeletalMeshComponent.h"
 #include "Engine/StaticMesh.h"
 #include "UObject/ConstructorHelpers.h"
-#include "Component/StatComponent.h"
 #include "Component/WeaponComponent.h"
 #include "Framework/PRCharacter.h"
 #include "Data/SkillData.h"
@@ -89,9 +88,35 @@ bool UWeapon::Initialize(USkillContext* InContext, uint8 InKey)
 	return true;
 }
 
-void UWeapon::BeginPlay()
+void UWeapon::InitSkill(uint8 Level)
 {
-	User->GetStatComponent()->OnChangedLevel.AddUObject(this, &UWeapon::InitSkill);
+	if (Key == 255u || !SkillDataTable) return;
+
+	const FString BaseKey = FString::FromInt(Key) + FString::FromInt(Level);
+	const int32 SkillNum = Skills.Num();
+	for (int32 Idx = 0; Idx < SkillNum; ++Idx)
+	{
+		FUsableSkill& Skill = Skills[Idx];
+		if (!Skill.Skill) continue;
+
+		const int32 Prefix = ((Idx == 0) || Skill.Skill->GetClass() == AttackClass) ? 0 : 1;
+		int32 SkillIdx = Idx;
+		if (Prefix == 0 && Idx != 0)
+		{
+			SkillIdx = (static_cast<int32>(FMath::Log2(Idx + 1)) - 1) * 2 + 1;
+			if ((Idx % 2) == 0) ++SkillIdx;
+		}
+
+		const FName SkillKey{ *(BaseKey + FString::FromInt(Prefix) + FString::FromInt(SkillIdx)) };
+		const auto* Data = SkillDataTable->FindRow<FSkillData>(SkillKey, TEXT(""), false);
+		if (!Data)
+		{
+			UE_LOG(LogDataTable, Error, TEXT("Cannot found skill data %s!"), *SkillKey.ToString());
+			continue;
+		}
+
+		Skill.Data = Data->Data;
+	}
 }
 
 void UWeapon::BeginSkill(uint8 Index)
@@ -200,35 +225,4 @@ void UWeapon::LoadAll(const FWeaponData& WeaponData)
 		if (--AsyncLoadCount == 0u)
 			OnAsyncLoadEnded.Broadcast();
 	});
-}
-
-void UWeapon::InitSkill(uint8 Level)
-{
-	if (Key == 255u || !SkillDataTable) return;
-
-	const FString BaseKey = FString::FromInt(Key) + FString::FromInt(Level);
-	const int32 SkillNum = Skills.Num();
-	for (int32 Idx = 0; Idx < SkillNum; ++Idx)
-	{
-		FUsableSkill& Skill = Skills[Idx];
-		if (!Skill.Skill) continue;
-		
-		const int32 Prefix = ((Idx == 0) || Skill.Skill->GetClass() == AttackClass) ? 0 : 1;
-		int32 SkillIdx = Idx;
-		if (Prefix == 0 && Idx != 0)
-		{
-			SkillIdx = (static_cast<int32>(FMath::Log2(Idx + 1)) - 1) * 2 + 1;
-			if ((Idx % 2) == 0) ++SkillIdx;
-		}
-
-		const FName SkillKey{ *(BaseKey + FString::FromInt(Prefix) + FString::FromInt(SkillIdx)) };
-		const auto* Data = SkillDataTable->FindRow<FSkillData>(SkillKey, TEXT(""), false);
-		if (!Data)
-		{
-			UE_LOG(LogDataTable, Error, TEXT("Cannot found skill data %s!"), *SkillKey.ToString());
-			continue;
-		}
-
-		Skill.Data = Data->Data;
-	}
 }

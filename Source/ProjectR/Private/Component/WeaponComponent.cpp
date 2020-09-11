@@ -285,6 +285,13 @@ void UWeaponComponent::ServerAddWeapon_Implementation(int32 Key)
 	Weapons.Add(NewWeapon);
 }
 
+void UWeaponComponent::ServerSetLevel_Implementation(uint8 InLevel)
+{
+	Level = InLevel;
+	for (auto* Weapon : Weapons)
+		Weapon->InitSkill(Level);
+}
+
 void UWeaponComponent::OnRep_VisualData()
 {
 	RightWeapon->SetWeapon(VisualData.RightMesh, VisualData.RightAnim, VisualData.RightTransform);
