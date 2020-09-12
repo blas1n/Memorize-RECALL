@@ -23,8 +23,11 @@ void UPRAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 	if (AnimData.NotLock != CurAnimData.NotLock || CurAnimData.Lock != CurAnimData.Lock || CurAnimData.Air != CurAnimData.Air)
 	{
 		AnimData = MoveTemp(CurAnimData);
-		SavePoseSnapshot(TEXT("Pose"));
-		BlendRatio = 1.0f;
+		if (User->HasActorBegunPlay())
+		{
+			SavePoseSnapshot(TEXT("Pose"));
+			BlendRatio = 1.0f;
+		}
 	}
 
 	const float SwapDuration = User->GetWeaponComponent()->GetWeaponSwapDuration();

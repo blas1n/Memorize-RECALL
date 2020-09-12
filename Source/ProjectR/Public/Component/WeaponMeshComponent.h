@@ -19,9 +19,6 @@ public:
 
 	void Detach();
 
-	UFUNCTION(BlueprintCallable)
-	void SetTrail(bool bOnTrail);
-
 private:
 	void TickComponent(float DeltaTime, ELevelTick TickType,
 		FActorComponentTickFunction* ThisTickFunction) override;
@@ -32,9 +29,6 @@ private:
 	bool SetScaleIfNeed(const FVector& A, const FVector& B);
 
 private:
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = true))
-	uint8 bEnableTrail : 1;
-
 	UPROPERTY(EditAnywhere, meta = (AllowPrivateAccess = true))
 	UMaterialInterface* SwapMaterial;
 
@@ -46,6 +40,10 @@ private:
 	FVector BeforeScale;
 
 	float SwapRatio;
+
 	uint8 bNeedFast : 1;
 	uint8 bNowDecrease : 1;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = true))
+	uint8 bEnableTrail : 1;
 };
