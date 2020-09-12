@@ -5,13 +5,10 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "GenericTeamAgentInterface.h"
-#include "Data/MoveState.h"
 #include "PRCharacter.generated.h"
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnDeath);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnLand, const FHitResult&, Hit);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnAttack, float, Damage, AActor*, Target);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnDamage, float, Damage, AActor*, Target);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnDamaged, float, Damage, APRCharacter*, Target);
 
 UCLASS(BlueprintType)
 class PROJECTR_API APRCharacter final : public ACharacter, public IGenericTeamAgentInterface
@@ -21,35 +18,26 @@ class PROJECTR_API APRCharacter final : public ACharacter, public IGenericTeamAg
 public:
 	APRCharacter(const FObjectInitializer& ObjectInitializer);
 
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly)
+	void Heal(float Value);
+
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly)
+	void SetMaxHealth(float NewMaxHealth, bool bWithCurrent);
+
 	UFUNCTION(BlueprintCallable)
 	void Lock(AActor* NewLockTarget);
 
 	UFUNCTION(BlueprintCallable)
 	void Unlock();
-
-	UFUNCTION(BlueprintCallable)
-	void SetMoveState(EMoveState NewMoveState);
-
-	FORCEINLINE void GetActorEyesViewPoint(FVector& Location, FRotator& Rotation) const override
-	{
-		GetLookLocationAndRotation(Location, Rotation);
-	}
 	
 	FORCEINLINE FGenericTeamId GetGenericTeamId() const override { return FGenericTeamId{ TeamId }; }
 	FORCEINLINE void SetGenericTeamId(const FGenericTeamId& NewTeamId) override { TeamId = NewTeamId.GetId(); }
 	FORCEINLINE void SetGenericTeamId(uint8 NewTeamId) { TeamId = NewTeamId; }
 	
-	FORCEINLINE class UWeaponComponent* GetWeaponComponent() const noexcept { return WeaponComponent; }
-	FORCEINLINE class UStatComponent* GetStatComponent() const noexcept { return StatComponent; }
-
-	FORCEINLINE EMoveState GetMoveState() const noexcept { return MoveState; }
-	FORCEINLINE AActor* GetLockTarget() const noexcept { return LockTarget; }
+	FORCEINLINE class UWeaponComponent* GetWeaponComponent() const noexcept { return WeaponComp; }
+	FORCEINLINE AActor* GetLockedTarget() const noexcept { return LockedTarget; }
 	FORCEINLINE bool IsLocked() const noexcept { return bIsLocked; }
 	FORCEINLINE bool IsDeath() const noexcept { return bIsDeath; }
-
-protected:
-	UFUNCTION(BlueprintNativeEvent)
-	void GetLookLocationAndRotation(FVector& Location, FRotator& Rotation) const;
 
 private:
 #if WITH_EDITOR
@@ -57,6 +45,9 @@ private:
 #endif
 
 	void PostInitializeComponents() override;
+
+	void BeginPlay() override;
+	
 	void Tick(float DeltaSeconds) override;
 
 	float TakeDamage(float Damage, const FDamageEvent& DamageEvent,
@@ -67,8 +58,6 @@ private:
 
 	void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
-	void Landed(const FHitResult& Hit) override;
-
 	void Initialize();
 	void Death();
 
@@ -77,9 +66,6 @@ private:
 
 	UFUNCTION(Server, Reliable, WithValidation)
 	void ServerUnlock();
-
-	UFUNCTION(Server, Reliable, WithValidation)
-	void ServerSetMoveState(EMoveState NewMoveState);
 
 	UFUNCTION(NetMulticast, Reliable)
 	void MulticastDeath();
@@ -90,42 +76,26 @@ private:
 	void ServerUnlock_Implementation();
 	FORCEINLINE bool ServerUnlock_Validate() const noexcept { return true; }
 
-	void ServerSetMoveState_Implementation(EMoveState NewMoveState);
-	FORCEINLINE bool ServerSetMoveState_Validate(EMoveState NewMoveState) const noexcept { return true; }
-
 	void MulticastDeath_Implementation();
-
-	UFUNCTION()
-	void OnRep_MoveState();
 
 	UFUNCTION()
 	void OnRep_IsLocked();
 
-	void SetMovement();
-
-	void GetLookLocationAndRotation_Implementation(FVector& Location, FRotator& Rotation) const;
-
-	bool IsParryable(float Damage, APRCharacter* Causer);
+	void ApplyCharacterData(const struct FCharacterData& Data);
 	
 public:
 	UPROPERTY(BlueprintAssignable)
 	FOnDeath OnDeath;
 
 	UPROPERTY(BlueprintAssignable)
-	FOnLand OnLand;
-
-	UPROPERTY(BlueprintAssignable)
-	FOnAttack OnAttack;
-
-	UPROPERTY(BlueprintAssignable)
-	FOnDamage OnDamage;
+	FOnDamaged OnDamaged;
 
 private:
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = true))
-	UWeaponComponent* WeaponComponent;
+	UPROPERTY()
+	class UDataTable* CharacterDataTable;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = true))
-	UStatComponent* StatComponent;
+	UWeaponComponent* WeaponComp;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = true))
 	class UWeaponMeshComponent* RightWeapon;
@@ -133,23 +103,23 @@ private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = true))
 	UWeaponMeshComponent* LeftWeapon;
 
+	UPROPERTY(Transient, Replicated)
+	AActor* LockedTarget;
+
+	UPROPERTY(Replicated, Transient, VisibleInstanceOnly, BlueprintReadOnly, Category = Health, meta = (AllowPrivateAccess = true))
+	float Health;
+
+	UPROPERTY(Replicated, EditAnywhere, BlueprintReadOnly, Category = Health, meta = (AllowPrivateAccess = true))
+	float MaxHealth;
+
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Data, meta = (AllowPrivateAccess = true))
 	uint8 CharacterKey;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Data, meta = (AllowPrivateAccess = true))
 	uint8 TeamId;
 
-	UPROPERTY(Transient, ReplicatedUsing = OnRep_MoveState)
-	EMoveState MoveState;
-
-	UPROPERTY(Transient, Replicated)
-	AActor* LockTarget;
-
 	UPROPERTY(Transient, ReplicatedUsing = OnRep_IsLocked)
 	uint8 bIsLocked : 1;
-
-	UPROPERTY()
-	class UDataTable* CharacterDataTable;
 
 	uint8 bIsDeath : 1;
 };

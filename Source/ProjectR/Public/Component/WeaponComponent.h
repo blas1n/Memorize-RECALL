@@ -4,8 +4,15 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
+#include "Data/CombatState.h"
 #include "Data/VisualData.h"
 #include "WeaponComponent.generated.h"
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnAttack);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnDodge);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnStopSkill);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnEnableCombo);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnDisableCombo);
 
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
 class PROJECTR_API UWeaponComponent final : public UActorComponent
@@ -51,6 +58,9 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void DisableCombo();
 
+	UFUNCTION(BlueprintSetter)
+	void SetLevel(uint8 InLevel);
+
 	void OnEndSkill();
 
 	void SetWeaponComponent(class UWeaponMeshComponent* InRightWeapon,
@@ -89,6 +99,9 @@ private:
 	UFUNCTION(Server, Reliable, WithValidation)
 	void ServerAddWeapon(int32 Key);
 
+	UFUNCTION(Server, Reliable, WithValidation)
+	void ServerSetLevel(uint8 InLevel);
+
 	void ServerAttack_Implementation(bool bIsStrongAttack);
 	FORCEINLINE bool ServerAttack_Validate(bool bIsStrongAttack) const noexcept { return true; }
 
@@ -107,6 +120,9 @@ private:
 	void ServerAddWeapon_Implementation(int32 Key);
 	FORCEINLINE bool ServerAddWeapon_Validate(int32 Key) const noexcept { return true; }
 
+	void ServerSetLevel_Implementation(uint8 InLevel);
+	FORCEINLINE bool ServerSetLevel_Validate(uint8 InLevel) const noexcept { return InLevel < 10; }
+
 	void EquipWeapon(class UWeapon* NewWeapon);
 	void Initialize();
 
@@ -115,6 +131,22 @@ private:
 
 	UFUNCTION()
 	void Detach();
+
+public:
+	UPROPERTY(BlueprintAssignable)
+	FOnAttack OnAttack;
+
+	UPROPERTY(BlueprintAssignable)
+	FOnDodge OnDodge;
+
+	UPROPERTY(BlueprintAssignable)
+	FOnStopSkill OnStopSkill;
+
+	UPROPERTY(BlueprintAssignable)		
+	FOnEnableCombo OnEnableCombo;
+
+	UPROPERTY(BlueprintAssignable)
+	FOnDisableCombo OnDisableCombo;
 
 private:
 	UPROPERTY(EditAnywhere, Category = Data, meta = (AllowPrivateAccess = true))
@@ -144,10 +176,14 @@ private:
 	UPROPERTY(ReplicatedUsing = OnRep_VisualData, Transient)
 	FVisualData VisualData;
 
+	UPROPERTY(Transient, VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = true))
+	ECombatState CombatState;
+
+	UPROPERTY(Replicated, EditDefaultsOnly, BlueprintSetter = SetLevel, meta = (AllowPrivateAccess = true))
+	uint8 Level;
+
 	uint8 WeaponIndex;
 	uint8 SkillIndex;
 
-	uint8 bIsCasting : 1;
 	uint8 bNowCombo : 1;
-	uint8 bNowDodge : 1;
 };

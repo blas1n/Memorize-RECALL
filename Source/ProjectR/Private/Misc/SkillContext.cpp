@@ -10,8 +10,8 @@ void USkillContext::Initialize(const TArray<UPrimitiveComponent*>& InComponents)
 	auto* User = GetTypedOuter<ACharacter>();
 	check(User && User->HasAuthority());
 	
-	User->GetMesh()->GetAnimInstance()->OnMontageEnded
-		.AddUniqueDynamic(this, &USkillContext::OnMontageEnded);
+	if (auto* AnimInstance = User->GetMesh()->GetAnimInstance())
+		AnimInstance->OnMontageEnded.AddUniqueDynamic(this, &USkillContext::OnMontageEnded);
 
 	Components = InComponents;
 	for (auto* Component : Components)

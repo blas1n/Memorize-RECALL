@@ -30,9 +30,7 @@ class PROJECTR_API UWeapon final : public UObject
 public:
 	UWeapon();
 	bool Initialize(class USkillContext* InContext, uint8 InKey);
-
-	void BeginPlay();
-	void EndPlay() {}
+	void InitSkill(uint8 Level);
 
 	void BeginSkill(uint8 Index);
 	void EndSkill(uint8 Index);
@@ -48,8 +46,6 @@ public:
 
 private:
 	void LoadAll(const struct FWeaponData& WeaponData);
-
-	void InitSkill(uint8 Level);
 
 private:
 	UPROPERTY(Transient)

@@ -2,11 +2,9 @@
 
 #include "Framework/PRPlayerController.h"
 #include "Engine/World.h"
-#include "GameFramework/CharacterMovementComponent.h"
-#include "Kismet/GameplayStatics.h"
 #include "Perception/AIPerceptionComponent.h"
 #include "Perception/AISenseConfig_Sight.h"
-#include "TimerManager.h"
+#include "Component/PRMovementComponent.h"
 #include "Component/TargetComponent.h"
 #include "Component/WeaponComponent.h"
 #include "Framework/PRCharacter.h"
@@ -49,7 +47,7 @@ void APRPlayerController::Tick(float DeltaSeconds)
 	Super::Tick(DeltaSeconds);
 
 	auto* MyPawn = GetPawn<APRCharacter>();
-	if (!MyPawn || !MyPawn->GetLockTarget()) return;
+	if (!MyPawn || !MyPawn->GetLockedTarget()) return;
 
 	float Radius = 0.0f;
 	for (auto Iter = Perception->GetSensesConfigIterator(); Iter; ++Iter)
@@ -61,7 +59,7 @@ void APRPlayerController::Tick(float DeltaSeconds)
 		}
 	}
 
-	const FVector TargetLoc = MyPawn->GetLockTarget()->GetActorLocation();
+	const FVector TargetLoc = MyPawn->GetLockedTarget()->GetActorLocation();
 	const float Dist = FVector::DistSquared(MyPawn->GetActorLocation(), TargetLoc);
 	if (Dist <= Radius) return;
 
@@ -91,7 +89,7 @@ void APRPlayerController::SetupInputComponent()
 
 	InputComponent->BindAction(TEXT("WeekAttack"), IE_Pressed, this, &APRPlayerController::AttackWeak);
 	InputComponent->BindAction(TEXT("StrongAttack"), IE_Pressed, this, &APRPlayerController::AttackStrong);
-
+	
 	InputComponent->BindAction<FIndexer>(TEXT("Weapon1"), IE_Pressed, this, &APRPlayerController::SwapWeapon, static_cast<uint8>(0));
 	InputComponent->BindAction<FIndexer>(TEXT("Weapon2"), IE_Pressed, this, &APRPlayerController::SwapWeapon, static_cast<uint8>(1));
 	InputComponent->BindAction<FIndexer>(TEXT("Weapon3"), IE_Pressed, this, &APRPlayerController::SwapWeapon, static_cast<uint8>(2));
@@ -104,14 +102,16 @@ void APRPlayerController::SetupInputComponent()
 
 void APRPlayerController::MoveForward(float Value)
 {
-	if (auto* MyPawn = GetPawn())
-		MyPawn->AddMovementInput(GetDirectionVector(EAxis::X), Value);
+	if (Value != 0.0f)
+		if (auto* MyPawn = GetPawn())
+			MyPawn->AddMovementInput(GetDirectionVector(EAxis::X), Value);
 }
 
 void APRPlayerController::MoveRight(float Value)
 {
-	if (auto* MyPawn = GetPawn())
-		MyPawn->AddMovementInput(GetDirectionVector(EAxis::Y), Value);
+	if (Value != 0.0f)
+		if (auto* MyPawn = GetPawn())
+			MyPawn->AddMovementInput(GetDirectionVector(EAxis::Y), Value);
 }
 
 void APRPlayerController::InputYaw(float Value)
@@ -144,12 +144,14 @@ void APRPlayerController::ReleaseDodge()
 
 void APRPlayerController::Run()
 {
-	GetPawn<APRCharacter>()->SetMoveState(EMoveState::Run);
+	Cast<UPRMovementComponent>(GetPawn<APRCharacter>()
+		->GetCharacterMovement())->SetMoveState(EMoveState::Run);
 }
 
 void APRPlayerController::Walk()
 {
-	GetPawn<APRCharacter>()->SetMoveState(EMoveState::Walk);
+	Cast<UPRMovementComponent>(GetPawn<APRCharacter>()
+		->GetCharacterMovement())->SetMoveState(EMoveState::Walk);
 }
 
 void APRPlayerController::AttackWeak()
