@@ -116,7 +116,10 @@ void APRCharacter::BeginPlay()
 	Super::BeginPlay();
 
 	if (HasAuthority())
+	{
+		WeaponComp->SetComponents(GetAttackComponents());
 		Health = MaxHealth;
+	}
 }
 
 float APRCharacter::TakeDamage(float Damage, const FDamageEvent& DamageEvent,
