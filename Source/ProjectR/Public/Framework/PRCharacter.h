@@ -8,7 +8,7 @@
 #include "PRCharacter.generated.h"
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnDeath);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnDamaged, float, Damage, APRCharacter*, Target);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnDamaged, float, Damage, APRCharacter*, Causer);
 
 UCLASS(BlueprintType)
 class PROJECTR_API APRCharacter final : public ACharacter, public IGenericTeamAgentInterface
@@ -39,6 +39,10 @@ public:
 	FORCEINLINE bool IsLocked() const noexcept { return bIsLocked; }
 	FORCEINLINE bool IsDeath() const noexcept { return bIsDeath; }
 
+protected:
+	UFUNCTION(BlueprintImplementableEvent)
+	TArray<UPrimitiveComponent*> GetAttackComponents() const;
+
 private:
 #if WITH_EDITOR
 	void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
@@ -68,6 +72,9 @@ private:
 	void ServerUnlock();
 
 	UFUNCTION(NetMulticast, Reliable)
+	void MulticastOnHit(float Damage, APRCharacter* Causer);
+
+	UFUNCTION(NetMulticast, Reliable)
 	void MulticastDeath();
 
 	void ServerLock_Implementation(AActor* NewLockTarget);
@@ -76,6 +83,7 @@ private:
 	void ServerUnlock_Implementation();
 	FORCEINLINE bool ServerUnlock_Validate() const noexcept { return true; }
 
+	void MulticastOnHit_Implementation(float Damage, APRCharacter* Causer);
 	void MulticastDeath_Implementation();
 
 	UFUNCTION()

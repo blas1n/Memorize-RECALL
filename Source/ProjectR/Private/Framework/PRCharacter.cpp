@@ -116,7 +116,10 @@ void APRCharacter::BeginPlay()
 	Super::BeginPlay();
 
 	if (HasAuthority())
+	{
+		WeaponComp->SetComponents(GetAttackComponents());
 		Health = MaxHealth;
+	}
 }
 
 float APRCharacter::TakeDamage(float Damage, const FDamageEvent& DamageEvent,
@@ -129,7 +132,7 @@ float APRCharacter::TakeDamage(float Damage, const FDamageEvent& DamageEvent,
 
 	if (auto* InstigatorPawn = EventInstigator->GetPawn<APRCharacter>())
 	{
-		OnDamaged.Broadcast(Damage, InstigatorPawn);
+		MulticastOnHit(Damage, InstigatorPawn);
 		UAISense_Damage::ReportDamageEvent(GetWorld(), this, InstigatorPawn,
 			Damage, InstigatorPawn->GetActorLocation(), GetActorLocation());
 	}
@@ -201,6 +204,11 @@ void APRCharacter::ServerUnlock_Implementation()
 	
 	if (bWasLocked)
 		Cast<UPRMovementComponent>(GetCharacterMovement())->ApplyLock(false);
+}
+
+void APRCharacter::MulticastOnHit_Implementation(float Damage, APRCharacter* Causer)
+{
+	OnDamaged.Broadcast(Damage, Causer);
 }
 
 void APRCharacter::MulticastDeath_Implementation()
