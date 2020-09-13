@@ -68,6 +68,9 @@ private:
 	void ServerUnlock();
 
 	UFUNCTION(NetMulticast, Reliable)
+	void MulticastOnHit(float Damage, APRCharacter* Causer);
+
+	UFUNCTION(NetMulticast, Reliable)
 	void MulticastDeath();
 
 	void ServerLock_Implementation(AActor* NewLockTarget);
@@ -76,6 +79,7 @@ private:
 	void ServerUnlock_Implementation();
 	FORCEINLINE bool ServerUnlock_Validate() const noexcept { return true; }
 
+	void MulticastOnHit_Implementation(float Damage, APRCharacter* Causer);
 	void MulticastDeath_Implementation();
 
 	UFUNCTION()
