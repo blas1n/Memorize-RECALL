@@ -21,6 +21,16 @@ void USkillContext::Initialize(const TArray<UPrimitiveComponent*>& InComponents)
 	}
 }
 
+void USkillContext::SetCollision(int32 AttackPart)
+{
+	const int32 Num = Components.Num();
+	for (int32 Idx = 0; Idx < Num; ++Idx)
+	{
+		const bool bIsEnable = AttackPart & (1 << Idx);
+		Components[Idx]->SetGenerateOverlapEvents(bIsEnable);
+	}
+}
+
 void USkillContext::PlayAnimation(UAnimMontage* Animation, const FOnAnimationEnded& OnAnimationEnded)
 {
 	check(GetTypedOuter<AActor>()->HasAuthority() && Animation && OnAnimationEnded.IsBound());
@@ -35,16 +45,6 @@ void USkillContext::StopAnimation(UAnimMontage* Animation)
 
 	Callbacks.Remove(Animation);
 	MulticastStopAnimation(Animation);
-}
-
-void USkillContext::SetCollision(int32 AttackPart)
-{
-	const int32 Num = Components.Num();
-	for (int32 Idx = 0; Idx < Num; ++Idx)
-	{
-		const bool bIsEnable = AttackPart & (1 << Idx);
-		Components[Idx]->SetGenerateOverlapEvents(bIsEnable);
-	}
 }
 
 void USkillContext::OnOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
