@@ -23,14 +23,6 @@ UWeaponComponent::UWeaponComponent()
 	SkillIndex = 255u;
 }
 
-void UWeaponComponent::SetComponents(const TArray<UPrimitiveComponent*>& InComponents)
-{
-	Components = InComponents;
-
-	if (HasBegunPlay())
-		SkillContext->Initialize(Components);
-}
-
 void UWeaponComponent::Attack(bool bIsStrongAttack)
 {
 	ServerAttack(bIsStrongAttack);
@@ -120,6 +112,11 @@ void UWeaponComponent::SetWeaponComponent(UWeaponMeshComponent* InRightWeapon,
 	LeftWeapon = InLeftWeapon;
 }
 
+void UWeaponComponent::SetComponents(const TArray<class UPrimitiveComponent*>& Components)
+{
+	SkillContext->Initialize(Components);
+}
+
 #if WITH_EDITOR
 
 void UWeaponComponent::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
@@ -146,13 +143,9 @@ void UWeaponComponent::BeginPlay()
 	auto* User = Cast<APRCharacter>(GetOwner());
 	User->OnDeath.AddDynamic(this, &UWeaponComponent::Detach);
 
-	if (GetOwnerRole() != ENetRole::ROLE_Authority)
-		return;
-
-	SkillContext->Initialize(Components);
-
-	for (auto* Weapon : Weapons)
-		Weapon->InitSkill(Level);
+	if (GetOwnerRole() == ENetRole::ROLE_Authority)
+		for (auto* Weapon : Weapons)
+			Weapon->InitSkill(Level);
 }
 
 void UWeaponComponent::EndPlay(EEndPlayReason::Type EndPlayReason)
@@ -215,8 +208,8 @@ void UWeaponComponent::Initialize()
 
 void UWeaponComponent::ServerAttack_Implementation(bool bIsStrongAttack)
 {
-	if ((CombatState != ECombatState::None && !bNowCombo)
-		|| !Weapons.IsValidIndex(WeaponIndex)) return;
+	if (bBlockSkill || (CombatState != ECombatState::None &&
+		!bNowCombo) || !Weapons.IsValidIndex(WeaponIndex)) return;
 
 	if (bNowCombo)
 	{
@@ -234,8 +227,9 @@ void UWeaponComponent::ServerAttack_Implementation(bool bIsStrongAttack)
 
 void UWeaponComponent::ServerDodge_Implementation()
 {
-	if (CombatState == ECombatState::Dodge || (CombatState != ECombatState::None
-		&& !bNowCombo) || !Weapons.IsValidIndex(WeaponIndex)) return;
+	if (bBlockSkill || CombatState == ECombatState::Dodge ||
+		(CombatState != ECombatState::None && !bNowCombo) ||
+		!Weapons.IsValidIndex(WeaponIndex)) return;
 
 	if (bNowCombo)
 	{
@@ -256,8 +250,8 @@ void UWeaponComponent::ServerStopSkill_Implementation()
 
 void UWeaponComponent::ServerSwapWeapon_Implementation(uint8 Index)
 {
-	if ((CombatState != ECombatState::None && !bNowCombo) || WeaponIndex == Index)
-		return;
+	if (bBlockSkill || (CombatState != ECombatState::None
+		&& !bNowCombo) || WeaponIndex == Index) return;
 
 	EquipWeapon(Weapons[Index]);
 	WeaponIndex = Index;
@@ -265,7 +259,8 @@ void UWeaponComponent::ServerSwapWeapon_Implementation(uint8 Index)
 
 void UWeaponComponent::ServerChangeWeapon_Implementation(uint8 Index, int32 Key)
 {
-	if (CombatState != ECombatState::None || !Weapons.IsValidIndex(Index) || Weapons[Index]->GetKey() == Key)
+	if (bBlockSkill || CombatState != ECombatState::None ||
+		!Weapons.IsValidIndex(Index) || Weapons[Index]->GetKey() == Key)
 		return;
 
 	auto* NewWeapon = NewObject<UWeapon>(GetOwner());
@@ -279,7 +274,7 @@ void UWeaponComponent::ServerChangeWeapon_Implementation(uint8 Index, int32 Key)
 
 void UWeaponComponent::ServerAddWeapon_Implementation(int32 Key)
 {
-	if (CombatState != ECombatState::None) return;
+	if (bBlockSkill || CombatState != ECombatState::None) return;
 
 	UWeapon* NewWeapon = NoWeapon;
 	

@@ -130,7 +130,6 @@ void UPRMovementComponent::OnRep_LockSpeed()
 void UPRMovementComponent::OnRep_MoveState()
 {
 	SetMovement();
-	UE_LOG(LogTemp, Log, TEXT("Rep"));
 }
 
 void UPRMovementComponent::SetMovement()

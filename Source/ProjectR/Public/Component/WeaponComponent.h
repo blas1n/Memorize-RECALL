@@ -23,9 +23,6 @@ public:
 	UWeaponComponent();
 
 	UFUNCTION(BlueprintCallable)
-	void SetComponents(const TArray<class UPrimitiveComponent*>& InComponents);
-
-	UFUNCTION(BlueprintCallable)
 	void Attack(bool bIsStrongAttack);
 
 	UFUNCTION(BlueprintCallable)
@@ -66,10 +63,13 @@ public:
 	void SetWeaponComponent(class UWeaponMeshComponent* InRightWeapon,
 		UWeaponMeshComponent* InLeftWeapon) noexcept;
 
+	void SetComponents(const TArray<class UPrimitiveComponent*>&Components);
+
 	FORCEINLINE const FAnimData& GetAnimData() const noexcept { return VisualData.AnimData; }
 	FORCEINLINE float GetWeaponSwapDuration() const noexcept { return WeaponSwapDuration; }
 	FORCEINLINE int32 GetWeaponNum() const noexcept { return Weapons.Num(); }
 	FORCEINLINE uint8 GetWeaponIndex() const noexcept { return WeaponIndex; }
+	FORCEINLINE bool IsBlockSkill() const noexcept { return bBlockSkill; }
 
 private:
 #if WITH_EDITOR
@@ -162,9 +162,6 @@ private:
 	UWeaponMeshComponent* LeftWeapon;
 
 	UPROPERTY(Transient)
-	TArray<UPrimitiveComponent*> Components;
-
-	UPROPERTY(Transient)
 	TArray<UWeapon*> Weapons;
 
 	UPROPERTY(Transient)
@@ -186,4 +183,7 @@ private:
 	uint8 SkillIndex;
 
 	uint8 bNowCombo : 1;
+
+	UPROPERTY(Transient, EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = true))
+	uint8 bBlockSkill : 1;
 };
