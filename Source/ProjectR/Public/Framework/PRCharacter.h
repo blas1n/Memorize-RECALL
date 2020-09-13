@@ -8,7 +8,7 @@
 #include "PRCharacter.generated.h"
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnDeath);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnDamaged, float, Damage, APRCharacter*, Target);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnDamaged, float, Damage, APRCharacter*, Causer);
 
 UCLASS(BlueprintType)
 class PROJECTR_API APRCharacter final : public ACharacter, public IGenericTeamAgentInterface
