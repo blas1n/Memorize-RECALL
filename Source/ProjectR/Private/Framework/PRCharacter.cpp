@@ -126,7 +126,8 @@ float APRCharacter::TakeDamage(float Damage, const FDamageEvent& DamageEvent,
 	AController* EventInstigator, AActor* DamageCauser)
 {	
 	Damage = Super::TakeDamage(Damage, DamageEvent, EventInstigator, DamageCauser);
-	
+	if (Damage <= 0.0f) return 0.0f;
+
 	Health = FMath::Max(Health - Damage, 0.0f);
 	if (Health <= 0.0f) Death();
 
