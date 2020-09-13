@@ -146,7 +146,7 @@ bool APRCharacter::ShouldTakeDamage(float Damage, const FDamageEvent& DamageEven
 	return
 		Super::ShouldTakeDamage(Damage, DamageEvent, EventInstigator, DamageCauser)
 		&& EventInstigator && DamageCauser && Damage > 0.0f
-		&& GetTeamAttitudeTowards(*EventInstigator) != ETeamAttitude::Friendly;
+		&& GetTeamAttitudeTowards(*DamageCauser) != ETeamAttitude::Friendly;
 }
 
 void APRCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
