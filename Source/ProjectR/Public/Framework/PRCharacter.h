@@ -39,6 +39,10 @@ public:
 	FORCEINLINE bool IsLocked() const noexcept { return bIsLocked; }
 	FORCEINLINE bool IsDeath() const noexcept { return bIsDeath; }
 
+protected:
+	UFUNCTION(BlueprintImplementableEvent)
+	TArray<UPrimitiveComponent*> GetAttackComponents() const;
+
 private:
 #if WITH_EDITOR
 	void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
