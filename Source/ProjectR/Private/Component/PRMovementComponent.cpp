@@ -77,10 +77,10 @@ FVector UPRMovementComponent::ConsumeInputVector()
 	{
 		LastInputVector = InputVector;
 		InputVector = FVector::ZeroVector;
+	
+		if (GetOwnerRole() == ROLE_AutonomousProxy)
+			ServerSetLastInputVector(LastInputVector);
 	}
-
-	if (GetOwnerRole() == ROLE_AutonomousProxy)
-		ServerSetLastInputVector(LastInputVector);
 
 	return Super::ConsumeInputVector();
 }
