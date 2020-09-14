@@ -6,7 +6,7 @@
 #include "Components/SkeletalMeshComponent.h"
 #include "WeaponMeshComponent.generated.h"
 
-UCLASS()
+UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
 class PROJECTR_API UWeaponMeshComponent : public USkeletalMeshComponent
 {
 	GENERATED_BODY()

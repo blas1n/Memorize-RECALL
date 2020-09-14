@@ -61,7 +61,7 @@ void APRPlayerController::Tick(float DeltaSeconds)
 
 	const FVector TargetLoc = MyPawn->GetLockedTarget()->GetActorLocation();
 	const float Dist = FVector::DistSquared(MyPawn->GetActorLocation(), TargetLoc);
-	if (Dist <= Radius) return;
+	if (Dist <= FMath::Square(Radius)) return;
 
 	if (AActor* Target = Targeter->GetTargetedActor())
 		MyPawn->Lock(Target);
