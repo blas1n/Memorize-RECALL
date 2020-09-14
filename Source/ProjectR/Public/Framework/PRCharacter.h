@@ -111,7 +111,7 @@ private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = true))
 	UWeaponMeshComponent* LeftWeapon;
 
-	UPROPERTY(Transient, Replicated)
+	UPROPERTY(Transient, Replicated, BlueprintReadOnly, Category = Lock, meta = (AllowPrivateAccess = true))
 	AActor* LockedTarget;
 
 	UPROPERTY(Replicated, Transient, VisibleInstanceOnly, BlueprintReadOnly, Category = Health, meta = (AllowPrivateAccess = true))
@@ -126,7 +126,7 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Data, meta = (AllowPrivateAccess = true))
 	uint8 TeamId;
 
-	UPROPERTY(Transient, ReplicatedUsing = OnRep_IsLocked)
+	UPROPERTY(Transient, ReplicatedUsing = OnRep_IsLocked, BlueprintReadOnly, Category = Lock, meta = (AllowPrivateAccess = true))
 	uint8 bIsLocked : 1;
 
 	uint8 bIsDeath : 1;
