@@ -8,8 +8,8 @@ UPRMovementComponent::UPRMovementComponent()
 {
 	SetIsReplicatedByDefault(true);
 
-	GravityScale = 2.0f;
-	JumpZVelocity = 420.f;
+	GravityScale = 2.3f;
+	JumpZVelocity = 600.f;
 	AirControl = 0.05f;
 	RotationRate = FRotator(0.0f, 360.0f, 0.0f);
 	bUseControllerDesiredRotation = false;
@@ -77,10 +77,10 @@ FVector UPRMovementComponent::ConsumeInputVector()
 	{
 		LastInputVector = InputVector;
 		InputVector = FVector::ZeroVector;
+	
+		if (GetOwnerRole() == ROLE_AutonomousProxy)
+			ServerSetLastInputVector(LastInputVector);
 	}
-
-	if (GetOwnerRole() == ROLE_AutonomousProxy)
-		ServerSetLastInputVector(LastInputVector);
 
 	return Super::ConsumeInputVector();
 }

@@ -89,7 +89,7 @@ void APRCharacter::Tick(float DeltaSeconds)
 
 	FRotator ActorRot = UKismetMathLibrary::FindLookAtRotation(MyLoc, TargetLoc);
 	ActorRot = FMath::Lerp(GetActorRotation(), ActorRot, DeltaSeconds * 10.0f);
-	SetActorRotation(ActorRot);
+	SetActorRotation(FRotator{ 0.0f, ActorRot.Yaw, 0.0f });
 
 	if (AController* MyController = GetController())
 	{
@@ -126,7 +126,8 @@ float APRCharacter::TakeDamage(float Damage, const FDamageEvent& DamageEvent,
 	AController* EventInstigator, AActor* DamageCauser)
 {	
 	Damage = Super::TakeDamage(Damage, DamageEvent, EventInstigator, DamageCauser);
-	
+	if (Damage <= 0.0f) return 0.0f;
+
 	Health = FMath::Max(Health - Damage, 0.0f);
 	if (Health <= 0.0f) Death();
 
@@ -146,7 +147,7 @@ bool APRCharacter::ShouldTakeDamage(float Damage, const FDamageEvent& DamageEven
 	return
 		Super::ShouldTakeDamage(Damage, DamageEvent, EventInstigator, DamageCauser)
 		&& EventInstigator && DamageCauser && Damage > 0.0f
-		&& GetTeamAttitudeTowards(*EventInstigator) != ETeamAttitude::Friendly;
+		&& GetTeamAttitudeTowards(*DamageCauser) != ETeamAttitude::Friendly;
 }
 
 void APRCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const

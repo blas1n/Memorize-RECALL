@@ -265,6 +265,7 @@ void UWeaponComponent::ServerChangeWeapon_Implementation(uint8 Index, int32 Key)
 
 	auto* NewWeapon = NewObject<UWeapon>(GetOwner());
 	NewWeapon->Initialize(SkillContext, Key);
+	NewWeapon->InitSkill(Level);
 
 	if (Index == WeaponIndex)
 		EquipWeapon(NewWeapon);
@@ -284,6 +285,7 @@ void UWeaponComponent::ServerAddWeapon_Implementation(int32 Key)
 		NewWeapon->Initialize(SkillContext, Key);
 	}
 
+	NewWeapon->InitSkill(Level);
 	if (Weapons.Num() == 0)
 		EquipWeapon(NewWeapon);
 
