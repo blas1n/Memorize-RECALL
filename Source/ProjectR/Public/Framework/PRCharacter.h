@@ -114,10 +114,10 @@ private:
 	UPROPERTY(Transient, Replicated, BlueprintReadOnly, Category = Lock, meta = (AllowPrivateAccess = true))
 	AActor* LockedTarget;
 
-	UPROPERTY(Replicated, Transient, VisibleInstanceOnly, BlueprintReadOnly, Category = Health, meta = (AllowPrivateAccess = true))
+	UPROPERTY(Replicated, Transient, VisibleInstanceOnly, BlueprintReadOnly, Category = Data, meta = (AllowPrivateAccess = true))
 	float Health;
 
-	UPROPERTY(Replicated, EditAnywhere, BlueprintReadOnly, Category = Health, meta = (AllowPrivateAccess = true))
+	UPROPERTY(Replicated, EditAnywhere, BlueprintReadOnly, Category = Data, meta = (AllowPrivateAccess = true))
 	float MaxHealth;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Data, meta = (AllowPrivateAccess = true))
