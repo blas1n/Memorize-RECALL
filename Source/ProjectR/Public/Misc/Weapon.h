@@ -20,6 +20,8 @@ struct FUsableSkill
 
 	UPROPERTY()
 	class UDataAsset* Data;
+
+	uint8 bIsOverrided : 1;
 };
 
 UCLASS(BlueprintType)
@@ -34,6 +36,8 @@ public:
 
 	void BeginSkill(uint8 Index);
 	void EndSkill(uint8 Index);
+
+	void TickSkill(uint8 Index, float DeltaTime);
 	
 	void RegisterOnAsyncLoadEnded(const FOnAsyncLoadEndedSingle& Callback);
 
@@ -67,7 +71,6 @@ private:
 	UDataTable* SkillDataTable;
 
 	FOnAsyncLoadEnded OnAsyncLoadEnded;
-	TSubclassOf<USkill> AttackClass;
 
 	uint8 Key;
 	uint8 AsyncLoadCount;
