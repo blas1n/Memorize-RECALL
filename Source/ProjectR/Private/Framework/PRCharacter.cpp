@@ -84,7 +84,7 @@ void APRCharacter::Tick(float DeltaSeconds)
 
 	if (!LockedTarget) return;
 
-	if (!IsMoveInputIgnored())
+	if (!IsMoveInputIgnored() || WeaponComp->IsCheckingCombo())
 	{
 		const FVector MyLoc = GetActorLocation();
 		const FVector TargetLoc = LockedTarget->GetActorLocation();

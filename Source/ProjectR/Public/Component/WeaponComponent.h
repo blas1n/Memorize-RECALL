@@ -69,6 +69,7 @@ public:
 	FORCEINLINE float GetWeaponSwapDuration() const noexcept { return WeaponSwapDuration; }
 	FORCEINLINE int32 GetWeaponNum() const noexcept { return Weapons.Num(); }
 	FORCEINLINE uint8 GetWeaponIndex() const noexcept { return WeaponIndex; }
+	FORCEINLINE bool IsCheckingCombo() const noexcept { return bNowCombo; }
 	FORCEINLINE bool IsBlockSkill() const noexcept { return bBlockSkill; }
 
 private:
@@ -182,6 +183,7 @@ private:
 	uint8 WeaponIndex;
 	uint8 SkillIndex;
 
+	UPROPERTY(Replicated, Transient)
 	uint8 bNowCombo : 1;
 
 	UPROPERTY(Transient, EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = true))

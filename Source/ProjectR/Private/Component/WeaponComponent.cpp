@@ -162,6 +162,7 @@ void UWeaponComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Out
 
 	DOREPLIFETIME(UWeaponComponent, VisualData);
 	DOREPLIFETIME(UWeaponComponent, Level);
+	DOREPLIFETIME(UWeaponComponent, bNowCombo);
 }
 
 void UWeaponComponent::EquipWeapon(UWeapon* NewWeapon)
