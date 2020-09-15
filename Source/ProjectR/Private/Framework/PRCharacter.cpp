@@ -84,12 +84,15 @@ void APRCharacter::Tick(float DeltaSeconds)
 
 	if (!LockedTarget) return;
 
-	const FVector MyLoc = GetActorLocation();
-	const FVector TargetLoc = LockedTarget->GetActorLocation();
+	if (!IsMoveInputIgnored())
+	{
+		const FVector MyLoc = GetActorLocation();
+		const FVector TargetLoc = LockedTarget->GetActorLocation();
 
-	FRotator ActorRot = UKismetMathLibrary::FindLookAtRotation(MyLoc, TargetLoc);
-	ActorRot = FMath::Lerp(GetActorRotation(), ActorRot, DeltaSeconds * 10.0f);
-	SetActorRotation(FRotator{ 0.0f, ActorRot.Yaw, 0.0f });
+		FRotator ActorRot = UKismetMathLibrary::FindLookAtRotation(MyLoc, TargetLoc);
+		ActorRot = FMath::Lerp(GetActorRotation(), ActorRot, DeltaSeconds * 10.0f);
+		SetActorRotation(FRotator{ 0.0f, ActorRot.Yaw, 0.0f });
+	}
 
 	if (AController* MyController = GetController())
 	{
