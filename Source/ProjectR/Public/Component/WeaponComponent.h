@@ -80,6 +80,10 @@ private:
 	void InitializeComponent() override;
 	void BeginPlay() override;
 	void EndPlay(EEndPlayReason::Type EndPlayReason) override;
+
+	void TickComponent(float DeltaTime, ELevelTick TickType,
+		FActorComponentTickFunction* ThisTickFunction) override;
+	
 	void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 	UFUNCTION(Server, Reliable, WithValidation)

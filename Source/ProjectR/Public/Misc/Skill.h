@@ -17,6 +17,9 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void Begin(class USkillContext* Context, class UDataAsset* Data);
 
+	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
+	void Tick(float DeltaTime);
+
 	UFUNCTION(BlueprintCallable)
 	void End();
 
@@ -26,6 +29,9 @@ public:
 	UWorld* GetWorld() const override;
 
 protected:
+	UFUNCTION(BlueprintImplementableEvent, meta = (DisplayName = "Initialize"))
+	void ReceiveInitialize();
+
 	UFUNCTION(BlueprintImplementableEvent, meta = (DisplayName = "Begin"))
 	void ReceiveBegin(USkillContext* Context, UDataAsset* Data);
 

@@ -36,6 +36,8 @@ public:
 
 	void BeginSkill(uint8 Index);
 	void EndSkill(uint8 Index);
+
+	void TickSkill(uint8 Index, float DeltaTime);
 	
 	void RegisterOnAsyncLoadEnded(const FOnAsyncLoadEndedSingle& Callback);
 
