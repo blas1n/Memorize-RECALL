@@ -7,6 +7,7 @@
 void USkill::Initialize()
 {
 	User = GetTypedOuter<APRCharacter>();
+	ReceiveInitialize();
 }
 
 void USkill::Begin(USkillContext* Context, UDataAsset* Data)

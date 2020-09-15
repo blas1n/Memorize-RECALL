@@ -152,6 +152,15 @@ void UWeapon::EndSkill(uint8 Index)
 	if (Skill.Skill) Skill.Skill->End();
 }
 
+void UWeapon::TickSkill(uint8 Index, float DeltaTime)
+{
+	if (!Skills.IsValidIndex(Index))
+		return;
+
+	FUsableSkill& Skill = Skills[Index];
+	if (Skill.Skill) Skill.Skill->Tick(DeltaTime);
+}
+
 void UWeapon::RegisterOnAsyncLoadEnded(const FOnAsyncLoadEndedSingle& Callback)
 {
 	check(Callback.IsBound());
