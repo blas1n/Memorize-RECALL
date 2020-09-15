@@ -61,22 +61,31 @@ bool UWeapon::Initialize(USkillContext* InContext, uint8 InKey)
 	Skills.Init(FUsableSkill{}, SkillNum);
 
 	if (Data->DodgingClass)
-		Skills[0].Skill = NewObject<USkill>(this, Data->DodgingClass);
-
-	if ((AttackClass = Data->AttackClass))
 	{
-		USkill* Attack = NewObject<USkill>(this, AttackClass);
+		USkill* Dodge = NewObject<USkill>(this, Data->DodgingClass);
+		Dodge->Initialize();
+		Skills[0].Skill = Dodge;
+	}
+
+	if (Data->AttackClass)
+	{
+		USkill* Attack = NewObject<USkill>(this, Data->AttackClass);
+		Attack->Initialize();
+
 		for (int32 Index = 1; Index < SkillNum; ++Index)
 			Skills[Index].Skill = Attack;
 	}
 
 	for (const auto& Skill : Data->Skills)
+	{
 		if (Skill.Value)
-			Skills[Skill.Key].Skill = NewObject<USkill>(this, Skill.Value);
-
-	for (FUsableSkill& Skill : Skills)
-		if (Skill.Skill)
-			Skill.Skill->Initialize();
+		{
+			USkill* SkillInst = NewObject<USkill>(this, Skill.Value);
+			SkillInst->Initialize();
+			Skills[Skill.Key].Skill = SkillInst;
+			Skills[Skill.Key].bIsOverrided = true;
+		}
+	}
 
 	VisualData.RightAnim = Data->RightAnim;
 	VisualData.RightTransform = Data->RightTransform;
@@ -99,7 +108,7 @@ void UWeapon::InitSkill(uint8 Level)
 		FUsableSkill& Skill = Skills[Idx];
 		if (!Skill.Skill) continue;
 
-		const int32 Prefix = ((Idx == 0) || Skill.Skill->GetClass() == AttackClass) ? 0 : 1;
+		const int32 Prefix = Skill.bIsOverrided ? 1 : 0;
 		int32 SkillIdx = Idx;
 		if (Prefix == 0 && Idx != 0)
 		{
@@ -141,6 +150,15 @@ void UWeapon::EndSkill(uint8 Index)
 	
 	FUsableSkill& Skill = Skills[Index];
 	if (Skill.Skill) Skill.Skill->End();
+}
+
+void UWeapon::TickSkill(uint8 Index, float DeltaTime)
+{
+	if (!Skills.IsValidIndex(Index))
+		return;
+
+	FUsableSkill& Skill = Skills[Index];
+	if (Skill.Skill) Skill.Skill->Tick(DeltaTime);
 }
 
 void UWeapon::RegisterOnAsyncLoadEnded(const FOnAsyncLoadEndedSingle& Callback)

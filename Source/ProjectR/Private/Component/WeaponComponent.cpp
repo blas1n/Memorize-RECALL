@@ -15,7 +15,7 @@
 UWeaponComponent::UWeaponComponent()
 	: Super()
 {
-	PrimaryComponentTick.bCanEverTick = false;
+	PrimaryComponentTick.bCanEverTick = true;
 	bWantsInitializeComponent = true;
 	SetIsReplicatedByDefault(true);
 	
@@ -156,12 +156,22 @@ void UWeaponComponent::EndPlay(EEndPlayReason::Type EndPlayReason)
 	Super::EndPlay(EndPlayReason);
 }
 
+void UWeaponComponent::TickComponent(float DeltaTime,
+	ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
+{
+	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+
+	if (GetOwner()->HasAuthority() && Weapons.IsValidIndex(WeaponIndex) && CombatState != ECombatState::None)
+		Weapons[WeaponIndex]->TickSkill(CombatState == ECombatState::Dodge ? 0u : SkillIndex + 1, DeltaTime);
+}
+
 void UWeaponComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
 	DOREPLIFETIME(UWeaponComponent, VisualData);
 	DOREPLIFETIME(UWeaponComponent, Level);
+	DOREPLIFETIME(UWeaponComponent, bNowCombo);
 }
 
 void UWeaponComponent::EquipWeapon(UWeapon* NewWeapon)
