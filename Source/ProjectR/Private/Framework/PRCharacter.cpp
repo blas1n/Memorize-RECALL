@@ -81,7 +81,6 @@ void APRCharacter::PostEditChangeProperty(FPropertyChangedEvent& PropertyChanged
 void APRCharacter::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
-
 	if (!LockedTarget) return;
 
 	if (!IsMoveInputIgnored() || WeaponComp->IsCheckingCombo())
