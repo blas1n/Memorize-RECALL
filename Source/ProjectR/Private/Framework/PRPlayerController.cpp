@@ -144,14 +144,20 @@ void APRPlayerController::ReleaseDodge()
 
 void APRPlayerController::Run()
 {
-	Cast<UPRMovementComponent>(GetPawn<APRCharacter>()
-		->GetCharacterMovement())->SetMoveState(EMoveState::Run);
+	if (auto* MyPawn = GetPawn<APRCharacter>())
+	{
+		Cast<UPRMovementComponent>(MyPawn->
+			GetCharacterMovement())->SetMoveState(EMoveState::Run);
+	}
 }
 
 void APRPlayerController::Walk()
 {
-	Cast<UPRMovementComponent>(GetPawn<APRCharacter>()
-		->GetCharacterMovement())->SetMoveState(EMoveState::Walk);
+	if (auto* MyPawn = GetPawn<APRCharacter>())
+	{
+		Cast<UPRMovementComponent>(MyPawn->
+			GetCharacterMovement())->SetMoveState(EMoveState::Walk);
+	}
 }
 
 void APRPlayerController::AttackWeak()
