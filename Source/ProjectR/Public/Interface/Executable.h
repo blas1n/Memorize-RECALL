@@ -17,6 +17,8 @@ class PROJECTR_API IExecutable
 	GENERATED_BODY()
 
 public:
-	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
 	void Execute();
+
+	virtual void Execute_Implementation() {}
 };

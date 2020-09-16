@@ -17,9 +17,12 @@ class PROJECTR_API IStateExecutable
 	GENERATED_BODY()
 
 public:
-	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
 	void BeginExecute();
 
-	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
 	void EndExecute();
+
+	virtual void BeginExecute_Implementation() {}
+	virtual void EndExecute_Implementation() {}
 };
