@@ -38,6 +38,7 @@ void UTargetComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActo
 	if (GetOwnerRole() != ENetRole::ROLE_Authority)
 		return;
 	
+	TargetActors.Remove(nullptr);
 	const int32 Num = TargetActors.Num();
 	if (Num == 0)
 	{
