@@ -4,6 +4,7 @@
 #include "Kismet/KismetMathLibrary.h"
 #include "Net/UnrealNetwork.h"
 #include "Perception/AIPerceptionComponent.h"
+#include "Framework/PRCharacter.h"
 
 UTargetComponent::UTargetComponent()
 	: Super()
@@ -88,6 +89,9 @@ void UTargetComponent::ServerSetInterval_Implementation(float InInterval)
 
 void UTargetComponent::OnPerceptionUpdated(AActor* Actor, FAIStimulus Stimulus)
 {
+	if (Cast<APRCharacter>(Actor)->IsDeath())
+		return;
+
 	if (Stimulus.IsActive())
 		TargetActors.AddUnique(Actor);
 	else
