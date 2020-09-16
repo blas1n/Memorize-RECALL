@@ -15,6 +15,7 @@ public:
 	ULeap();
 
 private:
+	void Initialize() override;
 	void Begin(USkillContext* InContext, const UDataAsset* Data) override;
 	void Tick(float DeltaTime) override;
 	void End() override;
@@ -33,6 +34,7 @@ private:
 
 	FVector StartLocation;
 
+	float RootHeight;
 	float MaxHeight;
 	float LeapDuration;
 	float AttackRange;

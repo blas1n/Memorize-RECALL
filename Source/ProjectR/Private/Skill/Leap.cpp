@@ -14,6 +14,15 @@ ULeap::ULeap()
 	Spline->GetPoints().Init(FVector::ZeroVector, 5);
 }
 
+void ULeap::Initialize()
+{
+	Super::Initialize();
+
+	const float ActorZ = GetUser()->GetActorLocation().Z;
+	const float RootZ = GetUser()->GetMesh()->GetBoneLocation(TEXT("root")).Z;
+	RootHeight = ActorZ - RootZ;
+}
+
 void ULeap::Begin(USkillContext* InContext, const UDataAsset* Data)
 {
 	Super::Begin(InContext, Data);
@@ -39,6 +48,7 @@ void ULeap::Tick(float DeltaTime)
 	FVector NewLocation;
 	if (Spline->Compute(Idx, Alpha, NewLocation))
 	{
+		NewLocation.Z += RootHeight;
 		if (!GetUser()->SetActorLocation(NewLocation, true))
 			Finish();
 	}
@@ -65,7 +75,7 @@ void ULeap::SetData(const UDataAsset* Data)
 
 void ULeap::InitSpline()
 {
-	StartLocation = GetUser()->GetActorLocation();
+	StartLocation = GetUser()->GetMesh()->GetBoneLocation(TEXT("root"));
 	Target = GetUser()->GetLockedTarget();
 
 	FVector RangeVec = Target->GetActorLocation() - StartLocation;
@@ -84,7 +94,15 @@ void ULeap::InitSpline()
 void ULeap::UpdateSpline()
 {
 	FVector TargetLocation = Target->GetActorLocation();
-	TargetLocation.Z = StartLocation.Z;
+	FVector UnderLocation = TargetLocation;
+	UnderLocation.Z = 0.0f;
+
+	FCollisionObjectQueryParams Params;
+	Params.AddObjectTypesToQuery(ECollisionChannel::ECC_WorldStatic);
+
+	FHitResult Result;
+	if (GetWorld()->LineTraceSingleByObjectType(Result, TargetLocation, UnderLocation, Params))
+		TargetLocation.Z = Result.Location.Z;
 
 	FVector RangeVec = TargetLocation - StartLocation;
 	RangeVec.Normalize();
