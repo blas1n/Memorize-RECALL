@@ -7,23 +7,17 @@
 #include "Skill.generated.h"
 
 UCLASS(Abstract, Blueprintable)
-class PROJECTR_API USkill final : public UObject
+class PROJECTR_API USkill : public UObject
 {
 	GENERATED_BODY()
 	
 public:
-	void Initialize();
+	virtual void Initialize();
+	virtual void Begin(class USkillContext* Context, const class UDataAsset* Data);
+	virtual void Tick(float DeltaTime);
+	virtual void End();
 
-	UFUNCTION(BlueprintCallable)
-	void Begin(class USkillContext* Context, class UDataAsset* Data);
-
-	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
-	void Tick(float DeltaTime);
-
-	UFUNCTION(BlueprintCallable)
-	void End();
-
-	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
+	UFUNCTION(BlueprintNativeEvent)
 	bool CanUseSkill() const;
 
 	UWorld* GetWorld() const override;
@@ -33,15 +27,22 @@ protected:
 	void ReceiveInitialize();
 
 	UFUNCTION(BlueprintImplementableEvent, meta = (DisplayName = "Begin"))
-	void ReceiveBegin(USkillContext* Context, UDataAsset* Data);
+	void ReceiveBegin(USkillContext* Context, const UDataAsset* Data);
+
+	UFUNCTION(BlueprintImplementableEvent, meta = (DisplayName = "Tick"))
+	void ReceiveTick(float DeltaTime);
 
 	UFUNCTION(BlueprintImplementableEvent, meta = (DisplayName = "End"))
 	void ReceiveEnd();
 
-private:
-	bool CanUseSkill_Implementation() const noexcept { return true; }
+	UFUNCTION(BlueprintCallable, meta = (BlueprintProtected))
+	void Finish();
+
+	virtual bool CanUseSkill_Implementation() const { return true; }
+
+	FORCEINLINE class APRCharacter* GetUser() const noexcept { return User; }
 
 private:
 	UPROPERTY(Transient, BlueprintReadOnly, Category = Owner, meta = (AllowPrivateAccess = true))
-	class APRCharacter* User;
+	APRCharacter* User;
 };
