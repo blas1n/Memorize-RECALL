@@ -89,12 +89,15 @@ void APRCharacter::Tick(float DeltaSeconds)
 	Super::Tick(DeltaSeconds);
 	if (!LockedTarget) return;
 
-	const FVector MyLoc = GetActorLocation();
-	const FVector TargetLoc = LockedTarget->GetActorLocation();
-	
-	FRotator ActorRot = UKismetMathLibrary::FindLookAtRotation(MyLoc, TargetLoc);
-	ActorRot = FMath::Lerp(GetActorRotation(), ActorRot, DeltaSeconds * 10.0f);
-	SetActorRotation(FRotator{ 0.0f, ActorRot.Yaw, 0.0f });
+	if (!IsMoveInputIgnored() || WeaponComp->IsCheckingCombo())
+	{
+		const FVector MyLoc = GetActorLocation();
+		const FVector TargetLoc = LockedTarget->GetActorLocation();
+
+		FRotator ActorRot = UKismetMathLibrary::FindLookAtRotation(MyLoc, TargetLoc);
+		ActorRot = FMath::Lerp(GetActorRotation(), ActorRot, DeltaSeconds * 10.0f);
+		SetActorRotation(FRotator{ 0.0f, ActorRot.Yaw, 0.0f });
+	}
 
 	if (AController* MyController = GetController())
 	{
@@ -135,7 +138,9 @@ float APRCharacter::TakeDamage(float Damage, const FDamageEvent& DamageEvent,
 	if (Damage <= 0.0f) return 0.0f;
 
 	Health = FMath::Max(Health - Damage, 0.0f);
-	if (Health <= 0.0f) Death();
+	OnRep_Health();
+
+	if (Health == 0.0f) Death();
 
 	if (auto* InstigatorPawn = EventInstigator->GetPawn<APRCharacter>())
 	{
