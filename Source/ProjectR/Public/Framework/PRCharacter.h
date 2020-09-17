@@ -8,6 +8,7 @@
 #include "PRCharacter.generated.h"
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnDeath);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnLocked, bool, bIsLock);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnDamaged, float, Damage, APRCharacter*, Causer);
 
 UCLASS(BlueprintType)
@@ -94,6 +95,9 @@ private:
 public:
 	UPROPERTY(BlueprintAssignable)
 	FOnDeath OnDeath;
+
+	UPROPERTY(BlueprintAssignable)
+	FOnLocked OnLocked;
 
 	UPROPERTY(BlueprintAssignable)
 	FOnDamaged OnDamaged;

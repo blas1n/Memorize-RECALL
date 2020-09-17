@@ -191,8 +191,7 @@ void APRCharacter::ServerLock_Implementation(AActor* NewLockTarget)
 	const bool bWasLocked = bIsLocked;
 	bIsLocked = true;
 
-	if (!bWasLocked)
-		Cast<UPRMovementComponent>(GetCharacterMovement())->ApplyLock(true);
+	if (!bWasLocked) OnRep_IsLocked();
 }
 
 void APRCharacter::ServerUnlock_Implementation()
@@ -202,8 +201,7 @@ void APRCharacter::ServerUnlock_Implementation()
 	const bool bWasLocked = bIsLocked;
 	bIsLocked = false;
 	
-	if (bWasLocked)
-		Cast<UPRMovementComponent>(GetCharacterMovement())->ApplyLock(false);
+	if (bWasLocked) OnRep_IsLocked();
 }
 
 void APRCharacter::MulticastOnHit_Implementation(float Damage, APRCharacter* Causer)
@@ -229,6 +227,7 @@ void APRCharacter::MulticastDeath_Implementation()
 void APRCharacter::OnRep_IsLocked()
 {
 	Cast<UPRMovementComponent>(GetCharacterMovement())->ApplyLock(bIsLocked);
+	OnLocked.Broadcast(true);
 }
 
 void APRCharacter::ApplyCharacterData(const FCharacterData& Data)
