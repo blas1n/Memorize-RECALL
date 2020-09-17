@@ -89,10 +89,7 @@ void UTargetComponent::ServerSetInterval_Implementation(float InInterval)
 
 void UTargetComponent::OnPerceptionUpdated(AActor* Actor, FAIStimulus Stimulus)
 {
-	if (Cast<APRCharacter>(Actor)->IsDeath())
-		return;
-
-	if (Stimulus.IsActive())
+	if (Stimulus.IsActive() && !Cast<APRCharacter>(Actor)->IsDeath())
 		TargetActors.AddUnique(Actor);
 	else
 		TargetActors.Remove(Actor);
