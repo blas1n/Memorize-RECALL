@@ -45,6 +45,7 @@ private:
 
 	void Lock();
 	void Unlock();
+	void Relock();
 
 	void Interact();
 

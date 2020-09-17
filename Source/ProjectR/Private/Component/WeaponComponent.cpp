@@ -100,7 +100,7 @@ void UWeaponComponent::OnEndSkill()
 {
 	if (!bNowCombo)
 		SkillIndex = 255u;
-
+	
 	CombatState = ECombatState::None;
 	OnStopSkill.Broadcast();
 }
@@ -254,7 +254,7 @@ void UWeaponComponent::ServerDodge_Implementation()
 
 void UWeaponComponent::ServerStopSkill_Implementation()
 {
-	if (Weapons.IsValidIndex(WeaponIndex))
+	if (CombatState != ECombatState::None && Weapons.IsValidIndex(WeaponIndex))
 		Weapons[WeaponIndex]->EndSkill(CombatState == ECombatState::Dodge ? 0u : SkillIndex + 1u);
 }
 

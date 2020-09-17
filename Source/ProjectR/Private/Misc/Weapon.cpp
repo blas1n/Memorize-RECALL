@@ -14,7 +14,7 @@
 #include "Interface/Executable.h"
 #include "Interface/StateExecutable.h"
 #include "Library/PRStatics.h"
-#include "Misc/Skill.h"
+#include "Skill/Skill.h"
 
 UWeapon::UWeapon()
 	: Super()

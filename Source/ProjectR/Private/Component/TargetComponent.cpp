@@ -4,6 +4,7 @@
 #include "Kismet/KismetMathLibrary.h"
 #include "Net/UnrealNetwork.h"
 #include "Perception/AIPerceptionComponent.h"
+#include "Framework/PRCharacter.h"
 
 UTargetComponent::UTargetComponent()
 	: Super()
@@ -38,6 +39,7 @@ void UTargetComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActo
 	if (GetOwnerRole() != ENetRole::ROLE_Authority)
 		return;
 	
+	TargetActors.Remove(nullptr);
 	const int32 Num = TargetActors.Num();
 	if (Num == 0)
 	{
@@ -87,7 +89,7 @@ void UTargetComponent::ServerSetInterval_Implementation(float InInterval)
 
 void UTargetComponent::OnPerceptionUpdated(AActor* Actor, FAIStimulus Stimulus)
 {
-	if (Stimulus.IsActive())
+	if (Stimulus.IsActive() && !Cast<APRCharacter>(Actor)->IsDeath())
 		TargetActors.AddUnique(Actor);
 	else
 		TargetActors.Remove(Actor);
