@@ -44,6 +44,9 @@ protected:
 	UFUNCTION(BlueprintImplementableEvent)
 	TArray<UPrimitiveComponent*> GetAttackComponents() const;
 
+	UFUNCTION(BlueprintImplementableEvent)
+	void OnRep_Health();
+
 private:
 #if WITH_EDITOR
 	void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
@@ -118,7 +121,7 @@ private:
 	UPROPERTY(Transient, Replicated, BlueprintReadOnly, Category = Lock, meta = (AllowPrivateAccess = true))
 	AActor* LockedTarget;
 
-	UPROPERTY(Replicated, Transient, VisibleInstanceOnly, BlueprintReadOnly, Category = Data, meta = (AllowPrivateAccess = true))
+	UPROPERTY(ReplicatedUsing = OnRep_Health, Transient, VisibleInstanceOnly, BlueprintReadOnly, Category = Data, meta = (AllowPrivateAccess = true))
 	float Health;
 
 	UPROPERTY(Replicated, EditAnywhere, BlueprintReadOnly, Category = Data, meta = (AllowPrivateAccess = true))
