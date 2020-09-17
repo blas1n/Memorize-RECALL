@@ -44,7 +44,7 @@ void ULeap::Tick(float DeltaTime)
 		UpdateSpline();
 	
 	UpdateLeap(DeltaTime);
-
+	
 	FVector NewLocation;
 	if (Spline->Compute(Idx, Alpha, NewLocation))
 	{
@@ -95,7 +95,7 @@ void ULeap::UpdateSpline()
 {
 	FVector TargetLocation = Target->GetActorLocation();
 	FVector UnderLocation = TargetLocation;
-	UnderLocation.Z = 0.0f;
+	UnderLocation.Z = -1000.0f;
 
 	FCollisionObjectQueryParams Params;
 	Params.AddObjectTypesToQuery(ECollisionChannel::ECC_WorldStatic);
@@ -104,13 +104,14 @@ void ULeap::UpdateSpline()
 	if (GetWorld()->LineTraceSingleByObjectType(Result, TargetLocation, UnderLocation, Params))
 		TargetLocation.Z = Result.Location.Z;
 
-	FVector RangeVec = TargetLocation - StartLocation;
-	RangeVec.Normalize();
-	RangeVec *= AttackRange;
-
 	auto& Point2 = Spline->GetPoints()[2];
 	Point2 = FMath::Lerp(StartLocation, TargetLocation, MaxHeightRatio);
 	Point2.Z += MaxHeight;
+
+	FVector RangeVec = TargetLocation - StartLocation;
+	RangeVec.Z = 0.0f;
+	RangeVec.Normalize();
+	RangeVec *= AttackRange;
 
 	Spline->GetPoints()[3] = TargetLocation - RangeVec;
 	Spline->GetPoints()[4] = TargetLocation;
@@ -118,7 +119,7 @@ void ULeap::UpdateSpline()
 
 void ULeap::UpdateLeap(float DeltaTime)
 {
-	float TimeRatio = Idx == 1 ? LeapTimeRatio : 1 - LeapTimeRatio;
+	float TimeRatio = Idx == 1 ? LeapTimeRatio : (1.0f - LeapTimeRatio);
 	TimeRatio *= LeapDuration;
 
 	Alpha += DeltaTime / TimeRatio;
