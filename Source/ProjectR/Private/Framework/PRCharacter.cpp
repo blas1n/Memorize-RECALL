@@ -41,7 +41,10 @@ APRCharacter::APRCharacter(const FObjectInitializer& ObjectInitializer)
 void APRCharacter::Heal(float Value)
 {
 	check(HasAuthority());
+	if (Value == 0.0f) return;
+
 	Health = FMath::Clamp(Health + Value, 0.0f, MaxHealth);
+	OnRep_Health();
 }
 
 void APRCharacter::SetMaxHealth(float NewMaxHealth, bool bWithCurrent)
@@ -52,7 +55,10 @@ void APRCharacter::SetMaxHealth(float NewMaxHealth, bool bWithCurrent)
 	MaxHealth = NewMaxHealth;
 
 	if (bWithCurrent)
+	{
 		Health = MaxHealth - Delta;
+		OnRep_Health();
+	}
 }
 
 void APRCharacter::Lock(AActor* NewLockTarget)
@@ -118,6 +124,7 @@ void APRCharacter::BeginPlay()
 	{
 		WeaponComp->SetComponents(GetAttackComponents());
 		Health = MaxHealth;
+		OnRep_Health();
 	}
 }
 
