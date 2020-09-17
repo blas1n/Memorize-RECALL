@@ -18,6 +18,8 @@ public:
 	UFUNCTION(BlueprintCallable)
 	bool IsValidIndex(int32 Idx);
 
+	FORCEINLINE TArray<FVector>& GetPoints() noexcept { return Points; }
+
 private:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = true))
 	TArray<FVector> Points;

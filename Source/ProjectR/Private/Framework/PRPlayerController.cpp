@@ -49,6 +49,13 @@ void APRPlayerController::Tick(float DeltaSeconds)
 	auto* MyPawn = GetPawn<APRCharacter>();
 	if (!MyPawn || !MyPawn->GetLockedTarget()) return;
 
+	const AActor* LockedTarget = MyPawn->GetLockedTarget();
+	if (Cast<APRCharacter>(LockedTarget)->IsDeath())
+	{
+		Relock();
+		return;
+	}
+
 	float Radius = 0.0f;
 	for (auto Iter = Perception->GetSensesConfigIterator(); Iter; ++Iter)
 	{
@@ -59,14 +66,10 @@ void APRPlayerController::Tick(float DeltaSeconds)
 		}
 	}
 
-	const FVector TargetLoc = MyPawn->GetLockedTarget()->GetActorLocation();
+	const FVector TargetLoc = LockedTarget->GetActorLocation();
 	const float Dist = FVector::DistSquared(MyPawn->GetActorLocation(), TargetLoc);
-	if (Dist <= FMath::Square(Radius)) return;
-
-	if (AActor* Target = Targeter->GetTargetedActor())
-		MyPawn->Lock(Target);
-	else
-		MyPawn->Unlock();
+	if (Dist > FMath::Square(Radius))
+		Relock();
 }
 
 void APRPlayerController::SetupInputComponent()
@@ -144,14 +147,20 @@ void APRPlayerController::ReleaseDodge()
 
 void APRPlayerController::Run()
 {
-	Cast<UPRMovementComponent>(GetPawn<APRCharacter>()
-		->GetCharacterMovement())->SetMoveState(EMoveState::Run);
+	if (auto* MyPawn = GetPawn<APRCharacter>())
+	{
+		Cast<UPRMovementComponent>(MyPawn->
+			GetCharacterMovement())->SetMoveState(EMoveState::Run);
+	}
 }
 
 void APRPlayerController::Walk()
 {
-	Cast<UPRMovementComponent>(GetPawn<APRCharacter>()
-		->GetCharacterMovement())->SetMoveState(EMoveState::Walk);
+	if (auto* MyPawn = GetPawn<APRCharacter>())
+	{
+		Cast<UPRMovementComponent>(MyPawn->
+			GetCharacterMovement())->SetMoveState(EMoveState::Walk);
+	}
 }
 
 void APRPlayerController::AttackWeak()
@@ -205,6 +214,17 @@ void APRPlayerController::Lock()
 void APRPlayerController::Unlock()
 {
 	if (APRCharacter* MyPawn = GetPawn<APRCharacter>())
+		MyPawn->Unlock();
+}
+
+void APRPlayerController::Relock()
+{
+	auto* MyPawn = GetPawn<APRCharacter>();
+	if (!MyPawn) return;
+
+	if (AActor* Target = Targeter->GetTargetedActor())
+		MyPawn->Lock(Target);
+	else
 		MyPawn->Unlock();
 }
 

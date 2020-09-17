@@ -1,6 +1,6 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-#include "Misc/Skill.h"
+#include "Skill/Skill.h"
 #include "Component/WeaponComponent.h"
 #include "Framework/PRCharacter.h"
 
@@ -10,15 +10,25 @@ void USkill::Initialize()
 	ReceiveInitialize();
 }
 
-void USkill::Begin(USkillContext* Context, UDataAsset* Data)
+void USkill::Begin(USkillContext* Context, const UDataAsset* Data)
 {
 	ReceiveBegin(Context, Data);
+}
+
+void USkill::Tick(float DeltaTime)
+{
+	ReceiveTick(DeltaTime);
 }
 
 void USkill::End()
 {
 	ReceiveEnd();
 	User->GetWeaponComponent()->OnEndSkill();
+}
+
+void USkill::Finish()
+{
+	End();
 }
 
 UWorld* USkill::GetWorld() const
