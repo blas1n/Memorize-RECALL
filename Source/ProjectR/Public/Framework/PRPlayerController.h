@@ -7,8 +7,6 @@
 #include "GenericTeamAgentInterface.h"
 #include "PRPlayerController.generated.h"
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnInteract);
-
 UCLASS(BlueprintType)
 class PROJECTR_API APRPlayerController final : public APlayerController, public IGenericTeamAgentInterface
 {
@@ -16,9 +14,19 @@ class PROJECTR_API APRPlayerController final : public APlayerController, public 
 
 public:
 	APRPlayerController();
+
+	UFUNCTION(BlueprintCallable)
+	void RegisterInteractor(UObject* InInteractor);
 	
+	UFUNCTION(BlueprintCallable)
+	void UnregisterInteractor();
+
 	FGenericTeamId GetGenericTeamId() const override;
 	void SetGenericTeamId(const FGenericTeamId& NewTeamId) override;
+
+protected:
+	UFUNCTION(BlueprintImplementableEvent)
+	void OnSetInteractor(UObject* NewInteractor);
 
 private:
 	void BeginPlay() override;
@@ -51,14 +59,13 @@ private:
 
 	FVector GetDirectionVector(EAxis::Type Axis) const;
 
-public:
-	UPROPERTY(BlueprintAssignable)
-	FOnInteract OnInteract;
-
 private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = true))
 	class UTargetComponent* Targeter;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = true))
 	class UAIPerceptionComponent* Perception;
+
+	UPROPERTY(Transient)
+	UObject* Interactor;
 };
