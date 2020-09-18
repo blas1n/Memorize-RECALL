@@ -119,12 +119,12 @@ void APRPlayerController::MoveRight(float Value)
 
 void APRPlayerController::InputYaw(float Value)
 {
-	AddYawInput(Value);
+	if (GetPawn()) AddYawInput(Value);
 }
 
 void APRPlayerController::InputPitch(float Value)
 {
-	AddPitchInput(Value);
+	if (GetPawn()) AddPitchInput(Value);
 }
 
 void APRPlayerController::PressDodge()
