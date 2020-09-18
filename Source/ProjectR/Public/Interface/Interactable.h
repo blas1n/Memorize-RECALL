@@ -24,6 +24,6 @@ public:
 	FText GetInteractName() const;
 
 protected:
-	virtual void Execute_Implementation(APRCharacter* Target) {}
+	virtual void Interact_Implementation(APRCharacter* Target) {}
 	virtual FText GetInteractName_Implementation() const { return FText{}; }
 };
