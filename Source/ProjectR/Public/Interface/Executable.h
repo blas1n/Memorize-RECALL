@@ -20,5 +20,6 @@ public:
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
 	void Execute();
 
+protected:
 	virtual void Execute_Implementation() {}
 };
