@@ -8,6 +8,7 @@
 #include "Component/TargetComponent.h"
 #include "Component/WeaponComponent.h"
 #include "Framework/PRCharacter.h"
+#include "Interface/Interactable.h"
 
 DECLARE_DELEGATE_OneParam(FIndexer, uint8);
 
@@ -19,6 +20,19 @@ APRPlayerController::APRPlayerController()
 
 	Targeter = CreateDefaultSubobject<UTargetComponent>(TEXT("Targeter"));
 	Perception = CreateDefaultSubobject<UAIPerceptionComponent>(TEXT("Perception"));
+}
+
+void APRPlayerController::RegisterInteractor(UObject* InInteractor)
+{
+	check(InInteractor->GetClass()->ImplementsInterface(UInteractable::StaticClass()));
+	Interactor = InInteractor;
+	OnSetInteractor(Interactor);
+}
+
+void APRPlayerController::UnregisterInteractor()
+{
+	Interactor = nullptr;
+	OnSetInteractor(Interactor);
 }
 
 FGenericTeamId APRPlayerController::GetGenericTeamId() const
@@ -230,7 +244,10 @@ void APRPlayerController::Relock()
 
 void APRPlayerController::Interact()
 {
-	OnInteract.Broadcast();
+	if (!Interactor) return;
+	
+	IInteractable::Execute_Interact(Interactor, GetPawn<APRCharacter>());
+	Interactor = nullptr;
 }
 
 FVector APRPlayerController::GetDirectionVector(EAxis::Type Axis) const
