@@ -136,5 +136,6 @@ private:
 	UPROPERTY(Transient, ReplicatedUsing = OnRep_IsLocked, BlueprintReadOnly, Category = Lock, meta = (AllowPrivateAccess = true))
 	uint8 bIsLocked : 1;
 
+	UPROPERTY(Transient, BlueprintReadOnly, meta = (AllowPrivateAccess = true))
 	uint8 bIsDeath : 1;
 };
