@@ -8,6 +8,7 @@
 #include "PRCharacter.generated.h"
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnDeath);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnLocked, bool, bIsLock);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnDamaged, float, Damage, APRCharacter*, Causer);
 
 UCLASS(BlueprintType)
@@ -42,6 +43,9 @@ public:
 protected:
 	UFUNCTION(BlueprintImplementableEvent)
 	TArray<UPrimitiveComponent*> GetAttackComponents() const;
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void OnRep_Health();
 
 private:
 #if WITH_EDITOR
@@ -96,6 +100,9 @@ public:
 	FOnDeath OnDeath;
 
 	UPROPERTY(BlueprintAssignable)
+	FOnLocked OnLocked;
+
+	UPROPERTY(BlueprintAssignable)
 	FOnDamaged OnDamaged;
 
 private:
@@ -114,7 +121,7 @@ private:
 	UPROPERTY(Transient, Replicated, BlueprintReadOnly, Category = Lock, meta = (AllowPrivateAccess = true))
 	AActor* LockedTarget;
 
-	UPROPERTY(Replicated, Transient, VisibleInstanceOnly, BlueprintReadOnly, Category = Data, meta = (AllowPrivateAccess = true))
+	UPROPERTY(ReplicatedUsing = OnRep_Health, Transient, VisibleInstanceOnly, BlueprintReadOnly, Category = Data, meta = (AllowPrivateAccess = true))
 	float Health;
 
 	UPROPERTY(Replicated, EditAnywhere, BlueprintReadOnly, Category = Data, meta = (AllowPrivateAccess = true))
@@ -129,5 +136,6 @@ private:
 	UPROPERTY(Transient, ReplicatedUsing = OnRep_IsLocked, BlueprintReadOnly, Category = Lock, meta = (AllowPrivateAccess = true))
 	uint8 bIsLocked : 1;
 
+	UPROPERTY(Transient, BlueprintReadOnly, meta = (AllowPrivateAccess = true))
 	uint8 bIsDeath : 1;
 };

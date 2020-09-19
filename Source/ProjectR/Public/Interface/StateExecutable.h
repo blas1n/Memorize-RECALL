@@ -23,6 +23,7 @@ public:
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
 	void EndExecute();
 
+protected:
 	virtual void BeginExecute_Implementation() {}
 	virtual void EndExecute_Implementation() {}
 };

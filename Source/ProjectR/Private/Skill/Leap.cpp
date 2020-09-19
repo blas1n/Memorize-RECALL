@@ -50,9 +50,9 @@ void ULeap::Tick(float DeltaTime)
 	{
 		NewLocation.Z += RootHeight;
 		if (!GetUser()->SetActorLocation(NewLocation, true))
-			Finish();
+			bIsLeapEnded = true;
 	}
-	else Finish();
+	else bIsLeapEnded = true;
 }
 
 void ULeap::End()

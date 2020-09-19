@@ -41,7 +41,10 @@ APRCharacter::APRCharacter(const FObjectInitializer& ObjectInitializer)
 void APRCharacter::Heal(float Value)
 {
 	check(HasAuthority());
+	if (Value == 0.0f) return;
+
 	Health = FMath::Clamp(Health + Value, 0.0f, MaxHealth);
+	OnRep_Health();
 }
 
 void APRCharacter::SetMaxHealth(float NewMaxHealth, bool bWithCurrent)
@@ -52,7 +55,10 @@ void APRCharacter::SetMaxHealth(float NewMaxHealth, bool bWithCurrent)
 	MaxHealth = NewMaxHealth;
 
 	if (bWithCurrent)
+	{
 		Health = MaxHealth - Delta;
+		OnRep_Health();
+	}
 }
 
 void APRCharacter::Lock(AActor* NewLockTarget)
@@ -83,12 +89,15 @@ void APRCharacter::Tick(float DeltaSeconds)
 	Super::Tick(DeltaSeconds);
 	if (!LockedTarget) return;
 
-	const FVector MyLoc = GetActorLocation();
-	const FVector TargetLoc = LockedTarget->GetActorLocation();
-	
-	FRotator ActorRot = UKismetMathLibrary::FindLookAtRotation(MyLoc, TargetLoc);
-	ActorRot = FMath::Lerp(GetActorRotation(), ActorRot, DeltaSeconds * 10.0f);
-	SetActorRotation(FRotator{ 0.0f, ActorRot.Yaw, 0.0f });
+	if (!IsMoveInputIgnored() || WeaponComp->IsCheckingCombo())
+	{
+		const FVector MyLoc = GetActorLocation();
+		const FVector TargetLoc = LockedTarget->GetActorLocation();
+
+		FRotator ActorRot = UKismetMathLibrary::FindLookAtRotation(MyLoc, TargetLoc);
+		ActorRot = FMath::Lerp(GetActorRotation(), ActorRot, DeltaSeconds * 10.0f);
+		SetActorRotation(FRotator{ 0.0f, ActorRot.Yaw, 0.0f });
+	}
 
 	if (AController* MyController = GetController())
 	{
@@ -118,6 +127,7 @@ void APRCharacter::BeginPlay()
 	{
 		WeaponComp->SetComponents(GetAttackComponents());
 		Health = MaxHealth;
+		OnRep_Health();
 	}
 }
 
@@ -128,7 +138,9 @@ float APRCharacter::TakeDamage(float Damage, const FDamageEvent& DamageEvent,
 	if (Damage <= 0.0f) return 0.0f;
 
 	Health = FMath::Max(Health - Damage, 0.0f);
-	if (Health <= 0.0f) Death();
+	OnRep_Health();
+
+	if (Health == 0.0f) Death();
 
 	if (auto* InstigatorPawn = EventInstigator->GetPawn<APRCharacter>())
 	{
@@ -191,8 +203,7 @@ void APRCharacter::ServerLock_Implementation(AActor* NewLockTarget)
 	const bool bWasLocked = bIsLocked;
 	bIsLocked = true;
 
-	if (!bWasLocked)
-		Cast<UPRMovementComponent>(GetCharacterMovement())->ApplyLock(true);
+	if (!bWasLocked) OnRep_IsLocked();
 }
 
 void APRCharacter::ServerUnlock_Implementation()
@@ -202,8 +213,7 @@ void APRCharacter::ServerUnlock_Implementation()
 	const bool bWasLocked = bIsLocked;
 	bIsLocked = false;
 	
-	if (bWasLocked)
-		Cast<UPRMovementComponent>(GetCharacterMovement())->ApplyLock(false);
+	if (bWasLocked) OnRep_IsLocked();
 }
 
 void APRCharacter::MulticastOnHit_Implementation(float Damage, APRCharacter* Causer)
@@ -229,6 +239,7 @@ void APRCharacter::MulticastDeath_Implementation()
 void APRCharacter::OnRep_IsLocked()
 {
 	Cast<UPRMovementComponent>(GetCharacterMovement())->ApplyLock(bIsLocked);
+	OnLocked.Broadcast(true);
 }
 
 void APRCharacter::ApplyCharacterData(const FCharacterData& Data)
