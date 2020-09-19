@@ -4,26 +4,26 @@
 
 #include "CoreMinimal.h"
 #include "UObject/Interface.h"
-#include "StateExecutable.generated.h"
+#include "Interactable.generated.h"
 
 UINTERFACE(BlueprintType, MinimalAPI)
-class UStateExecutable : public UInterface
+class UInteractable : public UInterface
 {
 	GENERATED_BODY()
 };
 
-class PROJECTR_API IStateExecutable
+class PROJECTR_API IInteractable
 {
 	GENERATED_BODY()
 
 public:
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
-	void BeginExecute();
+	void Interact(class APRCharacter* Target);
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
-	void EndExecute();
+	FText GetInteractName() const;
 
 protected:
-	virtual void BeginExecute_Implementation() {}
-	virtual void EndExecute_Implementation() {}
+	virtual void Interact_Implementation(APRCharacter* Target) {}
+	virtual FText GetInteractName_Implementation() const { return FText{}; }
 };
