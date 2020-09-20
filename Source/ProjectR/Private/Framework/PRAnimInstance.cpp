@@ -10,6 +10,7 @@ UPRAnimInstance::UPRAnimInstance()
 {
 	bIsLocking = false;
 	bIsInAir = false;
+	bIsDeath = false;
 }
 
 void UPRAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
@@ -42,4 +43,5 @@ void UPRAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 
 	bIsLocking = User->IsLocked();
 	bIsInAir = Movement->IsFalling();
+	bIsDeath = User->IsDeath();
 }
