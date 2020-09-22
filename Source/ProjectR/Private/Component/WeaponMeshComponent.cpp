@@ -69,7 +69,7 @@ void UWeaponMeshComponent::TickComponent(float DeltaTime, ELevelTick TickType,
 	if (SwapDuration <= 0.0f) return;
 	
 	if (bNeedFast) SwapDuration *= 0.5f;
-	SwapRatio -= GetWorld()->GetDeltaSeconds() * (1.0f / SwapDuration);
+	SwapRatio -= GetWorld()->GetDeltaSeconds() / SwapDuration;
 	SwapRatio = FMath::Max(SwapRatio, 0.0f);
 
 	if (bNowDecrease)
